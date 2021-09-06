@@ -1,0 +1,29 @@
+# pakage manager
+/node_modules
+
+# Dependency Manager
+/vendor
+
+
+# cash file
+/bootstrap/cash
+
+
+
+
+
+# The file containing environment variables
+.env
+
+
+# Ignore IDE specific files
+.idea/
+
+
+
+
+
+# file
+mix-manifest.json
+package-lock.json
+composer.lock

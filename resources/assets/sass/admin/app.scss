@@ -1,0 +1,73 @@
+/*------------------------------------------------------------------
+ [Master Stylesheet]
+
+  Project:	User requests
+  Version:	1.1.0
+-------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------
+  ===== Table of Contents =====
+
+  * Template variable
+    + Bootstrap
+    + Variable
+    + base structure
+  * Template core Styles
+    + inputs
+    + Fonts
+    + Functions
+    + Utilities
+  * Components
+  * Plugin overrides
+
+  * Landing screens
+  * Layout
+
+-------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------*/
+/* === Import Bootstrap functions and variables === */
+@import "~bootstrap/dist/css/bootstrap.min.css";
+
+/*-------------------------------------------------------------------*/
+/* === Template variable / structure === */
+@import "helpers/variables";
+@import "base";
+
+
+
+
+/*-------------------------------------------------------------------*/
+/* === Core Styles === */
+@import "helpers/fonts";
+@import "mixins/inputs";
+
+
+
+/*-------------------------------------------------------------------*/
+/* === Components === */
+@import "components/forms";
+@import "components/icons";
+@import "components/bages";
+@import "components/google-icons";
+@import "components/datatable";
+@import "components/button";
+@import "components/bootstrap-modal";
+
+
+
+/*-------------------------------------------------------------------*/
+/* === Layout === */
+@import "layout/navbar";
+@import "layout/sidebar";
+
+
+
+/*-------------------------------------------------------------------*/
+/* === Pages === */
+@import "pages/refresh-page";
+@import "pages/admin/users";
+@import "pages/admin/requests";
+@import "pages/admin/login";
+@import "pages/user-index";
+

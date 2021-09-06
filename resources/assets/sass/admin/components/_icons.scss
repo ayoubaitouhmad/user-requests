@@ -1,0 +1,16 @@
+/* icons */
+.material-icons {
+  cursor: pointer;
+  font-size: 20px;
+  padding: .2rem;
+  border-radius: 6px;
+  .ico-edit{
+    stroke: $blue;
+  }
+  .ico-delete{
+    stroke: #ff3c3c;
+  }
+  .ico-check{
+    stroke: #ffc107;
+  }
+}

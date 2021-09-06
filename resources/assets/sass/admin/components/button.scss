@@ -1,0 +1,39 @@
+
+.btn-status {
+
+}
+
+.btn-approved {
+  background-color: #EAF8F3;
+  color: #61BB98;
+}
+
+.btn-rejected {
+
+}
+
+.btn-postpone {
+  background-color: #EFF3F6;
+  color: #8E98A1;
+}
+
+.btn-pending {
+  background-color: #CD9258;
+  color: #FEF2E8;
+}
+
+
+@mixin custom-btn{
+  outline: none;
+  border-radius: 1px;
+  border: 1px solid black;
+  padding: .2rem 1rem;
+  height: 2rem;
+  font-size: .785rem;
+
+
+
+}
+
+
+

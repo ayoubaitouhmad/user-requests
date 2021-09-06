@@ -1,0 +1,182 @@
+/* forms */
+.custom-form__control {
+  display: block;
+  width: 100%;
+  height: 2.4rem;
+  border: 1px solid rgba(4, 6, 17, 0.2) !important;
+  font-family: $default-font-family;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #495057;
+  background-color: #ffffff;
+  background-clip: padding-box;
+  border-radius: 4px;
+  outline: none;
+
+  &:focus {
+    border: 1.5px solid $first-color !important;
+    box-shadow: 0 0 3px $first-color;
+    transition: box-shadow .1s ease-in;
+  }
+
+  &:focus + .custom-control__label > .custom-control__label-placeholder {
+    color: $first-color !important;
+  }
+
+
+}
+
+
+.form-group__custom-control {
+  position: relative;
+  margin: 1rem 0;
+
+  & .custom-form__control {
+    display: block;
+    width: 100%;
+    height: 2.4rem;
+    border: 1px solid rgba(4, 6, 17, 0.2) !important;
+    font-family: $default-font-family;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: #495057;
+    background-color: #ffffff;
+    background-clip: padding-box;
+    border-radius: 4px;
+    outline: none;
+
+    &:focus {
+      border: 1.5px solid $first-color !important;
+      box-shadow: 0 0 3px $first-color;
+      transition: box-shadow .1s ease-in;
+    }
+
+    &:focus + .custom-control__label > .custom-control__label-placeholder {
+      color: $first-color !important;
+    }
+
+
+  }
+
+  & .custom-control__label {
+    position: absolute;
+    width: 15rem;
+    height: 3rem;
+    pointer-events: none;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+
+    & .custom-control__label-placeholder {
+      /* background-color: red; */
+      background-color: white;
+      position: absolute;
+      bottom: 18px;
+      left: 10px;
+      padding: .1px .2rem;
+      color: rgba(0, 0, 0, 0.5);
+      font-size: 0.875rem;
+      transition: all .1s ease-in-out;
+
+    }
+
+
+  }
+
+  & .custom-form__control-input {
+    padding: .1rem .8rem;
+    line-height: 1;
+  }
+
+  & .custom-form__control-date {
+    padding: .1rem .5rem;
+  }
+
+  & .custom-form__control-select {
+    padding: .1rem .5rem;
+  }
+
+  & .custom-control__file-checked {
+
+    border: 1px solid rgba(4, 6, 17, 0.2);
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .custom-form__control-checkbox {
+      background: black;
+      padding: 0.5rem 1rem;
+      width: auto;
+      height: 2.4rem;
+      display: flex;
+      -ms-flex-align: center;
+      align-items: center;
+      padding: 0.82rem;
+      font-size: 1rem;
+      font-weight: 400;
+      line-height: 1.5;
+      color: #495057;
+      text-align: center;
+      white-space: nowrap;
+      background-color: #e2e5e7;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .custom-form__control-file {
+      & {
+        position: relative;
+        width: 100%;
+        height: 2.4rem;
+      }
+
+      &.active-file {
+        color: $text-muted;
+        background-color: white;
+        //user-focus: none;
+        user-select: none;
+
+        &:hover {
+          background-color: $text-muted;
+          color: white;
+        }
+
+        &:active {
+          background-color: $dodger-blue;
+        }
+      }
+
+      &.inactive-file {
+        color: #fff;
+        background-color: #b4b6b8;
+        pointer-events: none;
+        //user-focus: none;
+        //user-select: none;
+      }
+
+      & .control-file__origin {
+        opacity: 0;
+        position: relative;
+        z-index: 2;
+        margin: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      & .control-file__value-container {
+        position: absolute;
+        top: 5px;
+        left: 35%;
+        z-index: 1;
+        line-height: 1.5;
+        color: #495057;
+        background-color: transparent;
+      }
+
+
+    }
+
+  }
+}
