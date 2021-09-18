@@ -2,6 +2,7 @@
     window.app.admin.login.ajaxRequest = () => {
         const loginFormEl = $('#login-form');
         loginFormEl.on('submit', function (e) {
+            console.log('clicked');
             e.preventDefault();
             let emailEl = loginFormEl.find('.form-item__data-email');
             let passwordEl = loginFormEl.find('.form-item__data-password');
@@ -34,7 +35,7 @@
             switch (header) {
                 case 'valid login':
                     func.refreshPage();
-                    setTimeout(() => location.assign("/admin"), 3000);
+                    setTimeout(() => location.assign("/admin/dashboard"), 3000);
                     break;
                 case 'validation':
                     errorMessagesEl.removeClass('d-none');

@@ -21,7 +21,7 @@ class Session
 	    if(session_id() === '')
 		    session_start();
 	    
-        if (!empty($name)  || !empty($value)) {
+        if (!empty($name)  && !empty($value)) {
             return $_SESSION[$name] = $value;
         }
         throw new Exception('Name and value required');
@@ -36,7 +36,7 @@ class Session
      */
     public static function get($name)
     {
-        $session = false;
+        $session = null;
         if (!empty($name) && isset($_SESSION[$name])) {
             $session = $_SESSION[$name];
         }
@@ -67,7 +67,6 @@ class Session
     {
         if (self::has($name)) {
             unset($_SESSION[$name]);
-//            $_SESSION[$name] = array();
         }
     }
 

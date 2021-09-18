@@ -6,13 +6,15 @@
         const form = $('#handle-user-request');
 
 
+        $(document).click(function(){
+            $('.cell-menu__submenu').addClass('d-none');
+        });
 
         // modals.modal('show');
         $(".cell-menu__ico").on('click' , function () {
-            $('.cell-menu__submenu').addClass('d-none')
+            $('.cell-menu__submenu').addClass('d-none');
             let $this = $(this);
             let cellMenuSubmenuEl = $this.siblings('.cell-menu__submenu');
-            console.log(cellMenuSubmenuEl);
             cellMenuSubmenuEl.removeClass('d-none').addClass('active');
         });
 
@@ -54,7 +56,9 @@
             modalEl.modal('show');
 
 
+
             $("#encContainer").val(thisParent.attr('row-id'));
+            console.log( $("#encContainer").val())
             // get the data stored in hidden input in current line
             let fullNameContainerEl = thisParent.find('.requests-list__user-name__hide');
             let dateContainerEl = thisParent.find('.requests-list__date__hide');
@@ -77,9 +81,6 @@
             dateDestinationEl.text(dateContainerEl.val());
             reasonDestinationEl.text(reasonContainerEl.val());
             typeDestinationEl.text(typeContainerEl.val());
-
-
-
             responseDestinationEl.val(responseContainerEl.val());
             statusDestinationEl.val(statusContainerEl.val());
 
@@ -89,15 +90,18 @@
 
         // delete request
         $('.dropdown-menu__delete-request').on('click', function () {
-            console.log('yep !!!');
+
         });
 
         // submit button exist out side form , so when btn clicked this func call submit event and handle it in ajax requests file
         $('#modal-btn__save').on('click', function (e) {
             form.submit();
         });
-        $('.navbar-toggler').click();
+
+
+
 
     };
 })();
+
 

@@ -30,7 +30,10 @@
                     }
 
                 })
-                    .then(res =>handleReturnData(res.data))
+                    .then(res => {
+                        handleReturnData(res.data);
+                        console.log(res.data);
+                    })
                     .catch(error => console.log(error.message));
 
             }
@@ -44,10 +47,12 @@
 
             switch (header) {
                 case 'done':
+                    $('.modal').modal('hide');
+                    func.resetScrolling();
                     func.refreshPage();
                     func.reloadPageContent('/admin/dashboard/requests');
 
-                    func.resetScrolling();
+
 
                     break;
                 case 'validation':

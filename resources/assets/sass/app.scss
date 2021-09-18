@@ -1,0 +1,83 @@
+/*------------------------------------------------------------------
+ [Master Stylesheet]
+
+  Project:	User requests
+  Version:	1.1.0
+-------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------
+  ===== Table of Contents =====
+
+  * Template variable
+    + Bootstrap
+    + Variable
+    + base structure
+  * Template core Styles
+    + inputs
+    + Fonts
+    + Functions
+    + Utilities
+  * Components
+  * Plugin overrides
+
+  * Landing screens
+  * Layout
+
+-------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------*/
+/* === Import Bootstrap functions and variables === */
+@import "../../../node_modules/bootstrap/dist/css/bootstrap.min.css";
+
+/*-------------------------------------------------------------------*/
+/* === Template variable / structure === */
+@import "helpers/variables";
+@import "resources/assets/sass/base";
+
+
+
+
+/*-------------------------------------------------------------------*/
+/* === Core Styles === */
+@import "helpers/fonts";
+@import "mixins/inputs";
+
+
+
+/*-------------------------------------------------------------------*/
+/* === Components === */
+@import "components/forms";
+@import "components/icons";
+@import "components/bages";
+@import "components/google-icons";
+@import "components/datatable";
+@import "components/button";
+@import "components/bootstrap-modal";
+
+
+
+/*-------------------------------------------------------------------*/
+/* === Layout === */
+@import "layout/navbar";
+@import "layout/sidebar";
+
+
+
+/*-------------------------------------------------------------------*/
+/* === Pages === */
+// helpers
+@import "global/refresh-page";
+
+// admin
+@import "admin/pages/requests";
+@import "admin/pages/users";
+@import "admin/pages/login";
+
+// user
+@import "user/pages/index";
+@import "user/pages/signup/signup";
+@import "user/pages/signup/signup-profile";
+@import "user/pages/signup/email";
+@import "user/pages/login/signin";
+@import "user/pages/dashboard/requests";
+

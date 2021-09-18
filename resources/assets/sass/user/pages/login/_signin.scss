@@ -1,0 +1,54 @@
+body[page-id="user-login"] {
+  .card{
+    width: 25rem;
+  }
+  .login-container__content{
+    .login-container__form{
+      .form-item {
+        margin: .5rem 0;
+        position: relative;
+        .material-icons{
+          position: absolute;
+          top: 8px;
+          left: 5px;
+          font-size: 1.1rem;
+          color: $text-muted;
+        }
+      }
+      .form-item__data{
+        width: 100%;
+        height: 2.5rem;
+        @include form-control-style;
+        color: $text-muted;
+        padding-left:2rem ;
+        outline: none !important;
+        @include transition(1s);
+        &:hover ,
+        &:active ,
+        &:focus{
+          border-color: $first-color !important;
+          @include transition(1s);
+        }
+
+
+        &:focus-visible{
+          outline: none;
+        }
+
+
+        &:focus + .material-icons,
+        &:hover + .material-icons {
+          color: $first-color !important;
+          @include transition(1s);
+        }
+
+
+
+
+
+      }
+
+    }
+  }
+
+}

@@ -19,16 +19,23 @@ class Request
     public static function get($key)
     {
         $all = self::all();
-        return $all->$key ?? false;
+        return $all->$key ?? null;
     }
 
 
-    public static function has($key)
+    public static function has($key): bool
     {
         $all = self::all(true);
         return in_array($key, array_keys($all));
     }
-
+	
+	
+	
+	/**
+	 * @param $key
+	 * @param $value
+	 * @return mixed
+	 */
     public static function hasValue($key , $value)
     {
         $all = self::all();

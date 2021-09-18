@@ -43,7 +43,6 @@ class CSRF
         $this->codeAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         $this->codeAlphabet .= "abcdefghijklmnopqrstuvwxyz";
         $this->codeAlphabet .= "0123456789";
-        $this->codeAlphabet .= "!#$%&'()*+,-./";
         if(session_id() === '')
             session_start();
     }
@@ -54,9 +53,9 @@ class CSRF
      * @param $max
      * @return int
      */
-    private  function rand($min, $max)
+    private  function rand( $max)
     {
-        return rand($min,$max);
+        return rand(0,$max);
     }
 
 
@@ -64,11 +63,11 @@ class CSRF
      * @param int $length
      * @return mixed
      */
-    public  function  getToken($length = 30)
+    public  function  getToken(int $length = 30)
     {
         $max = strlen($this->codeAlphabet);
         for ($i = 0; $i < $length; $i++) {
-            $this->token .= $this->codeAlphabet[$this->rand(0, $max - 1)];
+            $this->token .= $this->codeAlphabet[$this->rand( $max - 1)];
         }
         return $this->token;
     }
@@ -76,26 +75,26 @@ class CSRF
 	
 	
 	/**
-	 * after token is generated this function will added it to a session
+	 * after token is generated this function will add it to a session
 	 * @return false|mixed
 	 * @throws Exception
 	 */
 	public function token(){
-        if(!Session::has('token')){
-            Session::add('token',$this->getToken());
-            return $this->token;
-        }else{
-            return Session::get('token');
-        }
+		if(Session::has('token'))
+		{
+			return Session::get('token');
+		}else{
+			return Session::add('token',$this->getToken());
+		}
     }
-
-
-
-
-    /** verify if session has token or not
-     * @param $token
-     *
-     */
+	
+	
+	
+	/** verify if session has token or not
+	 * @param $token
+	 *
+	 * @throws Exception
+	 */
     public function verifyToken($token){
         if(Session::has('token') && Session::get('token') == $token){
             return true;
@@ -115,8 +114,28 @@ class CSRF
     }
 
 
-    public function refresh(){
 
-    }
-
+	
+	
+	
+	/**
+	 * @param int $length
+	 * @return mixed
+	 */
+	public  function  getValidationCode(int $length = 6)
+	{
+		$numbers = '0123456789';
+		$max = strlen($numbers);
+		$code = '';
+		for ($i = 0; $i < $length ; $i++) {
+			$code .= $numbers[$this->rand( $max - 1)];
+		}
+		return $code;
+	}
+	
+	public function refresh(){
+		return Session::add('token',$this->getToken());
+	}
+	
+	
 }

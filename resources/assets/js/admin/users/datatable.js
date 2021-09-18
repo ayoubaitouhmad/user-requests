@@ -12,7 +12,6 @@
         $('#user_form').parsley(); //adding frm
         $('#user-up-form').parsley(); // update form
         $('#user-save-form').parsley(); //adding frm
-        // add cities to dropdown
 
     };
 

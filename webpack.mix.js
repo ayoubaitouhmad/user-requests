@@ -2,6 +2,8 @@ let mix = require('laravel-mix');
 let minifier = require('minifier');
 mix.setPublicPath('public');
 
+
+
 mix.js('resources/assets/js/app.js', 'public/js/app.js')
 mix.autoload({
     jquery: ['$', 'window.jQuery'],
@@ -10,7 +12,7 @@ mix.autoload({
 
 
 
-mix.sass('resources/assets/sass/admin/app.scss', 'public/css/app.css')
+mix.sass('resources/assets/sass/app.scss', 'public/css/app.css')
     .options({
         postCss: [
             require('autoprefixer')

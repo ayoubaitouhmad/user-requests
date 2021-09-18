@@ -15,7 +15,7 @@ class Redirect
 	 */
 	public static function To($path){
         header("Location:$path");
-        die();
+        exit();
     }
 	
 	

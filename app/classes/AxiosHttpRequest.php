@@ -11,7 +11,6 @@
 		 */
 		public static function all(bool $isAssoc = false)
 		{
-			
 			return json_decode(file_get_contents('php://input'), $isAssoc);
 		}
 		
@@ -37,9 +36,7 @@
 		 */
 		public static function has($key)
 		{
-			
 			$all = self::all(true);
-			
 			return in_array($key, array_keys($all));
 		}
 		

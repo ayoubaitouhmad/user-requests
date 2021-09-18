@@ -3,12 +3,32 @@
 
     window.app.admin.users.ajaxRequest = () => {
         // global variable
+        // update form
         let updateFormEl = $('#user-up-form');
+        // update form fields
+        let updateFormName = $('#user-update-name');
+        let updateFormGender = $('#user-update-gender');
+        let updateFormAddress = $('#user-update-address');
+        let updateFormRole = $('#user-update-role');
+        let updateFormSecretQuestion = $('#user-update-secretQuestion');
+        let updateFormDate = $('#user-update-date');
+        let updateFormCity = $('#user-update-city');
+        let updateFormResponse = $('#user-update-response');
+        let updateFormEmail = $('#user-update-email');
+        let updateFormPhoneNumber = $('#user-update-phoneNumber');
+        let updateFormAccount = $('#user-update-account');
+        let updateFormPhoto = $('#user-update-photo');
+        let updateFormPhotoContainer = $('.user-update-photo__container');
+        // end update form
+
+        // add form
         let saveFormEl = $('#user-save-form');
-
+        //delete modal
         let deleteFormEl = $('#delete-user');
-        let getUserDataBtnEl = $('.ico-edit');
 
+        // buttons
+        let submitUpdateFormBtnEl = $('#submit-update-form');
+        let getUserDataBtnEl = $('.ico-edit');
         let user_id;
 
 
@@ -33,6 +53,7 @@
                 .catch(error => console.log(error));
 
         });
+
         function HandleDeleteHttpRequestReturnedData({header, body}) {
             let parentEl = deleteFormEl.closest('.modal');
             let errorMessagesEl = parentEl.find('.user-form-messages');
@@ -42,7 +63,7 @@
                 case 'done':
                     func.refreshPage();
                     func.reloadPageContent('/admin/dashboard/requests');
-
+                    $('.modal').modal('hide');
                     func.resetScrolling();
                     break;
                 case 'cancel':
@@ -69,19 +90,22 @@
             }
 
         }
+
         //end delete user
 
         // http requests / get user data user
-        getUserDataBtnEl.click(function () {
+        getUserDataBtnEl.on('click', function () {
+
             $('#update-user').modal('show'); // show user infos inside form
             /*
                 * the user id hashed hidden inside hidden input
                 * get the hashed from the current field (this)
             */
-            let id = $(this).parent().attr('bootstrap-data-toggle');
-            let token = saveFormEl.find(('input[type="hidden"]')).val();
+            let id = getUserDataBtnEl.closest('tr').attr('row-id');
+            let token = $('body').attr('page-token');
             user_id = id;
-            axios({
+
+            window.axios({
                 method: 'GET',
                 url: '/admin/dashboard/users/get',
                 headers: {
@@ -89,57 +113,32 @@
                     "x-user": id
                 }
             })
-                .then(res => handleGetHttpRequestReturnedData(res.data))
+                .then(res => {
+                    handleGetUserDataReturnData(res.data)
+                })
                 .catch(error => console.log(error));
 
         });
 
-        function handleGetHttpRequestReturnedData({title, body}) {
-            if (title === 'founded' && body) {
+        function handleGetUserDataReturnData({title, body}) {
+            if (title === 'founded' && body !== false) {
                 let userData = body; //here the user obj
 
-                let nameEl = $('#user-up-name');
-                let addressEl = $('#user-up-address');
-                let cityEl = $('#user-up-city');
-                let genderEl = $('#user-up-gender');
-                let dateEl = $('#user-up-date');
-                let phoneNumberEl = $('#user-up-phoneNumber');
-                let emailEl = $('#user-up-email');
-                let passwordEl = $('#user-up-ps');
-                let inputPhotoEl = $('#user-up-photo');
-                let roleEl = $('#user-up-role');
-                let compteEtatEl = $('#user-up-compteEtat');
-                let secretQuestionEl = $('#user-up-secretQuestion');
-                let responseEl = $('#user-up-response');
 
-                //input text
-                addressEl.val(userData.user_address).trigger('focus');
-                phoneNumberEl.val(userData.user_phoneNumber).trigger('focus');
-                emailEl.val(userData.user_email).trigger('focus');
-                passwordEl.val(userData.user_password).trigger('focus');
-                secretQuestionEl.val(userData.user_secretQuestion).trigger('focus')
-                responseEl.val(userData.user_Response).trigger('focus');
-                userData.user_gender === 'm' ? genderEl.val('male') : genderEl.val('female');
-                dateEl.val(userData.user_dateOfBirth).trigger('focus');
-
-                // select
-                userData.user_compteEtat ? compteEtatEl.val(userData.user_compteEtat).trigger('focus') : '';
-                userData.user_role ? roleEl.val(userData.user_role).trigger('focus') : '';
-                userData.user_gender ? genderEl.val(userData.user_gender === 'm' ? 'male' : 'female').trigger('focus') : '';
-                userData.user_ville ? cityEl.val(userData.user_ville) : '';
+                updateFormName.val(userData.user_fullname).trigger('focus');
+                updateFormGender.val(userData.user_gender === 'm' ? 'male' : 'female').trigger('focus');
+                updateFormAddress.val(userData.user_address).trigger('focus');
+                updateFormRole.val(userData.user_role).trigger('focus');
+                updateFormSecretQuestion.val(userData.user_secretQuestion).trigger('focus');
+                updateFormDate.val(userData.user_dateOfBirth).trigger('focus');
+                updateFormCity.val(userData.user_ville).trigger('focus');
+                updateFormResponse.val(userData.user_Response).trigger('focus');
+                updateFormEmail.val(userData.user_email).trigger('focus');
+                updateFormPhoneNumber.val(userData.user_phoneNumber).trigger('focus');
+                updateFormAccount.val(userData.user_compteEtat).trigger('focus');
+                updateFormPhotoContainer.attr('src', userData.user_photo);
 
 
-
-                // in the dom stay focused
-                nameEl.val(userData.user_fullname).trigger('focus');
-
-                $('.custom-input__input')
-                    .trigger('change')
-                    .trigger('focusout')
-                    .trigger('keyup')
-                    .trigger('copy')
-                    .trigger('paste')
-                    .trigger('cut');
             }
         }
 
@@ -147,65 +146,73 @@
 
 
         // http requests / update user
+        submitUpdateFormBtnEl.on('click', function () {
+            submitUpdateFormBtnEl.prop('disabled', true);
+            updateFormEl.submit();
+
+
+        })
         updateFormEl.on('submit', function (e) {
             e.preventDefault();
-            let errorMessagesEl = $('#user-update-form-messages');
-            let messageTitleEl = errorMessagesEl.children('.modal-error-title');
-            let messageBodyEl = errorMessagesEl.children('.modal-error-body');
-            let fileEl = $('#user-up-photo');
-            let tokenEl = updateFormEl.find('input[type="hidden"]');
-            let data = new FormData();
-            data.append('email', $('#user-up-email').val());
-            data.append('name', $('#user-up-name').val());
-            data.append('address', $('#user-up-address').val());
-            data.append('city', $('#user-up-city').val());
-            data.append('gender', $('#user-up-gender').val());
-            data.append('date', $('#user-up-date').val());
-            data.append('phone', $('#user-up-phoneNumber').val());
-            data.append('password', $('#user-up-ps').val());
-            data.append('role', $('#user-up-role').val());
-            data.append('account', $('#user-up-compteEtat').val());
-            data.append('question', $('#user-up-secretQuestion').val());
-            data.append('response', $('#user-up-response').val());
-            data.append('id', user_id);
-            data.append('token', tokenEl.val());
 
-            let _isFile = func.isFile(fileEl);
-            _isFile ? data.append('photo', fileEl[0].files[0]) :
-                data.append('photo', ' ');
 
-            e.preventDefault();
+            let formData = new FormData();
+            let token = $('body').attr('page-token');
+            formData.append('id', user_id);
+            formData.append('name', updateFormName.val());
+            formData.append('gender', updateFormGender.val());
+            formData.append('address', updateFormAddress.val());
+            formData.append('role', updateFormRole.val());
+            formData.append('question', updateFormSecretQuestion.val());
+            formData.append('date', updateFormDate.val());
+            formData.append('city', updateFormCity.val());
+            formData.append('response', updateFormResponse.val());
+            formData.append('email', updateFormEmail.val());
+            formData.append('phone', updateFormPhoneNumber.val());
+            formData.append('account', updateFormAccount.val());
+            if (func.isFile(updateFormPhoto)) formData.append('photo', updateFormPhoto.get(0).files[0]);
+
             if (updateFormEl.parsley().isValid()) {
-                axios({
+                submitUpdateFormBtnEl.prop('disabled', false);
+                window.axios({
                     method: 'post',
                     url: '/admin/dashboard/users/edit',
-                    data: data,
+                    data: formData
+                    ,
                     headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'multipart/form-data'
+                        'Content-Type': 'multipart/form-data',
+                        'Authorization': token
                     }
                 })
-                    .then(res => HandleUpdateHttpRequestReturnedData(res.data))
+                    .then(res => {
+                        HandleUpdateHttpRequestReturnedData(res.data);
+                        // HandleUpdateHttpRequestReturnedData(res.data)
+                    })
                     .catch(error => console.log(error));
-
-
-
-
             }
         });
 
         function HandleUpdateHttpRequestReturnedData({title, body}) {
 
 
-            let errorMessagesEl = $('#user-update-form-messages');
+            let errorMessagesEl = updateFormEl.find('#user-update-form-messages');
             let messageTitleEl = errorMessagesEl.children('.modal-error-title');
             let messageBodyEl = errorMessagesEl.children('.modal-error-body');
             switch (title) {
                 case 'done':
-
+                    $('.modal').modal('hide');
                     func.refreshPage();
                     func.reloadPageContent('/admin/dashboard/users')
 
+                    break;
+                case 'used':
+                    errorMessagesEl.removeClass('d-none');
+                    func.setClass(errorMessagesEl, 'alert-warning', 'alert-danger');
+                    messageTitleEl
+                        .html(body.substring(0, body.indexOf(',')) + ',');
+
+                    messageBodyEl
+                        .html(body.substring(body.indexOf(',') + 1, body.length));
                     break;
                 case 'sql':
                     errorMessagesEl.removeClass('d-none');
@@ -254,121 +261,97 @@
         //end update user
 
 
-        // http requests / get users list
-        //get the data from the controller to the view
-        // $.ajax({
-        //     'url': "/admin/users/edit/d",
-        //     'contentType': 'application/json'
-        // }).done( function(data) {
-        //     let x = JSON.parse(data);
-        //     $('#table_id').dataTable( {
-        //         "aaData": x,
-        //         "columns": [
-        //             { "data": "user_id" },
-        //             { "data": "user_fullname"}
-        //         ]
-        //     });
-        // })
-        //end get users list
-
-
         // http requests / add user
         saveFormEl.submit(function (e) {
-            let errorMessagesEl = $('#user-save-modal-messages');
-            let messageTitleEl = errorMessagesEl.children('.modal-error-title');
-            let messageBodyEl = errorMessagesEl.children('.modal-error-body');
+            e.preventDefault();
+
+
             let nameEl = saveFormEl.find('#user-save-name');
             let emailEl = saveFormEl.find('#user-save-email');
+            let phone = saveFormEl.find('#user-save-phone');
             let passwordEl = saveFormEl.find('#user-save-password');
-            let tokenEl = saveFormEl.find('input[type="hidden"]');
-            e.preventDefault();
-            $.ajax({
-                type: 'POST',
-                url: '/admin/dashboard/users/add',
-                dataType: 'json',
-                data: {
-                    name: nameEl.val(),
-                    email: emailEl.val(),
-                    password: passwordEl.val(),
-                    token: tokenEl.val()
+            let token = $('body').attr('page-token');
+
+
+            window.axios({
+                method: 'POST',
+                headers: {
+                    'Authorization': token
                 },
-                success: function ({title, body}) {
-                    // done , error , used , validator
-                    switch (title) {
-                        case 'done':
-                            $('body').load('/page/refresh');
-                            $('[data-toggle="minimize"]').click();
-                            setTimeout(function () {
-                                $('body').load('/admin/dashboard/users');
-                                $('[data-toggle="minimize"]').click();
-                            }, 3000);
-
-                            break;
-                        case 'used':
-                            errorMessagesEl.removeClass('d-none');
-                            func.setClass(errorMessagesEl, 'alert-warning', 'alert-danger');
-                            messageTitleEl
-                                .html(body.substring(0, body.indexOf(',')) + ',');
-
-                            messageBodyEl
-                                .html(body.substring(body.indexOf(',') + 1, body.length));
-                            break;
-                        case 'validator':
-                            errorMessagesEl.removeClass('d-none');
-                            func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
-                            let arrays = Object.values(body);
-                            if (arrays.find(x => x !== undefined) !== undefined) {
-                                let firstArray = arrays.find(x => x !== undefined);
-                                if (arrays.find(x => x !== undefined) !== undefined) {
-                                    if (firstArray.find(x => x !== undefined) !== undefined) {
-                                        messageBodyEl.text(firstArray.find(x => x !== undefined));
-                                    }
-                                }
-                            }
-                            break;
-                        case 'error':
-                            errorMessagesEl.removeClass('d-none');
-                            func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
-                            errorMessagesEl.removeClass('d-none')
-                            $('.modal-error-title')
-                                .html(body.substring(0, body.indexOf(',')) + ',');
-
-                            $('.modal-error-body')
-                                .html(body.substring(body.indexOf(',') + 1, body.length));
-                            break;
+                data: {
+                    'action': 'add',
+                    'data': {
+                        'name': nameEl.val(),
+                        'email': emailEl.val(),
+                        'password': passwordEl.val(),
+                        'phone': phone.val(),
                     }
                 },
-                error: function () {
-                    alert('');
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1000);
-                }
-            });
+                url: '/admin/dashboard/users/add'
+            })
+                .then(response => handleSaveFormReturnData(response.data))
+                .catch(error => {
+                    alert('please try again.')
+                    location.reload();
+                })
 
 
         });
+
+        function handleSaveFormReturnData({header, body}) {
+            let errorMessagesEl = saveFormEl.closest('.modal-body').find('#user-save-modal-messages');
+            let messageTitleEl = errorMessagesEl.children('.modal-error-title');
+            let messageBodyEl = errorMessagesEl.children('.modal-error-body');
+            switch (header) {
+                case 'done':
+                    $('.modal').modal('hide');
+                    func.resetScrolling();
+                    $('body').load('/page/refresh');
+                    $('[data-toggle="minimize"]').click();
+                    setTimeout(function () {
+                        $('body').load('/admin/dashboard/users');
+                        $('[data-toggle="minimize"]').click();
+                    }, 3000);
+
+                    break;
+                case 'used':
+                    errorMessagesEl.removeClass('d-none');
+                    func.setClass(errorMessagesEl, 'alert-warning', 'alert-danger');
+                    messageTitleEl
+                        .html(body.substring(0, body.indexOf(',')) + ',');
+
+                    messageBodyEl
+                        .html(body.substring(body.indexOf(',') + 1, body.length));
+                    break;
+                case 'validator':
+                    errorMessagesEl.removeClass('d-none');
+                    func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
+                    let arrays = Object.values(body);
+                    if (arrays.find(x => x !== undefined) !== undefined) {
+                        let firstArray = arrays.find(x => x !== undefined);
+                        if (arrays.find(x => x !== undefined) !== undefined) {
+                            if (firstArray.find(x => x !== undefined) !== undefined) {
+                                messageTitleEl.html('');
+                                messageBodyEl.text(firstArray.find(x => x !== undefined));
+                            }
+                        }
+                    }
+                    break;
+                case 'error':
+                    errorMessagesEl.removeClass('d-none');
+                    func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
+                    errorMessagesEl.removeClass('d-none')
+                    $('.modal-error-title')
+                        .html(body.substring(0, body.indexOf(',')) + ',');
+
+                    $('.modal-error-body')
+                        .html(body.substring(body.indexOf(',') + 1, body.length));
+                    break;
+            }
+        }
+
         // add user
 
-
-        $('.close-session').on('click' , function (){
-            axios({
-                method: 'post',
-                url: '/admin/logout',
-                data:{
-                    'data' : 'fdgdfg'
-                }
-            })
-                .then(res => {
-                    if(res.data.header ==='logout'){
-                        func.refreshPage();
-                        setTimeout(() => location.assign("/admin"), 3000);
-                    }
-                })
-                .catch(error => console.log(error));
-
-
-        });
 
     };
 })();

@@ -15,6 +15,9 @@ class UploadImage extends File implements UploadFile
     protected $targetFolder;
 
     protected $fullPath;
+    
+    
+    public  static  $test;
 
 
     /**
@@ -94,7 +97,12 @@ class UploadImage extends File implements UploadFile
     {
         return $this->fullPath = self::targetFolder . 'img_' . md5($this->fileName) .'.' . $this->fileFormat;
     }
-
+	
+	public static function generate()
+	{
+		return  self::targetFolder . 'img_' . md5(self::$test) .'.' . 'jpg';
+	}
+    
     public function isDuplicateFile()
     {
         return file_exists($this->fullPath);

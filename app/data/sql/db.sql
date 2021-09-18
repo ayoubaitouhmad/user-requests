@@ -107,8 +107,9 @@ group by  rr.role_name;
  */
 
     CREATE OR REPLACE VIEW view_GetUsersRoleCountByUser
-    as
-    SELECT r.role_name as 'month', COUNT(u.user_id) as 'count' ,cast((count(u.user_id) *100 / (select count(*) from user_roles)) as DECIMAL ) as 'percentage'
+as
+
+    SELECT r.role_name as 'role', COUNT(u.user_id) as 'count' , convert(count(u.user_id) * 100 / sum(count(u.user_id))over() , integer ) as 'percentage'
     FROM users u
              RIGHT JOIN user_roles r on r.role_name = u.user_role
     GROUP BY r.role_name;
@@ -120,13 +121,12 @@ group by  rr.role_name;
       * view 2
       * get last four user sign up with
      */
-    CREATE VIEW view_GetLastFourUser
-    as
-    SELECT  u.user_id,u.user_fullname , u.user_dateOfBirth ,u.user_role , u.user_gender , u.created_at
-    FROM users u
+    CREATE OR REPLACE VIEW view_GetLastFourUser
+as
+    SELECT u.user_fullname , u.user_dateOfBirth ,user_photo , user_gender
+    FROM user u
     group by  u.user_fullname , u.user_dateOfBirth ,u.user_role , u.user_gender,created_at
     order by  u.created_at DESC  LIMIT 4;
-
 
 
 
@@ -228,6 +228,23 @@ DELIMITER ;
 
 
 
+/**
+  *  proc 2
+  *Percentage of your requests per month
+ */
 
 
 
+
+DELIMITER //
+CREATE or replace PROCEDURE proc_UserRequestsPercentage(IN id INT , IN year year)
+    BEGIN
+    select months.name , count(request.user_id), convert( COALESCE(count(request.request_id) * 100 / (select count(*) from request where monthname(request_date)=months.name),0),integer )
+    from  request
+              RIGHT JOIN  months on months.name = monthname(request_date)
+        and  request.user_id = id
+        and year(request.request_date) = year
+    GROUP BY FIELD(months.name, 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September',
+        'October', 'November', 'December');
+    END //
+DELIMITER ;

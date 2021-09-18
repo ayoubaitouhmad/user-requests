@@ -32,11 +32,35 @@
 		
 		protected $user;
 		
+		protected  $type;
+		
+		
+		
+		
 		private $PDO;
 		
 		private $tableName;
 		
 		
+		/**
+		 * @return mixed
+		 */
+		public function getType()
+		{
+			
+			return $this->type;
+		}
+		
+		
+		
+		/**
+		 * @param mixed $type
+		 */
+		public function setType($type): void
+		{
+			
+			$this->type = $type;
+		}
 		
 		/**
 		 * @return mixed
@@ -172,21 +196,21 @@
 		
 		
 		/**
-		 * @return User
+		 *
 		 */
-		public function getUser(): User
+		public function getUser()
 		{
-			
 			return $this->user;
 		}
 		
 		
 		
 		/**
-		 * @param User $user
+		 *
+		 * @param $user
 		 * @return Request
 		 */
-		public function setUser(User $user): Request
+		public function setUser( $user): Request
 		{
 			
 			$this->user = $user;
@@ -298,10 +322,35 @@
 		
 		/**
 		 * @param $record
+		 * @return bool
 		 */
-		public function create($record)
+		public function create($record): bool
 		{
-			// TODO: Implement create() method.
+			try {
+				$query = " INSERT INTO {$this->tableName} (request_id , request_pretext ,request_type , user_id) ";
+				$query .= " VALUES(:id , :request_pretext ,:request_type ,:user_id)";
+				$stmt = $this->PDO->prepare($query);
+				
+				$request_id = generateRequestIds();
+				$request_pretext =$record->getPretext();
+				$request_type =$record->getType();
+				$user_id =$record->getUser();
+				
+				$stmt->bindParam(':id' , $request_id , PDO::PARAM_STR);
+				$stmt->bindParam(':request_pretext' , $request_pretext , PDO::PARAM_STR);
+				$stmt->bindParam(':request_type' , $request_type , PDO::PARAM_STR);
+				$stmt->bindParam(':user_id' , $user_id , PDO::PARAM_STR);
+				
+				
+				$stmt->execute();
+				
+				return  $stmt->rowCount() > 0;
+				
+			} catch (Exception $exception) {
+				echo $exception->getMessage();
+				
+				return false;
+			}
 		}
 		
 		
@@ -367,7 +416,7 @@
 		{
 			
 			try {
-				$query = 'SELECT * FROM {$this->table_name} WHERE  {$this->table_name}.request_id = :id';
+				$query = 'SELECT * FROM request WHERE request_id = :id';
 				$stmt = $this->PDO->prepare($query);
 				$stmt->bindParam(':id', $id, PDO::PARAM_INT);
 				$stmt->execute();
@@ -395,21 +444,15 @@
 				$query .= ' request_response = :response , ';
 				$query .= ' request_status = :status  ';
 				$query .= ' WHERE request_id = :id; ';
-				
 				$stmt = $this->PDO->prepare($query);
-				
 				$response = $record->getResponse();
 				$status = $record->getStatus();
 				$id = $record->getId();
-				
 				$stmt->bindParam(':response', $response, PDO::PARAM_STR);
 				$stmt->bindParam(':status', $status, PDO::PARAM_STR);
 				$stmt->bindParam(':id', $id, PDO::PARAM_INT);
+				return $stmt->execute();
 				
-				
-				$stmt->execute();
-				
-				return $stmt->rowCount() > 0;
 				
 				
 			} catch (PDOException $exception) {
@@ -447,10 +490,6 @@
 				*********************       ->  helpers <-   *******************************
 				 *
 		*/
-		
-		
-		
-		
 		
 		
 		
@@ -495,9 +534,11 @@
 		 */
 		public function getRequestsByGender($gender)
 		{
+			
 			$query = 'call getRequestsByGender(:gender);';
 			$fetchType = PDO::FETCH_OBJ;
 			$param = [':gender' => [$gender, PDO::PARAM_STR]];
+			
 			return $this->read($query, $fetchType, $param);
 		}
 		
@@ -509,9 +550,11 @@
 		 */
 		public function getRequestByMonth($date)
 		{
+			
 			$query = 'call prcoRequestByMonth(:date)';
 			$fetchType = PDO::FETCH_OBJ;
-			$param = [':date' =>  [$date , PDO::PARAM_STR]];
+			$param = [':date' => [$date, PDO::PARAM_STR]];
+			
 			return $this->read($query, $fetchType, $param);
 		}
 		

@@ -5,7 +5,9 @@
 	
 	use App\classes\base\UploadImage;
 	use App\interfaces\CrudInterface;
+	use App\models\base\Model;
 	use App\models\base\Person;
+	use Doctrine\DBAL\Exception;
 	use \PDOException;
 	use \PDO;
 	use App\data\database;
@@ -14,83 +16,135 @@
 	/**
 	 *
 	 */
-	class User  implements CrudInterface
+	class User extends Model implements  CrudInterface
 	{
 		
-		/**
-		 * @var
-		 */
+		
 		private $id;
 		
-		/**
-		 * @var
-		 */
+		
 		private $name;
 		
-		/**
-		 * @var
-		 */
+		
 		private $address;
 		
-		/**
-		 * @var
-		 */
+		
 		private $city;
 		
-		/**
-		 * @var
-		 */
+		
 		private $gender;
 		
-		/**
-		 * @var
-		 */
+		
 		private $date;
 		
-		/**
-		 * @var
-		 */
+		
 		private $phoneNumber;
 		
-		/**
-		 * @var
-		 */
+		
 		private $email;
 		
-		/**
-		 * @var
-		 */
+		
 		private $password;
 		
-		/**
-		 * @var
-		 */
+		
 		private $photo;
 		
-		/**
-		 * @var
-		 */
+		
 		private $role;
 		
-		/**
-		 * @var
-		 */
+		
 		private $accountStatus;
 		
-		/**
-		 * @var
-		 */
+		
 		private $secretQuestion;
 		
-		/**
-		 * @var
-		 */
+		
 		private $response;
 		
+		
+		private $created_at;
+		
+		
+		private $deleted_at;
+		
+		
+		
+	
+		
+		
+		
 		/**
-		 * @var PDO
+		 * @return mixed
 		 */
-		private $PDO;
+		public function getAccountStatus()
+		{
+			
+			return $this->accountStatus;
+		}
+		
+		
+		
+		/**
+		 * @param mixed $accountStatus
+		 * @return User
+		 */
+		public function setAccountStatus($accountStatus)
+		{
+			
+			$this->accountStatus = $accountStatus;
+			
+			return $this;
+		}
+		
+		
+		
+		/**
+		 * @return mixed
+		 */
+		public function getCreatedAt()
+		{
+			
+			return $this->created_at;
+		}
+		
+		
+		
+		/**
+		 * @param mixed $created_at
+		 * @return User
+		 */
+		public function setCreatedAt($created_at)
+		{
+			
+			$this->created_at = $created_at;
+			
+			return $this;
+		}
+		
+		
+		
+		/**
+		 * @return mixed
+		 */
+		public function getDeletedAt()
+		{
+			
+			return $this->deleted_at;
+		}
+		
+		
+		
+		/**
+		 * @param mixed $deleted_at
+		 * @return User
+		 */
+		public function setDeletedAt($deleted_at)
+		{
+			
+			$this->deleted_at = $deleted_at;
+			
+			return $this;
+		}
 		
 		
 		
@@ -407,10 +461,7 @@
 		 */
 		public function __construct()
 		{
-			
-			$database = new database();
-			$this->PDO = $database->connection;
-			
+			$this->init($_ENV['DB_USER']);
 		}
 		
 		
@@ -423,11 +474,11 @@
 		{
 			
 			try {
-				$query = "SELECT * FROM `users`";
+				$query = "SELECT * FROM ".$this->tableName . "  order by created_at DESC";
 				$stmt = $this->PDO->query($query);
 				
-				return $stmt->fetchAll(\PDO::FETCH_OBJ);
-			} catch (\PDOException $exception) {
+				return $stmt->fetchAll(PDO::FETCH_OBJ);
+			} catch (PDOException $exception) {
 				echo $exception->getMessage();
 			}
 		}
@@ -441,13 +492,15 @@
 		 */
 		public function usersCount()
 		{
+			
 			try {
-				$query = 'SELECT COUNT(*) FROM `users`';
+				$query = "SELECT COUNT(*) FROM {$this->tableName}";
 				$stmt = $this->PDO->query($query);
 				$stmt->execute();
+				
 				return $stmt->fetchColumn();
 				
-			} catch (\PDOException $exception) {
+			} catch (PDOException $exception) {
 				echo $exception->getMessage();
 				
 				return false;
@@ -465,6 +518,7 @@
 		 */
 		public function read($query, $fetchType, array $data = [])
 		{
+			
 			try {
 				$stmt = $this->PDO->prepare($query);
 				if (count($data) > 0) {
@@ -499,7 +553,7 @@
 					$withPhoto = $user->getPhoto() !== null;
 					
 					$query = '';
-					$query = ' UPDATE users ';
+					$query = " UPDATE {$this->tableName} ";
 					$query .= ' SET ';
 					$query .= ' user_fullname = :fullname , ';
 					$query .= ' user_address = :address , ';
@@ -598,20 +652,25 @@
 		{
 			
 			try {
-				$query = 'INSERT INTO users (user_fullname,user_email,user_password,user_compteEtat) ';
-				$query .= 'VALUES (:name , :email , :pass , :account)';
+				$query = "INSERT INTO {$this->tableName} (user_id,user_fullname,user_email,user_password,user_phoneNumber) ";
+				$query .= 'VALUES (:id,:name , :email , :pass , :phone);';
 				$stmt = $this->PDO->prepare($query);
+				
 				$name = $record->getName();
+				$id = generateId($name);
 				$email = $record->getEmail();
 				$pass = $record->getPassword();
-				$status = 'inactive';
+				$phone = $record->getPhoneNumber();
+				
 				$stmt->bindParam(':name', $name, PDO::PARAM_STR);
+				$stmt->bindParam(':id', $id, PDO::PARAM_STR);
 				$stmt->bindParam(':email', $email, PDO::PARAM_STR);
 				$stmt->bindParam(':pass', $pass, PDO::PARAM_STR);
-				$stmt->bindParam(':account', $status, PDO::PARAM_STR);
+				$stmt->bindParam(':phone', $phone, PDO::PARAM_STR);
+				
 				$stmt->execute();
 				
-				return $stmt->rowCount();
+				return $stmt->rowCount() > 0;
 			} catch (PDOException $exception) {
 				echo $exception->getMessage();
 				
@@ -622,6 +681,67 @@
 		
 		
 		/**
+		 * add record to db
+		 * @param $record
+		 * @return int
+		 */
+		
+		public function createUserProfile(User $record): int
+		{
+			
+			try {
+				$query = "INSERT INTO {$this->tableName} (user_id,user_fullname,user_address,user_ville,user_gender,user_dateOfBirth,user_phoneNumber,user_email,user_password,user_photo,user_role,user_compteEtat,user_secretQuestion,user_Response) ";
+				$query .= 'VALUES (:user_id ,:fullname,:address,:ville,:gender,:dateOfBirth,:phoneNumber,:email,:password,:photo,:role,:compteEtat,:secretQuestion,:response)';
+				$stmt = $this->PDO->prepare($query);
+				
+				$id = $record->getId();
+				$fullname = $record->getName();
+				$address = $record->getAddress();
+				$ville = $record->getCity();
+				$gender = $record->getGender();
+				
+				$dateOfBirth = $record->getDate();
+				$phoneNumber = $record->getPhoneNumber();
+				$email = $record->getEmail();
+				$password = $record->getPassword();
+				
+				$photo = $record->getPhoto();
+				$role = $record->getRole();
+				$secretQuestion = $record->getSecretQuestion();
+				$response = $record->getResponse();
+				
+				$account = 'inactive';
+				
+				$stmt->bindParam(':user_id', $id, PDO::PARAM_INT);
+				$stmt->bindParam(':fullname', $fullname, PDO::PARAM_STR);
+				$stmt->bindParam(':address', $address, PDO::PARAM_STR);
+				$stmt->bindParam(':ville', $ville, PDO::PARAM_STR);
+				$stmt->bindParam(':gender', $gender, PDO::PARAM_STR);
+				$stmt->bindParam(':dateOfBirth', $dateOfBirth, PDO::PARAM_STR);
+				$stmt->bindParam(':phoneNumber', $phoneNumber, PDO::PARAM_STR);
+				$stmt->bindParam(':email', $email, PDO::PARAM_STR);
+				$stmt->bindParam(':password', $password, PDO::PARAM_STR);
+				$stmt->bindParam(':photo', $photo, PDO::PARAM_STR);
+				$stmt->bindParam(':role', $role, PDO::PARAM_STR);
+				$stmt->bindParam(':compteEtat', $account, PDO::PARAM_STR);
+				$stmt->bindParam(':secretQuestion', $secretQuestion, PDO::PARAM_STR);
+				$stmt->bindParam(':response', $response, PDO::PARAM_STR);
+				
+				$stmt->execute();
+				$stmt->rowCount() > 0;
+				
+				return $stmt->rowCount() > 0;
+			} catch (PDOException $exception) {
+				echo $exception->getMessage();
+				
+				return false;
+			}
+		}
+		
+		
+		
+		/**
+		 * get user by id
 		 * @param $id
 		 * @return false|mixed
 		 */
@@ -629,9 +749,33 @@
 		{
 			
 			try {
-				$query = 'SELECT * FROM users WHERE user_id = :id';
+				$query = "SELECT * FROM {$this->tableName} WHERE user_id = :id;";
 				$stmt = $this->PDO->prepare($query);
-				$stmt->bindParam(':id', $id, PDO::PARAM_INT);
+				$stmt->bindParam(':id', $id, PDO::PARAM_STR);
+				$stmt->execute();
+				
+				return $stmt->rowCount() > 0 ?  $stmt->fetch(PDO::FETCH_OBJ) : false;
+			} catch (PDOException $e) {
+				echo $e->getMessage();
+				
+				return false;
+			}
+		}
+		
+		
+		
+		/**
+		 * get user by id
+		 * @param $email
+		 * @return false|mixed
+		 */
+		public function getByEmail($email)
+		{
+			
+			try {
+				$query = "SELECT * FROM {$this->tableName} WHERE user_email = :email";
+				$stmt = $this->PDO->prepare($query);
+				$stmt->bindParam(':email', $email, PDO::PARAM_STR);
 				$stmt->execute();
 				
 				return $stmt->fetch(PDO::FETCH_OBJ);
@@ -640,6 +784,119 @@
 				
 				return false;
 			}
+		}
+		
+		
+		
+		/**
+		 * @param User $user
+		 * @return bool
+		 */
+		public function signupProfile(User $user)
+		{
+			
+			try {
+				
+				$query = ' ';
+				$query = "UPDATE {$this->tableName} ";
+				$query .= ' SET ';
+				$query .= ' user_gender = :gender, ';
+				$query .= ' user_address = :addresse, ';
+				$query .= ' user_role = :role, ';
+				$query .= ' user_secretQuestion = :secretQuestion, ';
+				$query .= ' user_Response = :response, ';
+				$query .= ' user_dateOfBirth = :date, ';
+				$query .= ' user_ville = :city ';
+				$query .= ' WHERE user_id = :id; ';
+				$stmt = $this->PDO->prepare($query);
+				
+				$gender = $user->getGender() === 'm' ? 'm' : 'f';
+				$addresse = $user->getAddress();
+				$role = $user->getRole();
+				$secretQuestion = $user->getSecretQuestion();
+				$response = $user->getResponse();
+				$date = $user->getDate();
+				$city = $user->getCity();
+				$id = $user->getId();
+				
+				$stmt->bindParam(':gender', $gender, PDO::PARAM_STR);
+				$stmt->bindParam(':addresse', $addresse, PDO::PARAM_STR);
+				$stmt->bindParam(':role', $role, PDO::PARAM_STR);
+				$stmt->bindParam(':secretQuestion', $secretQuestion, PDO::PARAM_STR);
+				$stmt->bindParam(':response', $response, PDO::PARAM_STR);
+				$stmt->bindParam(':date', $date, PDO::PARAM_STR);
+				$stmt->bindParam(':city', $city, PDO::PARAM_STR);
+				$stmt->bindParam(':id', $id, PDO::PARAM_INT);
+				
+				
+				
+				$stmt->execute();
+				
+				return $stmt->rowCount() > 0;
+			} catch (Exception $exception) {
+				echo $exception->getMessage();
+				
+				return false;
+			}
+		}
+		
+		
+		
+		/**
+		 * check credentials
+		 * @param $email
+		 * @return false|void
+		 */
+		public function isUser($email)
+		{
+			try {
+				$query = "SELECT * FROM {$this->tableName} where user_email = :email;";
+				$stmt = $this->PDO->prepare($query);
+				$stmt->bindParam(':email', $email, PDO::PARAM_STR);
+				$stmt->execute();
+				return $stmt->rowCount()>0 ? $stmt->fetch(PDO::FETCH_OBJ) : null;
+				
+			} catch (PDOException $exception) {
+				echo $exception->getMessage();
+				
+				return false;
+			}
+		}
+		
+		
+		
+		/**
+		 * check if some sign data exists already
+		 * @param $email
+		 * @param $phone
+		 * @return mixed
+		 */
+		public function isDuplicatedData($email, $phone)
+		{
+			
+			try {
+				$stmt = $this->PDO->prepare("SELECT COUNT(*) FROM {$this->tableName} where user_email = :email or user_phoneNumber  = :phone;");
+				$stmt->bindParam(':email', $email, PDO::PARAM_STR);
+				$stmt->bindParam(':phone', $phone, PDO::PARAM_STR);
+				$stmt->execute();
+				return $stmt->fetchColumn();
+			} catch (PDOException $exception) {
+				echo $exception->getMessage();
+				
+				return false;
+			}
+		}
+		
+		
+		
+		public function getUserRequests($id)
+		{
+			
+			$query = 'select * from  request where user_id= :id order by  request_date desc;';
+			$fetchType = PDO::FETCH_OBJ;
+			$param = [':id' => [$id, PDO::PARAM_INT]];
+			
+			return $this->read($query, $fetchType, $param);
 		}
 		
 		
@@ -655,7 +912,7 @@
 		 * @param $array
 		 * @return mixed
 		 */
-		public static function getUserImage($array )
+		public static function getUserImage($array)
 		{
 			
 			foreach ($array as $record) {
@@ -667,7 +924,19 @@
 		
 		
 		
-		
+		/**
+		 *
+		 */
+		public function generateUserPhotoName()
+		{
+			
+			$username = $this->getName();
+			$username = trim($username);
+			$username = str_replace(' ', '_', $username);
+			$username = strtolower($username);
+			
+			return $username . '-' . date('y-m-d-h-i-s');
+		}
 		
 		/*
 			 *
@@ -684,7 +953,7 @@
 			
 			$query = 'call proc_UserCountByGender(:gender);';
 			$fetchType = PDO::FETCH_OBJ;
-			$param = [':gender' => [$gender, \PDO::PARAM_STR]];
+			$param = [':gender' => [$gender, PDO::PARAM_STR]];
 			
 			return $this->read($query, $fetchType, $param);
 		}
@@ -692,7 +961,8 @@
 		
 		
 		/**
-		 * @param $yaer
+		 *
+		 * @param $year
 		 * @return array|false
 		 */
 		public function userCountByMonth($year): array
@@ -700,9 +970,50 @@
 			
 			$query = 'CALL proc_UserCountByMonth(:param);';
 			$fetchType = PDO::FETCH_OBJ;
-			$param = [':param' => [$year, \PDO::PARAM_STR]];
+			$param = [':param' => [$year, PDO::PARAM_STR]];
 			
 			return $this->read($query, $fetchType, $param);
+			
+		}
+		
+		
+		
+		public function proc_PercentageRequestsByRole($id)
+		{
+			
+			$query = 'call proc_PercentageRequestsByRole(:id);';
+			$fetchType = PDO::FETCH_OBJ;
+			$param = [':id' => [$id, PDO::PARAM_INT]];
+			
+			return $this->read($query, $fetchType, $param);
+		}
+		
+		
+		
+		/**
+		 * Percentage of   requests per month for specific user
+		 * @param $id
+		 * @param $year
+		 * @return array|false
+		 */
+		public function userRequestsPercentage($id, $year)
+		{
+			
+			try {
+				$query = 'CALL proc_UserRequestsPercentage(:id ,:year);';
+				$stmt = $this->PDO->prepare($query);
+				$stmt->bindParam(':id', $id, PDO::PARAM_INT);
+				$stmt->bindParam(':year', $year, PDO::PARAM_STR);
+				$stmt->execute();
+				
+				return $stmt->fetchAll(PDO::FETCH_OBJ);
+			} catch (PDOException $e) {
+				echo $e->getMessage();
+				
+				return false;
+			}
+			
+			
 			
 		}
 		
@@ -721,9 +1032,17 @@
 			
 		}
 		
-		public function getLastFourUsers(){
+		
+		
+		/**
+		 * @return false|mixed
+		 */
+		public function getLastFourUsers()
+		{
+			
 			$query = 'select * from view_GetLastFourUser';
-			return $this->read($query , PDO::FETCH_OBJ);
+			
+			return $this->read($query, PDO::FETCH_OBJ);
 		}
 		
 		

@@ -104,6 +104,8 @@
 	
 	/**
 	 * @param array $records
+	 * @param $idKey
+	 * @return array
 	 */
 	function encyptIdentifiers(array $records , $idKey){
 		foreach ($records as $record) {

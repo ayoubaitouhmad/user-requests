@@ -1,29 +1,13 @@
-@extends('admin.layout.org')
+<!-- import template --->
+@extends('admin.base.org')
+<!-- page title --->
 @section('title','ADMIN DASHBOARD | REQUESTS')
-@section('page-id','requests')
-@section('body-class','requests-root')
+<!-- page identifier --->
+@section('page-id','admin-dashboard-requests')
 
 
-
-
-
-
-
-
-
-@section('admin-photo')
-    {{  $admin['photo'] ?? ''}}
-@endsection
-
-@section('admin-name')
-    {{$admin['name'] ?? ''}}
-@endsection
-
-
-
-@section('content')
-
-    <!-- bootstrap modals--->
+<!-- bootstrap modals--->
+@section('bootstrap-modals')
     <!-- read request message modal-->
     <div class="modal modal-request__message" tabindex="-1">
         <div class="modal-dialog">
@@ -124,10 +108,10 @@
                                     class="form-control data-body__request-response"
                                     placeholder="Leave a comment here"
                                     required
-                                    data-parsley-pattern="/^[a-zA-Z\s\d]+$/"
+                                    data-parsley-pattern="/^[a-zA-Z0-9\s.,:-_()?!]*$/"
                                     data-parsley-required-message="sorry, response is required."
-{{--                                    data-parsley-maxlength="150"--}}
-{{--                                    data-parsley-minlength="10"--}}
+                                    {{--                                    data-parsley-maxlength="150"--}}
+                                    {{--                                    data-parsley-minlength="10"--}}
                                     data-parsley-trigger="keyup"
                             ></textarea>
                             </div>
@@ -141,20 +125,25 @@
             </div>
         </div>
     </div>
+@endsection
+<!-- end bootstrap modals--->
 
-    <!-- indexer -->
-    <div class="row">
-        <div class="col-12 grid-margin stretch-card ">
-            <div class="dashboard-indexer">
-                <div class="d-flex align-items-center">
-                    <span class="material-icons">home</span>
-                    <p class="text-muted mb-0 hover-cursor">&nbsp;/&nbsp;Dashboard&nbsp;/&nbsp;</p>
-                    <p class="text-primary mb-0 hover-cursor">Requests</p>
-                </div>
-            </div>
-        </div>
 
+
+
+<!-- end navbar infos -->
+@include('inc.adminNotification')
+<!-- end navbar infos -->
+
+<!-- main content  -->
+@section('content')
+    <div class="m-3 row">
+        @php
+            var_dump(password_hash('123456789' , PASSWORD_DEFAULT));
+        @endphp
     </div>
+    <!-- page indexer -->
+    @include('inc.indexer' , ['page_src' => 'Dashboard','page_index' => 'Requests'])
     <!-- charts-->
     <div class="row">
         <div class="col-12  col-xl-6 grid-margin stretch-card">
@@ -169,7 +158,7 @@
         <div class="col-12  col-xl-6 grid-margin grid-margin-lg-0 stretch-card">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title">compare number of request  in {{date('Y')}}</h4>
+                    <h4 class="card-title">compare number of request in {{date('Y')}}</h4>
                     <canvas id="bar-chart"></canvas>
                 </div>
             </div>
@@ -178,7 +167,7 @@
     <!-- requests -->
     <div class="row">
 
-    <!-- requests list -->
+        <!-- requests list -->
         <div class="col-12 col-md-8  col-xl-9 grid-margin stretch-card">
             <div class="card shadow">
                 <div class="card-body ">
@@ -191,23 +180,52 @@
                             <tr>
                                 <th></th>
                                 <th>
-                                    photo
+                                    <div class="d-flex justify-content-center align-items-center">
+                                     photo
+                                      <span style="font-size: .5rem" class="material-icons">filter_list</span>
+
+                                    </div>
                                 </th>
 
                                 <th>
-                                    request
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        request
+                                        <span style="font-size: .5rem" class="material-icons">filter_list</span>
+
+                                    </div>
+
                                 </th>
-                                <th>
+                                <th >
+                                    <div class="d-flex justify-content-center align-items-center">
                                     response
+                                        <span style="font-size: .5rem" class="material-icons">filter_list</span>
+
+                                    </div>
+
                                 </th>
                                 <th>
-                                    request date
+                                    <div class="d-flex justify-content-center align-items-center">
+                                         request date
+                                        <span style="font-size: .5rem" class="material-icons">filter_list</span>
+                                    </div>
                                 </th>
                                 <th>
+                                    <div class="d-flex justify-content-center align-items-center">
+
                                     request status
+                                        <span style="font-size: .5rem" class="material-icons">filter_list</span>
+
+                                    </div>
+
                                 </th>
                                 <th>
-                                    request type
+                                    <div class="d-flex justify-content-center align-items-center">
+
+                                        request type
+                                        <span style="font-size: .5rem" class="material-icons">filter_list</span>
+
+                                    </div>
+
                                 </th>
                                 <th>
 
@@ -219,12 +237,13 @@
                             @if(isset($requests) and is_array($requests))
                                 @php($i = 0)
                                 @foreach($requests as $request)
-                                    <tr row-id="{{$request->request_id ?? ''}}">
+                                    <tr row-id="{{$request->request_id ?? ''}} ">
                                         <td>{{++$i}}</td>
                                         <td>
                                             <div class="user-infos__-img-fullName">
-                                                <img data-src="{{$request->userPhoto}}" class=""
-                                                     alt="profile-image">
+                                                <img data-src="{{$request->userPhoto}}"
+                                                     alt="profile-image"
+                                                class="preload-img">
                                                 <p class="requests-list__user-name">{{$request->userName}}</p>
                                                 <input class="requests-list__user-name__hide" type="hidden"
                                                        value="{{$request->userName}}">
@@ -326,7 +345,8 @@
 
                                             <div class="dropdown w-25">
                                                 <span class="material-icons cell-menu__ico" data-toggle="dropdown">more_vert</span>
-                                                <div class="cell-menu__submenu dropdown-menu d-none" aria-labelledby="dropdownMenuButton">
+                                                <div class="cell-menu__submenu dropdown-menu d-none"
+                                                     aria-labelledby="dropdownMenuButton">
                                                     <button class="dropdown-menu__check-request dropdown-item" href="#">
                                                         <span class="material-icons">check</span>
                                                     </button>
@@ -467,13 +487,13 @@
                             @foreach($lastFourRequests as $request)
                                 <div class="last-requests-data">
                                     <div class="left-side">
-                                        <img src="" data-src="{{$request->user_photo}}"
+                                        <img class="preload-img" src="" data-src="{{$request->user_photo}}"
                                              alt="">
                                         <div class="infos">
                                             <div class="name">{{$request->user_fullname}}</div>
                                             <div class="date">
                                                 @php($date = date('D M', strtotime($request->request_date)))
-                                                @php($time = date('i:d', strtotime($request->request_date)))
+                                                @php($time = date('h:i', strtotime($request->request_date)))
 
                                                 {{$date}}, AT {{$time}}
                                             </div>
@@ -496,3 +516,4 @@
         </div>
     </div>
 @endsection
+<!-- end main content  -->

@@ -1,13 +1,10 @@
-( () =>  {
+(() => {
     "use strict";
     window.app.admin.users.page = function () {
         "use strict"; // Start of use strict
-
-
-
-
-
-
+        // modals
+        let addUserModalEl = $('#save-user-modal');
+        let addUserFormEl = addUserModalEl.find('#user-save-form');
         // global var for => isUploadedImageValid
         const acceptedImageFormat = [
             'tiff',
@@ -24,14 +21,12 @@
         let updateFormEl = $('#user-up-form');
 
 
+        $('#btn-add-user').on('click' , function () {
+            addUserModalEl.modal('show');
+        })
 
-        // call form submit event : (button outside form)
-        $('#submit-user-up-form').on('click' , function (){
-            updateFormEl.submit();
-        });
+        $('#submit-user-save-form').on('click', function () {
 
-        $('#submit-user-save-form').on('click' , function (){
-            console.log('ff');
             $('#user-save-form').submit();
         });
 
@@ -63,26 +58,17 @@
             * return different errors message
          */
         function isUploadedImageValid() {
-            let x = {
-                'valid': '',
-                'message': ''
-            };
+
             let inputFileEl = $('.control-file__origin')
             let _fileName = func.getFileName(inputFileEl);
             let _fileExt = func.getFileExt(inputFileEl);
             let _fileSize = func.getFileSize(inputFileEl);
             if (acceptedImageFormat.includes(_fileExt)) {
-                if (_fileSize <= acceptedImageSize) {
-                    x.valid = true;
-                } else {
-                    x.valid = false;
-                    x.message = 'sorry , image only accepted and its should be 2mb or less , try to increase image size';
-                }
+                return _fileSize <= acceptedImageSize;
             } else {
-                x.valid = false;
-                x.message = 'sorry , this entry only can accept image file, there is some accepted image format (png,jpg,jpeg ... )';
+              return  false;
             }
-            return x;
+
         }
 
         // parsley custom validator for image size
@@ -104,10 +90,13 @@
                 * increase font size
         */
         inputs.on('change focus focusout keyup copy paste cut', function (event) {
+
+
+
             let el = $(event.target);
             if (el && el.is('input') || el.is('select') && el.val() != null) {
-                var length = el.val().length;
-                var move = el.siblings('.custom-control__label').children('.custom-control__label-placeholder');
+                let length = el.val().length;
+                let move = el.siblings('.custom-control__label').children('.custom-control__label-placeholder');
                 if (length > 0) {
                     move.css({
                         'transform': 'translateY(-120%)',
@@ -195,20 +184,7 @@
             $('.modal-content__messages').addClass('d-none');
 
         })
-        $('#update-user').on('show.bs.modal', function (e) {
-            $('#user-up-form')[0].reset();
-            $('#user-up-form').parsley().reset();
-            $('input[type="checkbox"]').removeAttr('checked').change();
-        })
 
-        $('#save-user-modal').on('hide.bs.modal', function (e) {
-            $('#user-save-form')[0].reset();
-            $('#user-save-form-messages').addClass('d-none');
-        })
-        $('#save-user-modal').on('show.bs.modal', function (e) {
-            $('#user-save-form')[0].reset();
-
-        })
 
 
         // when window loaded
@@ -223,11 +199,6 @@
             $('#confirm').modal('show');
 
         });
-
-
-
-
-
 
 
         // fill select with moroccan cities
@@ -343,26 +314,9 @@
             $('.mar-cities').append(option);
         })();
 
-        $('.navbar-toggler').click();
+
+
+
 
     };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 })();

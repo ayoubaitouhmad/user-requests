@@ -11,21 +11,27 @@
   },
   "dependencies": {
     "@popovmp/request-service": "^4.7.1",
-    "apexcharts": "^3.28.1",
     "autoprefixer": "^10.3.2",
     "axios": "^0.21.1",
     "bootstrap": "^v4.0.0",
     "chart.js": "^3.5.1",
+    "console-stamp": "^3.0.3",
     "datatables.net": "^1.10.25",
-    "echarts": "^5.1.2",
+    "dotenv": "^10.0.0",
     "jquery": "^3.6.0",
+    "jquery.cookie": "^1.4.1",
+    "mix-env-file": "^0.1.1",
     "parsleyjs": "^2.9.2",
-    "popper.js": "^1.16.1"
+    "popper.js": "^1.16.1",
+    "pusher-js": "^7.0.3",
+    "sendmail": "^1.6.1"
   },
   "devDependencies": {
+    "browserify-fs": "^1.0.0",
     "laravel-mix": "^6.0.28",
     "laravel-mix-purgecss": "^6.0.0",
     "minifier": "^0.8.1",
+    "node-polyfill-webpack-plugin": "^1.1.4",
     "resolve-url-loader": "^4.0.0",
     "sass": "^1.38.1",
     "sass-loader": "^12.1.0"

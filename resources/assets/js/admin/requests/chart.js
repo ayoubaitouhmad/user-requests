@@ -11,6 +11,7 @@
         //handle data
         function getData(data) {
 
+
             let women = data.body.womenRequestsPerMonth;
             let men = data.body.menRequestsPerMonth;
             makeAreaCharts(men, women);

@@ -1,0 +1,96 @@
+
+.btn-status {
+
+}
+
+.btn-approved {
+  background-color: #EAF8F3;
+  color: #61BB98;
+}
+
+.btn-rejected {
+
+}
+
+.btn-postpone {
+  background-color: #EFF3F6;
+  color: #8E98A1;
+}
+
+.btn-pending {
+  background-color: #CD9258;
+  color: #FEF2E8;
+}
+
+
+@mixin custom-btn{
+  outline: none;
+  border-radius: 1px;
+  border: 1px solid black;
+  padding: .2rem 1rem;
+  height: 2rem;
+  font-size: .785rem;
+
+
+
+}
+
+
+
+.base-button{
+  background-color: $second-color;
+  color: $white;
+  width: 5rem;
+  font-size: 0.9rem !important;
+  outline: none;
+  &:hover{
+    background-color: #6659cb;
+    color: white;
+  }
+  &:active{
+    background-color: #786ce8;
+  }
+}
+
+
+.icon-button{
+  display: inline-block;
+  font-weight: 400;
+  text-align: center;
+  vertical-align: middle;
+  user-select: none;
+  border: 1px solid transparent;
+  line-height: 1.5;
+  border-radius: .25rem;
+  background-color: $second-color;
+  color: $white;
+  outline: none;
+  &:hover{
+    background-color: #6659cb;
+    color: white;
+  }
+  &:active{
+    background-color: #786ce8;
+  }
+}
+
+.delete-button{
+  background-color: red;
+  color: $white;
+  width: 5rem;
+  font-size: 0.9rem !important;
+  outline: none;
+  box-shadow: none;
+  &:hover{
+    background-color: #ff4b4b;
+    color: white;
+  }
+  &:active{
+    background-color: #a00000;
+
+  }
+  &:focus{
+    box-shadow: none;
+  }
+
+}

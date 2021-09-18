@@ -6,6 +6,12 @@
             users:{},
             requests : {},
             login:{}
+        },
+        user :{
+            signup :{},
+            signin :{},
+            dashboard :{},
+
         }
     };
 })();

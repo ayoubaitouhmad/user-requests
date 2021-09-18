@@ -87,13 +87,26 @@
 				$stmt = $this->PDO->prepare($query);
 				$stmt->bindParam(':username' , $id , PDO::PARAM_STR);
 				$stmt->execute();
-				return $stmt->rowCount() > 0 ? $stmt->fetch(PDO::FETCH_OBJ) : null;
+				return $stmt->fetch(PDO::FETCH_OBJ);
 			} catch (PDOException $e) {
 				echo $e->getMessage();
 				return false;
 			}
 		}
 		
+		public function getByID($id)
+		{
+			try {
+				$query = 'SELECT * FROM admin where admin_id = :id;';
+				$stmt = $this->PDO->prepare($query);
+				$stmt->bindParam(':id' , $id , PDO::PARAM_STR);
+				$stmt->execute();
+				return $stmt->fetch(PDO::FETCH_OBJ);
+			} catch (PDOException $e) {
+				echo $e->getMessage();
+				return false;
+			}
+		}
 		
 		
 		/**

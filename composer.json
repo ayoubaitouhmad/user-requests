@@ -1,23 +1,23 @@
 {
-
-
-    "autoload": {
-        "psr-4": {
-            "App\\": "app/"
-        },
-        "files": ["app/functions/base.php"]
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/"
     },
-    "require": {
-        "altorouter/altorouter": "^2.0",
-        "philo/laravel-blade": "3.*",
-        "illuminate/database": "^5.4",
-        "vlucas/phpdotenv": "^5.3",
-        "twbs/bootstrap": "4.6.0",
-        "ext-json": "*",
-      "ext-pdo": "*"
-    },
-    "config": {
-        "optimize-autoloader": true
-    }
-
+    "files": [
+      "app/functions/base.php"
+    ]
+  },
+  "require": {
+    "altorouter/altorouter": "^2.0",
+    "philo/laravel-blade": "3.*",
+    "vlucas/phpdotenv": "^5.3",
+    "ext-json": "*",
+    "ext-pdo": "*",
+    "doctrine/orm": "^2.9",
+    "pusher/pusher-php-server": "^7.0",
+    "phpmailer/phpmailer": "^6.5"
+  },
+  "config": {
+    "optimize-autoloader": true
+  }
 }

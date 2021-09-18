@@ -1,0 +1,98 @@
+body[page-id="user-signup-profile"] {
+
+  & {
+    @media (max-width: 580px) {
+      height: auto;
+    }
+  }
+  .container{
+    @media (max-width: 580px) {
+
+      height: auto;
+    }
+  }
+  .shadow{
+    box-shadow: 0 .5rem .3rem rgba(0,0,0,.15)!important;
+  }
+  #profile-form {
+
+
+    .row{
+      margin: 0;
+    }
+
+    .profile-form__header {
+      margin: 0;
+      border: 1px solid #e5e5e5 !important;
+      &.active{
+        padding: 2rem 0 !important;
+      }
+    }
+
+    .card {
+        border: none ;
+        border-right: 1px solid $text-muted ;
+
+      @media (max-width: 769px) {
+        border: 0;
+      }
+    }
+
+    .right-side {
+      .form-group {
+        padding: 0 .2rem;
+        font-size: .78rem;
+        font-family: 'Poppins';
+
+        .custom-form__control{
+          box-shadow: 0 0.3rem 0.1rem rgb(0 0 0 / 15%) !important;
+        }
+
+      }
+      .form-group_down{
+
+        @media (max-width: 580px) {
+          margin-top: -2rem;
+        }
+      }
+    }
+
+    .left-side {
+      .custom-file{
+        @media (max-width: 769px) {
+          //width: 80%;
+        }
+      }
+      img {
+        height: 10rem;
+        border-radius: 100%;
+        width: 10rem;
+        margin: 1rem 0;
+      }
+    }
+
+    input[type="submit"] {
+      @include custom-btn;
+      margin: 1rem 0;
+      color: $black;
+      background-color: $white;
+      border-color: $text-muted;
+      font-weight: 500;
+      @include transition(.8s);
+      &:hover,
+      &:focus{
+        border-color: $first-color !important;
+        color: $first-color;
+        @include transition(.8s);
+      }
+
+      &:active{
+        border-color: $black !important;
+        color: black;
+        @include transition(.8s);
+      }
+    }
+
+
+  }
+}

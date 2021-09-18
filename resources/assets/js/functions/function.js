@@ -1,5 +1,15 @@
 (function () {
     window.func = {
+        acceptedImageFormat : [
+            'tiff',
+            'tif',
+            'bmp',
+            'jpg',
+            'jpeg',
+            'webp',
+            'png'
+        ],
+        acceptedImageSize : 2,
         isFile(fileEl) {
             if (fileEl.is('input[type="file"]') && Reflect.has(fileEl[0], 'files') && fileEl[0].files[0] != null) {
                 return true;
@@ -43,6 +53,15 @@
         getFileNameFromString(path) {
             return path.includes('/') ? path.substring(path.lastIndexOf('/') + 1, path.length) : false;
         },
+        isValidImageExt(ext){
+            return this.acceptedImageFormat.includes(ext);
+        },
+        isValidImageSize(size){
+            return size <= this.acceptedImageSize;
+        },
+        isValidImage(ext , size){
+            return this.isValidImageSize(size) && this.isValidImageExt(ext);
+        },
         setClass(element, className, unwantedClassName) {
             if (element.hasClass(unwantedClassName)) {
                 element.removeClass(unwantedClassName);
@@ -83,11 +102,39 @@
             setTimeout(function () {
                 $('body').load($url);
                 $('[data-toggle="minimize"]').click();
-            }, 3000);
+            }, 2000);
         },
         refreshPage(){
             $('body').load('/page/refresh');
-            $('[data-toggle="minimize"]').click();
+
+        },
+        lazy(){
+            if ('IntersectionObserver' in window) {
+                const targets = document.querySelectorAll("img");
+                const lazyLoad = (target) => {
+                    const io = new IntersectionObserver((entries, observer) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                const img = entry.target;
+                                const src = img.getAttribute("data-src");
+
+                                img.setAttribute("src", src);
+                                img.classList.add("lazy-load");
+                                observer.disconnect();
+                            }
+                        })
+                    }, {threshold: [0.7]});
+
+                    io.observe(target);
+                }
+                targets.forEach(lazyLoad);
+
+            } else {
+                $('targets').each(function (){
+                    $this = $(this);
+                    $this.attr('src' , $this.attr('data-src'));
+                });
+            }
         }
     };
 

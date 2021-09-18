@@ -4,8 +4,9 @@
 	namespace App\controllers\admin\dashboard;
 	
 	
+	use App\classes\base\Controller;
 	use App\classes\base\UploadImage;
-	use App\classes\CrudErrors;
+	use App\classes\UiMessages;
 	use App\classes\CSRF;
 	use App\classes\ErrorHandler;
 	use App\classes\AxiosHttpRequest;
@@ -13,23 +14,18 @@
 	use App\classes\Request;
 	use App\classes\Session;
 	use App\classes\Validator;
-	use App\data\database;
 	use App\models\Admin;
 	use App\models\User;
+	use App\models\UserNotification;
 	use Exception;
 	
 	/**
 	 *
 	 */
-	class UsersController
+	class UsersController extends  Controller
 	{
 		
-		protected  $model;
-		protected  $tokenManager;
-		protected  $validator;
-		protected  $errorHandler;
-		protected  $currentAdmin;
-		protected $uploader;
+		
 		
 		
 		
@@ -38,16 +34,17 @@
 		 */
 		public function __construct()
 		{
-//		Session::remove('admin-connected');
+
 			if (!isAuthenticated()) {
 				Redirect::To('/admin/login');
 			}
-			$this->model = new Admin();
-			$this->tokenManager = new CSRF();
-			$this->errorHandler = new ErrorHandler();
-			$this->validator = new Validator($this->errorHandler);
-			$this->currentAdmin = Session::get('admin-connected');
-		
+			$this->init(new User());
+			
+			// TODO :  get the current Admin infos
+			$admin = new Admin();
+			$username = Session::get('admin-connected');
+			$this->currentAdmin = $admin->get($username);
+			$this->currentAdmin->admin_photo  = getFileFromDirByName($this->currentAdmin->admin_photo);
 			
 		}
 		
@@ -61,22 +58,31 @@
 		 */
 		public function index()
 		{
-			
-			$user = new User();
-			$usersRoleCountByUser = $user->usersRoleCountByUser();
-			$lastFourUsers = User::getUserImage($user->getLastFourUsers());
-			$users = $user->all();
-			getPhoto($users , 'user_photo'); // get users image from upload dir
-			encyptIdentifiers($users , 'user_id'); // crypt the users ids befor sended to view
+			// TODO / get users list
+			$usersRoleCountByUser = $this->model->usersRoleCountByUser();
+			$lastFourUsers = User::getUserImage($this->model->getLastFourUsers());
+			$users = $this->model->all();
+			// TODO / get page token
 			$tokenCreator = new CSRF();
 			$token = $tokenCreator->token();
-			$admin = [
-				'name' => $this->currentAdmin->admin_name,
-				'photo' => getFileFromDirByName($this->currentAdmin->admin_photo)
-			];
-			return view('admin/dashboard/users', compact(['users', 'token', 'usersRoleCountByUser', 'lastFourUsers' , 'admin']));
+			// TODO / get current admin infos
+			$admin = $this->currentAdmin;
+			// TODO / get  notifications list
+		
+			$notifications = HomeController::AdminNotification();
+			// TODO / send all to view
+			return view('admin/dashboard/users', compact([
+				'users',
+				'token',
+				'usersRoleCountByUser',
+				'lastFourUsers' ,
+				'admin',
+				'notifications'
+				
+			]));
 			
 		}
+		
 		
 		
 		
@@ -86,13 +92,15 @@
 		public function store()
 		{
 			
-			$user = new User();
-			$csrfCreator = new CSRF();
-			$errorHandler = new ErrorHandler();
-			$validator = new Validator($errorHandler);
-			if (Request::has('post') && Request::hasValue('post', 'token')) {
-				if ($csrfCreator->verifyToken(Request::get('post')->token)) {
-					$validator->add(Request::get('post'), [
+			if (
+					AxiosHttpRequest::has('action') &&
+					AxiosHttpRequest::hasValue('action' , 'add') &&
+					AxiosHttpRequest::has('data') &&
+					!empty(AxiosHttpRequest::getAuthorizationToken())
+			) {
+				if ($this->tokenManager->verifyToken(AxiosHttpRequest::getAuthorizationToken())) {
+					$postRequest = AxiosHttpRequest::all()->data;
+					$this->validator->add($postRequest, [
 						'name' => [
 							'required' => true,
 							'text' => true,
@@ -102,7 +110,7 @@
 						'email' => [
 							'required' => true,
 							'email' => true,
-							'maxLength' => 20,
+							'maxLength' => 100,
 							'minLength' => 5
 						],
 						'password' => [
@@ -110,50 +118,51 @@
 							'maxLength' => 50,
 							'minLength' => 8
 						]]);
-					if (!is_array($errorHandler->all())) {
-						$name = Request::get('post')->name;
-						$email = Request::get('post')->email;
-						$password = Request::get('post')->password;
-						$token = Request::get('post')->token;
-						
-						if ($user->count($email) == 0) {
+					if (!is_array($this->errorHandler->all())) {
+						$name = $postRequest->name;
+						$email = $postRequest->email;
+						$password = $postRequest->password;
+						$phone = $postRequest->phone;
+						if ($this->model->isDuplicatedData($email , $phone) === 0 ) {
+							$user = new User();
 							$user->setName($name);
 							$user->setEmail($email);
-							$user->setPassword($password);
+							$user->setPassword(password_hash($password , PASSWORD_DEFAULT));
+							$user->setPhoneNumber($phone);
 							if ($user->create($user)) {
 								echo cleanJSON([
-									'title' => CrudErrors::VALID,
+									'header' => UiMessages::VALID,
 									'body' => ''
 								]);
 							} else {
 								echo cleanJSON([
-									'title' => CrudErrors::ERROR,
-									'body' => CrudErrors::crudError('add')
+									'header' => UiMessages::ERROR,
+									'body' => UiMessages::crudError('add')
 								]);
 							}
 						} else {
 							echo cleanJSON([
-								'title' => CrudErrors::USED,
-								'body' => CrudErrors::used('email')
+								'header' => UiMessages::USED,
+								'body' => UiMessages::adminAddUser('email or password ')
 							]);
 						}
 					} else {
 						echo cleanJSON([
-							'title' => 'validator',
-							'body' => $errorHandler->all()
+							'header' => 'validator',
+							'body' => $this->errorHandler->all()
 						]);
 					}
 				} else {
 					echo cleanJSON([
-						'title' => CrudErrors::ERROR,
-						'body' => CrudErrors::error()
+						'header' => UiMessages::ERROR,
+						'body' => UiMessages::error()
 					]);
 				}
-				
+
 			} else {
 				echo cleanJSON([
-					'title' => CrudErrors::ERROR,
-					'body' => CrudErrors::error()
+					'header' => UiMessages::ERROR,
+					'body' => UiMessages::error()
 				]);
 			}
 		}
@@ -173,6 +182,7 @@
 				if (!empty($id)) {
 					$id = dec($id);
 					$userFounded = $user->get($id);
+					$userFounded->user_photo = getFileFromDirByName($userFounded->user_photo);
 					echo cleanJSON(
 						[
 							'title' => 'founded',
@@ -189,21 +199,18 @@
 		
 		/**
 		 * controller for update single record
+		 * @throws Exception
 		 */
 		public function edit()
 		{
 			
-			$user = new User();
-			$csrfCreator = new CSRF();
-			$errorHandler = new ErrorHandler();
-			$validator = new Validator($errorHandler);
-			// TODO : check post and token
-			if (Request::get('post') && Request::hasValue('post', 'token')) {
+		
+			
+			if (Request::has('post') ) {
 				$request = Request::get('post');
 				// TODO : check if this token exists in session
-				if ($csrfCreator->verifyToken($request->token)) {
-					
-					$validator->add($request, [
+				if ($this->tokenManager->verifyToken(AxiosHttpRequest::getAuthorizationToken())) {
+					$this->validator->add($request, [
 						
 						'email' => [
 							'required' => true,
@@ -228,7 +235,6 @@
 						],
 						'city' => [
 							'required' => true,
-						
 						],
 						'gender' => [
 							'required' => true,
@@ -244,12 +250,6 @@
 							'required' => true,
 							'phone' => 'mar',
 							'length' => 10
-						
-						],
-						'password' => [
-							'required' => true,
-							'maxLength' => 50,
-							'minLength' => 8
 						
 						],
 						'role' => [
@@ -278,8 +278,9 @@
 					
 					]);
 					// TODO: validate data
-					if (!is_array($errorHandler->all())) {
+					if (!is_array($this->errorHandler->all())) {
 						$updatePhoto = Request::hasValue('file', 'photo');
+						$user = new User();
 						$user->setId(dec($request->id));
 						$user->setName($request->name);
 						$user->setAddress($request->address);
@@ -288,60 +289,67 @@
 						$user->setDate($request->date);
 						$user->setPhoneNumber($request->phone);
 						$user->setEmail($request->email);
-						$user->setPassword($request->password);
 						$user->setRole($request->role);
 						$user->setCompteEtat($request->account);
 						$user->setSecretQuestion($request->question);
 						$user->setResponse($request->response);
-						
-						// TODO: check  if user want update photo
-						if ($updatePhoto) {
-							// TODO: update all filed and photo
-							$fileName = $user->getName() . '' . date('y-m-d-h-i-s');
-							$this->uploader = new UploadImage(Request::all(true)['file']['photo']);
-							$this->uploader->setFileName($fileName);
-							$user->setPhoto($fileName);
-							$res = $user->get($user->getId());
-							$oldPhoto = md5($res->user_photo);
-							if ($user->update($user)) {
-								$this->uploader->save();
-								deleteFile($oldPhoto);
+						if($user->isDuplicatedData($user->getEmail() ,$user->getPhoneNumber()) == 1){
+							// TODO: check  if user want update photo
+							if ($updatePhoto) {
+								// TODO: update all filed and photo
+								$fileName = $user->getName() . '' . date('y-m-d-h-i-s');
+								$this->uploader = new UploadImage(Request::all(true)['file']['photo']);
+								$this->uploader->setFileName($fileName);
+								$user->setPhoto($fileName);
+								$res = $user->get($user->getId());
+								$oldPhoto = md5($res->user_photo);
+								if ($this->model->update($user)) {
+									$this->uploader->save();
+									deleteFile($oldPhoto);
+									echo cleanJSON([
+										'title' => UiMessages::VALID,
+										'body' => ''
+									]);
+								} else {
+									echo cleanJSON([
+										'title' => UiMessages::ERROR,
+										'body' => UiMessages::crudError('update')
+									]);
+								}
+								
+							}
+							else {
+								// TODO: update all filed without photo
+								$user->update($user);
 								echo cleanJSON([
-									'title' => CrudErrors::VALID,
-									'body' => ''
-								]);
-							} else {
-								echo cleanJSON([
-									'title' => CrudErrors::ERROR,
-									'body' => CrudErrors::crudError('update')
+									'title' => UiMessages::VALID,
+									'body' => ' '
 								]);
 							}
-							
-						} else {
-							// TODO: update all filed without photo
-							$user->update($user);
+						}else{
 							echo cleanJSON([
-								'title' => CrudErrors::VALID,
-								'body' => ' '
+								'title' => UiMessages::USED,
+								'body' => UiMessages::used('email or password')
 							]);
 						}
+						
 					} else {
 						echo cleanJSON([
 							'title' => 'validator',
-							'body' => $errorHandler->all()
+							'body' => $this->errorHandler->all()
 						]);
 					}
 				} else {
 					echo cleanJSON([
 						'title' => 'Error',
-						'body' => CrudErrors::error()
+						'body' => UiMessages::error()
 					]);
 				}
 				
 			} else {
 				echo cleanJSON([
-					'title' => 'Error',
-					'body' => CrudErrors::error()
+					'title' => 'Errofr',
+					'body' => Request::all()
 				]);
 			}
 		}
@@ -354,20 +362,19 @@
 		public function destroy()
 		{
 			
-			$CSRF = new CSRF();
 			if (AxiosHttpRequest::has('type') && AxiosHttpRequest::hasValue('type', 'post') && !empty(AxiosHttpRequest::getAuthorizationToken())) {
-				if ($CSRF->verifyToken(AxiosHttpRequest::getAuthorizationToken())) {
+				if ($this->tokenManager->verifyToken(AxiosHttpRequest::getAuthorizationToken())) {
 					if (AxiosHttpRequest::has('data')) {
 						$id = dec(AxiosHttpRequest::get('data', 'id_enc'));
 						$user = new User();
 						if ($user->delete($id)) {
 							echo cleanJSON([
-								'header' => CrudErrors::VALID,
+								'header' => UiMessages::VALID,
 								'body' => $id
 							]);
 						} else {
 							echo cleanJSON([
-								'header' => CrudErrors::CANCEL,
+								'header' => UiMessages::CANCEL,
 								'body' => $id
 							]);
 						}
@@ -376,15 +383,15 @@
 					
 				} else {
 					echo cleanJSON([
-						'header' => CrudErrors::ERROR,
-						'body' => CrudErrors::error()
+						'header' => UiMessages::ERROR,
+						'body' => UiMessages::error()
 					]);
 				}
 				
 			} else {
 				echo cleanJSON([
-					'header' => CrudErrors::ERROR,
-					'body' => CrudErrors::error()
+					'header' => UiMessages::ERROR,
+					'body' => UiMessages::error()
 				]);
 			}
 			
@@ -397,20 +404,18 @@
 		 */
 		public function charts()
 		{
-			
-			$user = new User();
-			
 			echo cleanJSON([
 				'body' =>
 					[
 						
-						'userCountWomen' => $user->userCountByGender('f'),
-						'userCountMen' => $user->userCountByGender('m'),
-						'userCountByMonthCurYear' => $user->userCountByMonth(date('Y')),
-						'userCountByMonthLastYear' => $user->userCountByMonth((date('Y') - 1))
+						'userCountWomen' => $this->model->userCountByGender('f'),
+						'userCountMen' => $this->model->userCountByGender('m'),
+						'userCountByMonthCurYear' => $this->model->userCountByMonth(date('Y')),
+						'userCountByMonthLastYear' => $this->model->userCountByMonth((date('Y') - 1))
 					]
 			]);
 		}
+		
 		
 		
 	}

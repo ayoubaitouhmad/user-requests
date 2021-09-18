@@ -8,5 +8,8 @@ use App\classes\Redirect as rd;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 
+
+
+
 ?>
 

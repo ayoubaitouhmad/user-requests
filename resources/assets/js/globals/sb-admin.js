@@ -1,37 +1,39 @@
-( () => {
-        // close modal => current modal
-        $('.btn-close').on('click', function () {
-            let $this = $(this);
-            let modalEl = $this.closest('.modal');
-            if (modalEl) {
-                modalEl.modal('hide');
-            }
-        });
-
-        // change sidebar : show only icons
-        $('[data-toggle="minimize"]').on("click", function () {
-            $('body').toggleClass('sidebar-icon-only');
-        });
-
-        // show side bar in mobile phone
-        $('[data-toggle="offcanvas"]').on("click", function () {
-            $('.sidebar-offcanvas').toggleClass('active')
-        });
+(() => {
+    "use strict";
 
 
-        // switch right navbar
-        $('.navbar-toggler span').on('click', function () {
-            let $this = $(this);
-            $this.text() === 'switch_right' ? $this.text('switch_left') : $this.text('switch_right');
+    $('.btn-close').on('click', function () {
+        let $this = $(this);
+        let modalEl = $this.closest('.modal');
+        if (modalEl) {
+            modalEl.modal('hide');
+        }
+    });
 
-        });
+    // change sidebar : show only icons
+    $('[data-toggle="minimize"]').on("click", function () {
+        $('body').toggleClass('sidebar-icon-only');
+    });
+
+    // show side bar in mobile phone
+    $('[data-toggle="offcanvas"]').on("click", function () {
+        $('.sidebar-offcanvas').toggleClass('active')
+    });
 
 
-        //
-         $(document).on('mouseenter mouseleave', '.sidebar .nav-item', function (ev) {
-        var body = $('body');
-        var sidebarIconOnly = body.hasClass("sidebar-icon-only");
-        var sidebarFixed = body.hasClass("sidebar-fixed");
+    // switch right navbar
+    $('.navbar-toggler span').on('click', function () {
+        let $this = $(this);
+        $this.text() === 'switch_right' ? $this.text('switch_left') : $this.text('switch_right');
+
+    });
+
+
+
+    $(document).on('mouseenter mouseleave', '.sidebar .nav-item', function (ev) {
+        let body = $('body');
+        let sidebarIconOnly = body.hasClass("sidebar-icon-only");
+        let sidebarFixed = body.hasClass("sidebar-fixed");
         if (!('ontouchstart' in document.documentElement)) {
             if (sidebarIconOnly) {
                 if (sidebarFixed) {
@@ -50,6 +52,37 @@
         }
 
 
+
+
+
     });
+
+
+    // make user to see user he choose
+    $('.custom-file-input').on('change', function (e) {
+
+        let $this = $(this);
+        let shower = $this.closest('.card').find('#card-image');
+        shower.attr('src', URL.createObjectURL(e.target.files[0]));
+        let labelEl = $this.siblings('.custom-file-label');
+        let fileName = func.getFileName($this);
+        if (fileName.toString().length > 10) {
+            fileName = fileName.toString().substring(0, 10);
+        }
+        labelEl.text(fileName);
+    });
+
+
+    $('.modal').on('hide.bs.modal', function (e) {
+        let $this = $(e.target);
+        let form =  $this.find('form');
+        if (form.length>0) form.get(0).reset();
+        let labelEl = $this.find('.custom-file-label');
+        if (labelEl.length>0)  labelEl.html('');
+
+    })
+
+
+
 
 })();
