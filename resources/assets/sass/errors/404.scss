@@ -1,0 +1,38 @@
+[page-id="errors-error-404"] {
+
+  .app{
+    height: 100vh;
+    color:  rgb(68,68,68) !important;
+    .error-header__title,
+    .error-content__title,
+    .error-footer__title{
+      margin: .5rem 0;
+    }
+
+    .error-header{
+      .error-header__title{
+        font-size: 8rem;
+        margin-top: -.3rem;
+      }
+    }
+
+    .error-content{
+      margin-top: -2rem;
+      .error-content__title{
+
+      }
+    }
+    .error-footer{
+      .error-footer__title{
+        white-space: nowrap;
+        font-size: 1rem;
+      }
+    }
+
+
+
+  }
+
+
+
+}

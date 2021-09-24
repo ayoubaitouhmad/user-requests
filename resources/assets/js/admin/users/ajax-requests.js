@@ -114,6 +114,7 @@
                 }
             })
                 .then(res => {
+
                     handleGetUserDataReturnData(res.data)
                 })
                 .catch(error => console.log(error));
@@ -123,8 +124,6 @@
         function handleGetUserDataReturnData({title, body}) {
             if (title === 'founded' && body !== false) {
                 let userData = body; //here the user obj
-
-
                 updateFormName.val(userData.user_fullname).trigger('focus');
                 updateFormGender.val(userData.user_gender === 'm' ? 'male' : 'female').trigger('focus');
                 updateFormAddress.val(userData.user_address).trigger('focus');
@@ -139,6 +138,19 @@
                 updateFormPhotoContainer.attr('src', userData.user_photo);
 
 
+
+
+
+
+                //
+                // $('.custom-file-input')
+                //     .trigger('change')
+                //     .trigger('focus')
+                //     .trigger('focusout')
+                //     .trigger('keyup')
+                //     .trigger('copy')
+                //     .trigger('paste')
+                //     .trigger('cut');
             }
         }
 
@@ -200,7 +212,9 @@
             let messageBodyEl = errorMessagesEl.children('.modal-error-body');
             switch (title) {
                 case 'done':
-                    $('.modal').modal('hide');
+                    $('#update-user').modal('hide'); // show user infos inside form
+                    $('body').removeClass('modal-open');
+                    func.resetScrolling();
                     func.refreshPage();
                     func.reloadPageContent('/admin/dashboard/users')
 
@@ -299,7 +313,8 @@
         });
 
         function handleSaveFormReturnData({header, body}) {
-            let errorMessagesEl = saveFormEl.closest('.modal-body').find('#user-save-modal-messages');
+
+            let errorMessagesEl = saveFormEl.find('#user-save-modal-messages');
             let messageTitleEl = errorMessagesEl.children('.modal-error-title');
             let messageBodyEl = errorMessagesEl.children('.modal-error-body');
             switch (header) {

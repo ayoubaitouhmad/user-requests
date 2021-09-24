@@ -3,6 +3,7 @@
 namespace App\controllers\helpers;
 
 use App\classes\CSRF;
+use App\classes\fbLogin;
 use App\interfaces\Controller;
 use App\models\AdminNotification;
 use App\models\UserNotification;
@@ -19,4 +20,13 @@ class TestController implements Controller
 		$token = $token->token();
 		return view('test/test' , compact('token'));
 	}
+	
+	
+	
+	
+	public function login(){
+		fbLogin::login();
+	}
+	
+	
 }

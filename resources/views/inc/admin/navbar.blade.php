@@ -3,7 +3,7 @@
         <div class="navbar-brand-inner-wrapper d-flex justify-content-between align-items-center w-100">
             <a class="navbar-brand brand-logo" href="/admin">
                 <img class="brand-logo__img css-transitions-only-after-page-load "
-                     src="/img/logo2.png"
+                     src="/img/logo.svg"
                      alt="">
             </a>
             <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
@@ -18,7 +18,9 @@
                 <a class="nav-link count-indicator dropdown-toggle d-flex align-items-center justify-content-center notification-dropdown"
                    id="notificationDropdown" href="#" data-toggle="dropdown">
 
+                    @if(isset($settings->hide_notification) && $settings->hide_notification === 0)
                     <span class="material-icons admin-notifications__count">notifications</span>
+
                     @if(isset($notifications) and is_array($notifications) && count($notifications)>0 )
                         @php($count = 0)
                         @foreach($notifications as $notification)
@@ -31,6 +33,7 @@
                         @else
                             <span class="d-none admin-count"></span>
                         @endif
+                    @endif
                     @endif
 
 

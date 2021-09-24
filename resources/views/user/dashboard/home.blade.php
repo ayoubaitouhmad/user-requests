@@ -8,21 +8,16 @@
 
 
 
-@include('inc.adminNotification')
+@include('inc.notifications')
 
-
+@section('side-bar-home' , 'active-page')
 <!-- main content  -->
 @section('content')
     <!-- page indexer -->
     @include('inc.indexer' , ['page_src' => 'Home'])
-    <div class="row m-3">
+    <div class="row">
         @php
-            $password = "123456789";
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            if(password_verify($password.'' , $hashed_password)){
-            var_dump($hashed_password);
-
-            }
+            echo '<pre>';
 
         @endphp
     </div>

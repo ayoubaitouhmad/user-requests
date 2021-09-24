@@ -1,0 +1,75 @@
+body[page-id="user-reset-password"] {
+  background-color: $white;
+  height: 100vh;
+
+  .card{
+    width: 25rem;
+  }
+  .container__content {
+    .container__form {
+      .form-item {
+        margin: .5rem 0;
+        position: relative;
+
+        .material-icons{
+          position: absolute;
+
+          font-size: 1.1rem;
+          color: $text-muted;
+        }
+        .toggle-password{
+          top: 38px;
+          right: 5px;
+        }
+        .input-ico{
+          top: 37px;
+          left: 5px;
+        }
+      }
+      $assetPath :"/svg";
+
+      .data-container{
+        width: 100%;
+      }
+      .form-item__data{
+        width: 100%;
+        height: 2.5rem;
+        @include form-control-style;
+        color: $text-muted;
+        padding-left:2rem ;
+        outline: none !important;
+        @include transition(1s);
+        &:hover ,
+        &:active ,
+        &:focus{
+          border-color: $first-color !important;
+          @include transition(1s);
+        }
+
+
+        &:focus-visible{
+          outline: none;
+        }
+
+
+        &:focus + .material-icons,
+        &:hover + .material-icons {
+          color: $first-color !important;
+          @include transition(1s);
+        }
+
+
+
+
+
+      }
+
+      .base-button{
+        padding: .3rem 0;
+      }
+
+
+    }
+
+  }
+}

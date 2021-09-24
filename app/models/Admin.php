@@ -109,9 +109,11 @@
 		}
 		
 		
+		
 		/**
 		 * @param $username
 		 * @param $password
+		 * @return false|mixed|null
 		 */
 		public function isValid($username , $password){
 			try {

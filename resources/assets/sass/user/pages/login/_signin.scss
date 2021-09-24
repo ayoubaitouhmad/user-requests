@@ -9,11 +9,22 @@ body[page-id="user-login"] {
         position: relative;
         .material-icons{
           position: absolute;
-          top: 8px;
-          left: 5px;
           font-size: 1.1rem;
           color: $text-muted;
         }
+        .input-ico{
+          top: 30px;
+          left: 5px;
+        }
+        .material-icons.toggle-password{
+          top: 30px;
+          right: 5px;
+        color: rgb(51, 51, 51);
+        }
+      }
+      label{
+        width: 100%;
+
       }
       .form-item__data{
         width: 100%;
@@ -47,6 +58,10 @@ body[page-id="user-login"] {
 
 
       }
+
+    .form-item__submit{
+      padding: .2rem ;
+    }
 
     }
   }

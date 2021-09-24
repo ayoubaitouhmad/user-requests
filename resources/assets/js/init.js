@@ -2,6 +2,11 @@
     "use strict";
     $('document').ready(function () {
         switch ($('body').attr('page-id')) {
+            // testing
+
+            case 'testing':
+                window.app.admin.test();
+                break;
             // Admin
             case 'admin-dashboard-home':
                 window.app.admin.all();
@@ -58,17 +63,27 @@
                 window.app.user.all();
             }
                 break;
-            case  'user-dashboard-profile': {
+            case  'user-dashboard-setting': {
                 window.app.user.all();
+                window.app.user.dashboard.settings.plugins();
+                window.app.user.dashboard.settings.ajaxRequest();
+                window.app.user.dashboard.settings.page();
             }
                 break;
             // Requests
             case 'user-dashboard-requests' :
                 window.app.user.all();
-                window.app.user.dashboard.page();
-                window.app.user.dashboard.ajax();
-                window.app.user.dashboard.charts();
+                window.app.user.dashboard.requests.plugins();
+                window.app.user.dashboard.requests.page();
+                window.app.user.dashboard.requests.ajax();
+                window.app.user.dashboard.requests.charts();
                 break;
+
+            case 'user-reset-password':
+                window.app.user.security.reset();
+
         }
     });
 })();
+
+

@@ -3,11 +3,11 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<link rel="icon" href="/img/user.png">
+	<link rel="icon" href="/img/icon.svg">
 	<link rel="stylesheet" href="/css/app.css?=<?php echo time();?>">
 	<title>@yield('title')</title>
 </head>
-<body page-id="@yield('page-id')"  page-token="{{$token}}" class="preload">
+<body page-id="@yield('page-id')"  page-token="{{$token ?? ''}}" class=" @if(isset($settings->toggle_sidebar)) {{$settings->toggle_sidebar === 1 ? 'sidebar-icon-only' : ''}} @endif preload">
 <div class="app">
 
 	@yield('bootstrap-modals')

@@ -5,7 +5,7 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="icon" href="/img/user.png">
+    <link rel="icon" href="/img/icon.svg">
     <link rel="stylesheet" href="/css/app.css?=<?php echo time();?>">
     <title>Email Confirmation</title>
 </head>

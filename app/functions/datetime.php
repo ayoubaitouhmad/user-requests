@@ -42,16 +42,16 @@
 		}
 		else{
 			if($months >= 1 && $months<= 12){
-				return $months .'m';
+				return $months .'month';
 			}
 			else{
 				
 				if($days>0 && $days<= 30){
-					return $days . 'd';
+					return $days . 'day';
 				}
 				else{
 					if($hours > 0 && $hours<=24){
-						return $hours . 'h';
+						return $hours . 'hour';
 					}
 					else{
 						if($minutes >0 && $months<=59){

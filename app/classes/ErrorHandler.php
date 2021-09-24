@@ -69,16 +69,20 @@ class ErrorHandler
     }
 
 
-    function destroy($key = null)
+    function destroy($key)
     {
-        if ($key) {
-            $this->errors[$key] = [];
-            $this->currentField = [];
-
-        } else {
-            $this->errors = [];
+        if (!empty($key)) {
+            unset($this->errors[$key]);
         }
     }
+	
+	function destroyAll()
+	{
+		$this->errors = [];
+		$this->currentField = "";
+	}
+ 
+ 
 
 
 }

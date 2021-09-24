@@ -61,9 +61,7 @@
 		 */
 		public function index()
 		{
-			if(Session::has('token')){
 			
-			}
 			$token = $this->tokenManager->token();
 			$currentUser = Session::get('currentSignUp') ?? '';
 			
@@ -86,7 +84,7 @@
 				
 				// TODO : check if this token exists in session
 				if ($this->tokenManager->verifyToken($token)) {
-						$this->tokenManager->destroy();
+					
 					// TODO: validate data
 					$this->validator->add($request, [
 						'gender' => [
@@ -122,9 +120,10 @@
 					
 					]);
 					
+					
 					$this->uploader = new UploadImage(Request::all(true)['file']['photo']);
 					if (!$this->uploader->isValidType() || !$this->uploader->isValidSize()) {
-						$this->errorHandler->addError('image', 'sorry , sory image must be (jpg,jpeg,webp,png) and size 2mg');
+						$this->errorHandler->addError('image', 'sorry ,  image must be (jpg,jpeg,webp,png) and size 2mg');
 					}
 					
 					
@@ -176,7 +175,6 @@
 								// TODO : END SIGNUP ANS START SIGNING SESSION
 								Session::remove('currentSignUp');
 								Session::add('user-connected', $user->getEmail());
-								$this->tokenManager->destroy(); // REMOVE THE TOKEN FROM SESSION
 								echo cleanJSON([
 									'header' => 'done',
 									'body' => ''

@@ -15,6 +15,7 @@
 		public const adduser = 'add-user';
 		public const handleRequests = 'handle-requests';
 		public const NEW_REQUEST = 'NEW_REQUEST';
+		public const SECURITY_NOTIFICATION = 'Security_Notification';
 		
 		
 		

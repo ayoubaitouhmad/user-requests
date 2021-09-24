@@ -15,10 +15,12 @@
 	use App\classes\Validator;
 	use App\models\Admin;
 	use App\models\AdminNotification;
+	use App\models\AdminSetting;
 	use App\models\Notification;
 	use App\models\Request;
 	use App\models\User;
 	use App\models\UserNotification;
+	use App\models\UserSetting;
 	use Exception;
 	
 	
@@ -76,6 +78,9 @@
 			$admin = $this->currentAdmin;
 			// TODO / notifications list
 			$notifications = HomeController::AdminNotification();
+			// TODO : get user preferences
+			$setting =new AdminSetting();
+			$settings = $setting->get($this->currentAdmin->admin_id);
 			// TODO / send all to view
 			return view('admin/dashboard/requests', compact([
 				'requests',
@@ -83,7 +88,8 @@
 				'lastFourRequests',
 				'token',
 				'admin',
-				'notifications'
+				'notifications',
+				'settings'
 			]));
 		}
 		
@@ -141,9 +147,17 @@
 						$req->setResponse($data->response);
 						
 						if ($this->model->update($req)) {
+							
+						
 							$fullRequest = $this->model->get(dec($postRequest->req_id));
 							$user = new User();
 							$user = $user->get($fullRequest->user_id);
+							
+							$setting = new UserSetting();
+							$settings = $setting->get($user->user_id);
+							
+							
+							
 							$description = implode(' ', array_slice(explode(' ', $data->response), 0, 5)) . '...';
 							$title = $this->currentAdmin->admin_name .' update your request';
 							$userNotification = new AdminNotification();
@@ -152,7 +166,11 @@
 							$userNotification->setUserId($user->user_id);
 							$userNotification->setAdminId($this->currentAdmin->admin_id);
 							$userNotification->setNotificationType(3);
+							if($settings->notifiy_when_admin_send_feedback === 0){
+								$userNotification->setStatus(1);
+							}
 							$userNotification->create($userNotification);
+							
 							
 							PushNotification::send($user->user_email, [
 								'header ' => $title,

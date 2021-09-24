@@ -52,24 +52,7 @@
           }
         }
 
-        i.menu-arrow {
-          display: inline-block;
-          -webkit-font-smoothing: antialiased;
-          margin-left: auto;
-          margin-right: 0;
-          color: #000;
 
-          &:before {
-            content: "\F140";
-            font-family: "Material Design Icons";
-            font-style: normal;
-            display: block;
-            font-size: 1rem;
-            line-height: 10px;
-
-            transition: all 0.2s ease-in;
-          }
-        }
 
         .menu-title {
           color: inherit;
@@ -87,10 +70,6 @@
       .nav-link[aria-expanded="true"] {
         i.menu-arrow {
           &:before {
-            -moz-transform: rotate(180deg);
-            -o-transform: rotate(180deg);
-            -ms-transform: rotate(180deg);
-            -webkit-transform: rotate(180deg);
             transform: rotate(180deg);
           }
         }
@@ -114,13 +93,22 @@
     }
 
     &:not(.sub-menu) {
-      margin-top: .3rem;
 
       > .nav-item {
 
         border-bottom: 1px solid #f3f3f3;
         margin-top: 0;
-
+        position: relative;
+        &.active-page:before{
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 1%;
+          display: block;
+          width: .4rem;
+          height: 100%;
+          background-color: $second-color;
+        }
 
         > .nav-link {
           margin: 0;
@@ -148,15 +136,7 @@
     .nav-item {
       padding: 0;
 
-      &::before {
-        content: '';
-        position: absolute;
-        width: 5px;
-        height: 5px;
-        border-radius: 50%;
-        background: #000;
-        margin-top: 15px;
-      }
+
 
       .nav-link {
         color: #656565;
@@ -167,8 +147,9 @@
         height: auto;
         border-top: 0;
 
-        &:hover {
-          color: #000;
+        &:hover  {
+          border-bottom-color: #3B2F85;
+          border-top: 1px solid #3B2F85;
         }
       }
 
@@ -296,12 +277,10 @@
     bottom: 0;
     overflow: auto;
     right: -257px;
-    -webkit-transition: all 0.25s ease-out;
-    -o-transition: all 0.25s ease-out;
-    transition: all 0.25s ease-out;
   }
   .sidebar-offcanvas.active {
     right: 0;
+    transition: right .8s cubic-bezier(0.68,-0.55,0.27,1.55) !important;
   }
 }
 
@@ -498,5 +477,19 @@
         }
       }
     }
+  }
+}
+
+
+@media (max-width: 500px) {
+  .sidebar-offcanvas.active {
+      width: 160px;
+  }
+}
+
+
+@media (max-width: 400px) {
+  .sidebar-offcanvas.active {
+    width: 60px;
   }
 }

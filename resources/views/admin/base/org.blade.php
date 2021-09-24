@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="icon" href="/img/user.png">
+    <link rel="icon" href="/img/icon.svg">
     <link rel="stylesheet" href="/css/app.css?=<?php echo time();?>">
     <title>@yield('title')</title>
 </head>

@@ -16,10 +16,6 @@ $router  = new AltoRouter();
  */
 
 
-$router->map('GET', '/admin/dashboard', 'App\controllers\admin\dashboard\HomeController@index','home_dashboard');
-$router->map('POST', '/admin/logout', 'App\controllers\admin\dashboard\HomeController@logout','logout');
-
-
 
 
 
@@ -47,4 +43,7 @@ $router->map('GET', '/page/refresh', 'App\Controllers\helpers\RefreshPageControl
 /**
  * tools page  routes
  */
-$router->map('GET', '/test', 'App\controllers\helpers\TestController@index','test_file');
+$router->map('GET', '/test', 'App\controllers\helpers\TestController@index','test_ui');
+$router->map('GET', '/test/', 'App\controllers\helpers\TestController@index','test_uif');
+$router->map('GET', '/test/fb', 'App\controllers\helpers\TestController@login','test_fb');
+$router->map('GET', '/test/fb/callback', 'App\controllers\helpers\TestController@callback','testd_fb');

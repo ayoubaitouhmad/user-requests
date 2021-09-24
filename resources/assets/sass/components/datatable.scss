@@ -1,7 +1,15 @@
 
-table#requests-list {
+table {
+  tbody th{
+    cursor: pointer !important;
+    white-space: nowrap !important;
+  }
   tbody th,
   tbody td{
   vertical-align: middle !important;
+
   }
+
+
+
 }

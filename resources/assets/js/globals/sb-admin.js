@@ -22,9 +22,10 @@
 
 
     // switch right navbar
-    $('.navbar-toggler span').on('click', function () {
+    $('#navbar-toggler').on('click', function () {
         let $this = $(this);
-        $this.text() === 'switch_right' ? $this.text('switch_left') : $this.text('switch_right');
+        console.log('fdfd');
+        $this.hasClass('toggle') ? $this.removeClass('toggle')  : $this.addClass('toggle');
 
     });
 
@@ -82,7 +83,21 @@
 
     })
 
+    // toggle (show/hide) input password
+    $('.password-container .toggle-password').on('click' , function () {
+        console.log('fdgfdg');
+        let $this = $(this);
+        let inputEl = $this.siblings('input');
+        if(inputEl.prop('type') === 'text') {
+            $this.text('visibility_off');
+            inputEl.prop("type", "password");
+        }
+        else {
+            inputEl.prop("type", "text");
+            $this.text('visibility');
+        }
 
+    });
 
 
 })();

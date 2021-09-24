@@ -1,6 +1,6 @@
 (() => {
     'use strict';
-    window.app.user.dashboard.charts = () => {
+    window.app.user.dashboard.requests.charts = () => {
         // get charts data from server
         window.axios.get('/user/dashboard/requests/chart/data')
             .then(response => {

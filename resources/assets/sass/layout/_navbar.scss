@@ -11,6 +11,7 @@
   }
 }
 
+
 .navbar {
   font-weight: 400;
   transition: background 0.25s ease;
@@ -60,6 +61,14 @@
         color: #4a4a4a;
         font-size: 1.5rem;
         padding: 0;
+        transition: transform .5s !important;
+        transform: rotateZ(0) !important;
+
+      }
+      .navbar-toggler.toggle{
+        transition: transform .5s !important;
+        transform: rotateZ(180deg) !important;
+        //transform: rotateX(180deg);
       }
 
       .brand-logo-mini {
@@ -82,7 +91,7 @@
     color: #9b9b9b;
     padding-left: 1.062rem;
     padding-right: 1.062rem;
-    width: calc(100% - 257px);
+    width: calc(100% - 254px);
     height: 60px;
     border-bottom: 1px solid #e3e3e3;
 
@@ -147,14 +156,21 @@
       }
 
       .nav-item.dropdown {
+        #notifications-container{
+          max-height: 70vh;
+          overflow-y : scroll;
+          scrollbar-width: thin;
+        }
+
         .dropdown-menu {
           border: none;
           width: 32rem;
-
           box-shadow: 0px 3px 21px 0px rgba(0, 0, 0, 0.2);
           animation-name: dropdownAnimation;
           animation-duration: 0.25s;
           animation-fill-mode: both;
+
+
 
           .material-icons.clear-all{
             color: #f3f2ff;
@@ -179,9 +195,7 @@
           right: 0;
           left: auto;
           top: 60px;
-          max-height: 70vh;
-          overflow-y : scroll;
-          scrollbar-width: thin;
+
           .dropdown-item {
             margin-bottom: 0;
             padding: .65rem 1.5rem;
@@ -281,10 +295,11 @@
 @media (max-width: 991px) {
   .navbar {
     .navbar-brand-wrapper {
-      width: 100px;
+      padding-left: 15px;
+
       border-right: none;
       .navbar-brand-inner-wrapper {
-        margin-left: 3.975rem;
+        margin:0;
         .navbar-brand.brand-logo-mini {
           display: inline-block;
           width: 1.875rem;
@@ -301,7 +316,7 @@
 
       }
 
-      width: 55px;
+      width: 200px;
 
       .navbar-brand.brand-logo {
         //display: none;
@@ -317,7 +332,7 @@
     }
 
     .navbar-menu-wrapper {
-      width: calc(100% - 55px);
+      width: calc(100% - 200px);
       padding-left: 15px;
       padding-right: 15px;
 
@@ -394,10 +409,10 @@
 @media (max-width: 480px) {
   .navbar {
     .navbar-brand-wrapper {
-      width: 55px;
+
 
       .brand-logo-mini {
-        padding-top: 0px;
+        padding-top: 0;
       }
     }
   }

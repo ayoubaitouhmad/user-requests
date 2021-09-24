@@ -27,7 +27,8 @@
 
 /*-------------------------------------------------------------------*/
 /* === Import Bootstrap functions and variables === */
-@import "../../../node_modules/bootstrap/dist/css/bootstrap.min.css";
+
+@import "/node_modules/bootstrap/dist/css/bootstrap.css";
 
 /*-------------------------------------------------------------------*/
 /* === Template variable / structure === */
@@ -62,11 +63,18 @@
 @import "layout/sidebar";
 
 
+/*-------------------------------------------------------------------*/
+/* === inc === */
+@import "inc/settings";
+
 
 /*-------------------------------------------------------------------*/
 /* === Pages === */
 // helpers
 @import "global/refresh-page";
+
+// Errors
+@import "errors/404";
 
 // admin
 @import "admin/pages/requests";
@@ -80,4 +88,5 @@
 @import "user/pages/signup/email";
 @import "user/pages/login/signin";
 @import "user/pages/dashboard/requests";
+@import "user/pages/security/security";
 

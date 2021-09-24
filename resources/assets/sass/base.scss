@@ -31,6 +31,27 @@ body {
   background-color: #fff;
 
 
+  > *:focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+   button , a , input {
+    outline: none !important;
+  }
+  button,
+  input[type="submit"] ,
+  input[type="buttton"] ,
+  a{
+    cursor: pointer !important;
+  }
+
+  input::-ms-reveal,
+  input::-ms-clear {
+    display: none;
+  }
+
+
+
   @media (max-width: $mobile) {
 
     font-size: 14.4px !important;
@@ -40,7 +61,8 @@ body {
 
 
 .page-body-wrapper {
-  min-height: calc(100vh - 60px);
+  //min-height: calc(100vh - 60px);
+  height: 100vh;
   display: -webkit-flex;
   display: flex;
   flex-direction: row;
@@ -163,14 +185,13 @@ body {
     thead {
       tr {
         th {
-          cursor: pointer;
+          cursor: pointer !important;
           vertical-align: middle;
           text-align: left;
           font-family: 'Poppins', ' ';
           font-weight: 600;
-
           border-bottom: 1px solid #dee2e6;
-          white-space: nowrap;
+          white-space: nowrap !important;
           //
           //:nth-child(2) {
           //  width: 5rem !important;
@@ -384,3 +405,16 @@ body {
 }
 
 
+.shadow{
+  box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+
+}
+
+
+
+@media(max-width: 500px) {
+  canvas{
+    display: block !important;
+    height: 16rem !important;
+  }
+}

@@ -74,9 +74,12 @@
 	}
 	
 	
+	
+	
 	/**
 	 * loop into array contain user photo and affect photo path to the object
 	 * @param $array
+	 * @param $img_key
 	 * @return mixed
 	 */
 	function getPhoto($array , $img_key)

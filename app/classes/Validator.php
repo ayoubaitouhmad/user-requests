@@ -29,7 +29,9 @@
 			'gender',
 			'date',
 			'password',
-			'like'
+			'like',
+			'format',
+			'size',
 		);
 		
 		const REGEX = [
@@ -50,7 +52,7 @@
 			'email' => ' sorry , enter a valid email like(name@domain.com).',
 			'maxLength' => ' sorry , field can accept only regex. ',
 			'minLength' => ' sorry , field must be at least regex characters. ',
-			'text' => ' sorry, field can only contain character and spaces.',
+			'text' => ' sorry, field can only contain character and spaces and known symbols (?,!,= ...).',
 			'number' => ' sorry , field can only contain real number',
 			'phone' => ' sorry , field can only contain 10 number (Ex : 0606060606)',
 			'address' => 'sorry, field can only contain character,numbers and spaces.',
@@ -58,18 +60,11 @@
 			'date' => 'sorry , field accept men and women only.',
 			'password' => 'sorry ,password must be al least 8 characters (numbers,characters,symbol ...).',
 			'like' => 'sorry , sorry field must be in (regex) ',
+			'format' => 'sorry ,  field must be in list  (regex). ',
+			'size' => 'sorry ,  field must be less than regexMB.',
 			
 		];
 		
-		private const IMG_FORMAT = [
-			'tiff',
-			'tif',
-			'bmp',
-			'jpg',
-			'jpeg',
-			'webp',
-			'png'
-		];
 		
 		
 		
@@ -115,6 +110,7 @@
 						if (!call_user_func_array([$this, $rule], [$this->value, $regex]) ) {
 							if (in_array($rule, array_keys(self::MESSAGES))) {
 								$message = self::MESSAGES[$rule];
+							
 								if (str_contains($message, 'field')) {
 									$message = str_replace('field', $this->field, $message);
 								}
@@ -131,6 +127,7 @@
 								if (!$this->errorHandler->field($field)->hasErrors($message)) {
 									$this->errorHandler->addError($field, $message);
 								}
+								
 							} else {
 								$this->errorHandler->addError($field, 'error');
 							}
@@ -307,6 +304,14 @@
 			return in_array($val , $regex);
 		}
 		
+	
+		
+		public function size($val, $regex){
+			return  ($val['size']/ 1024 / 1024) < $regex;
+		}
+		public function format($val, $regex){
+			return in_array(pathinfo($val['name'])['extension'] , $regex);
+		}
 		
 		
 	}

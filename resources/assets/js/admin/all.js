@@ -18,33 +18,37 @@
 
 
         // push notification when new  user registered
-
-
         let newRequest = pusher.subscribe('NEW_REQUEST');
         newRequest.bind('my-event', function(data) {
             location.reload();
         });
+        // end receive notification when new sign up
 
+
+        // push notification when new  user registered
+        let securityNotification = pusher.subscribe('Security_Notification');
+        securityNotification.bind('my-event', function(data) {
+            location.reload();
+        });
         // end receive notification when new sign up
 
         // set notification status to deja vue
 
         $('.admin-notifications__count , .admin-count').on('click' , function (){
-
             let countContainer = $('.admin-count');
             let token = $('body').attr('page-token');
-            axios({
-                method : 'post',
+            window.axios({
+                method : 'POST',
                 url : '/admin/reset/notifications/count',
                 headers : {
                     'Authorization' : token
                 }
             })
-                .then(res=> {
+                .then(res=>
                     countContainer
                         .text('')
-                        .addClass('d-none');
-                })
+                        .addClass('d-none')
+                )
                 .catch(error => console.log(error));
         } );
 

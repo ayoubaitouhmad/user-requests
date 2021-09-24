@@ -34,7 +34,7 @@ class UiMessages
      */
     public static function used($who) : string
     {
-        return $who . ' Already used!!, if you have problem in your login info please try login or reset your password.';
+        return $who . ' Already used!!, if you have problem in your login info please try login or password your password.';
     }
 	
 
@@ -62,7 +62,8 @@ class UiMessages
 	/**
 	 * @return string
 	 */
-	public static function loginFailed(){
+	public static function loginFailed(): string
+	{
     	return 'sorry !!, password or email invalid .' ;
     }
 	
@@ -78,7 +79,8 @@ class UiMessages
 	 * @param $item
 	 * @return string
 	 */
-	public static function notMatch($item){
+	public static function notMatch($item): string
+	{
 		return 'sorry !!, '.$item.' is not match the code sent to your email ' ;
 	}
 	
@@ -93,5 +95,8 @@ class UiMessages
 	{
 		return $who . ' Already used!!,try  new email or password .';
 	}
+	
+
+	
 
 }

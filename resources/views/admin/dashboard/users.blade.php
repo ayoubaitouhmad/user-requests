@@ -487,17 +487,11 @@
 
 
 
-@include('inc.adminNotification')
+@include('inc.notifications')
+
 
 <!-- main content  -->
 @section('content')
-
-    <div class="row">
-        @php
-            echo '<pre>';
-                //var_dump($notifications);
-        @endphp
-    </div>
 
 
     <!-- page indexer -->

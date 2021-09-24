@@ -32,11 +32,19 @@ function getDirFileCount($dir)
 }
 
 
-function deleteFile($filename){
+function deleteUserImageByFileName($filename){
     $filepath = uploader::targetFolder .'img_'. $filename . '.jpg';
-    if(file_exists($filepath)){
+    if(file_exists($_SERVER['DOCUMENT_ROOT'].$filepath)){
         unlink($filepath);
     }
+}
+
+function deleteFile($file){
+	$fullPath = $_SERVER['DOCUMENT_ROOT'].$file;
+	if(file_exists($fullPath)){
+		unlink($fullPath);
+	}
+	
 }
 
 

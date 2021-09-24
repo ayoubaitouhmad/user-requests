@@ -5,21 +5,16 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="icon" href="/img/user.png">
+    <link rel="icon" href="/img/icon.svg">
     <link rel="stylesheet" href="/css/app.css?=<?php echo time();?>">
     <title>signup</title>
 </head>
 <body page-id="user-signup" page-token="{{$token ?? ''}}">
-<div class="row">
-    @php
-        var_dump($_SESSION);
 
-    @endphp
-</div>
 
-<div class="container-fluid d-flex flex-column justify-content-center align-items-center h-100">
+<div class="container-fluid d-flex flex-column justify-content-center align-items-center h-100 shadow">
     <div class="card shadow">
-        <div class="card-body">
+        <div class="card-body shadow bg-white rounded">
             <div class="signup-container">
                 <div class="signup-container__header">
                     <span class="container-title">
@@ -86,38 +81,38 @@
                                    data-parsley-trigger="keyup">
                             <span class="material-icons">lock</span>
                         </div>
-                        <hr class="my-2">
-                        <label for="">
-                            or continue with :
+{{--                        <hr class="my-2">--}}
+{{--                        <label for="">--}}
+{{--                            or continue with :--}}
 
-                        </label>
+{{--                        </label>--}}
 
-                        <div class="form-item">
-                            <input autocomplete="on"
-                                   type="button" placeholder=""
-                                   value="google"
-                                   class="form-item__data form-item__btn-google">
-                            <span></span>
-                        </div>
+{{--                        <div class="form-item">--}}
+{{--                            <input autocomplete="on"--}}
+{{--                                   type="button" placeholder=""--}}
+{{--                                   value="google"--}}
+{{--                                   class="form-item__data form-item__btn-google">--}}
+{{--                            <span></span>--}}
+{{--                        </div>--}}
 
-                        <div class="form-item">
-                            <input autocomplete="on"
-                                   type="button"
-                                   placeholder="" value="facebook"
-                                   class=" form-item__data form-item__btn-facebook">
-                            <span></span>
-                        </div>
+{{--                        <div class="form-item">--}}
+{{--                            <input autocomplete="on"--}}
+{{--                                   type="button"--}}
+{{--                                   placeholder="" value="facebook"--}}
+{{--                                   class=" form-item__data form-item__btn-facebook">--}}
+{{--                            <span></span>--}}
+{{--                        </div>--}}
 
                         <div class="form-item text-center">
                             <input type="submit"
                                    placeholder="submit"
-                                   class="form-item__submit">
+                                   class="form-item__submit base-button">
                         </div>
                     </form>
                 </div>
                 <hr class="my-2">
-                <div class="signup-container__footer">
-                    <a href="" class="float-right">forget password</a>
+                <div class="signup-container__footer text-center">
+                    Already have an account? <a href="/user/login">Log In</a>
                 </div>
 
             </div>

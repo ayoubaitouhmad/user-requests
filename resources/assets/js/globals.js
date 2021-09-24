@@ -10,7 +10,11 @@
         user :{
             signup :{},
             signin :{},
-            dashboard :{},
+            dashboard :{
+                settings : {},
+                requests : {}
+            },
+            security:{}
 
         }
     };

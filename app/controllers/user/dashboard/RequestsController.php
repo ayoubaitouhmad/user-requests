@@ -15,6 +15,7 @@
 	use App\models\AdminNotification;
 	use App\models\Notification;
 	use App\models\Request;
+	use App\models\UserSetting;
 	use App\models\User;
 	use App\models\UserNotification;
 	use Exception;
@@ -53,6 +54,14 @@
 		
 		public function index()
 		{
+			
+		
+			
+		
+			
+			
+			
+			
 			// TODO : get page token
 			$token = $this->tokenManager->token();
 			
@@ -69,13 +78,22 @@
 			// TODO : get current user infos
 			$activeUser = $this->currentUser;
 			
+			// TODO : get user preferences
+			$setting = new UserSetting();
+			$settings = $setting->get($this->currentUser->user_id);
+			
 			return view('user/dashboard/requests', compact([
 				'token',
 				'requests',
 				'percentageRequestsByRole',
 				'activeUser',
-				'notifications'
+				'notifications',
+				'settings'
 			]));
+			
+			
+			
+			
 		}
 		
 		
@@ -141,12 +159,35 @@
 							$notification->setUserId($this->currentUser->user_id);
 							$notification->setNotificationType(2);
 							$notification->create($notification);
-							// TODO : SEND NOTIFICATION
+							// TODO : SEND NOTIFICATION TO ADMIN
 							PushNotification::send(PushNotification::NEW_REQUEST, [
 								'title ' => $title,
 								'description' => $description,
 								'photo' => getFileFromDirByName($this->currentUser->user_photo)
 							]);
+							
+							
+							
+							// TODO : NOTIFY USER
+							$title = 'new request';
+							$description = 'You  has send new requests' ;
+							$notification = new AdminNotification();
+							$notification->setTitle($title);
+							$notification->setDescription($description);
+							$notification->setUserId($this->currentUser->user_id);
+							$notification->setAdminId('admin_');
+							$notification->setNotificationType(2);
+							$notification->create($notification);
+							// TODO : SEND NOTIFICATION
+							PushNotification::send($this->currentUser->user_email.'_new_request', [
+								'title ' => $title,
+								'description' => $description,
+								'photo' => ''
+							]);
+							
+							
+							
+							
 							echo cleanJSON([
 								'header' => UiMessages::VALID,
 								'body' => ''

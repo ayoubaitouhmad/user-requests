@@ -36,7 +36,7 @@
           func.preventScrolling();
         });
 
-         // reset onscroll to default
+         // password onscroll to default
         modals.on('hide.bs.modal', function () {
             func.resetScrolling();
             $('select').get(0).selectedIndex = 1;

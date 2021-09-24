@@ -24,7 +24,7 @@ class UploadImage extends File implements UploadFile
      * max image size accepted
      * size : byte
      */
-    const FILE_SIZE = 2097152000;
+    const FILE_SIZE = 2097152;
 
     /**
      *  image format accepted to upload
@@ -126,6 +126,6 @@ class UploadImage extends File implements UploadFile
 
     public function isValidSize()
     {
-        return $this->fileSize <= self::FILE_SIZE;
+        return $this->fileSize < self::FILE_SIZE;
     }
 }

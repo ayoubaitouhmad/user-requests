@@ -22,6 +22,11 @@
 		protected $created_at;
 		
 		protected $deleted_at;
+		protected $status;
+		
+		
+		
+	
 		
 		
 		protected $user_id;
@@ -36,7 +41,25 @@
 		protected $PDO;
 		
 		
+		/**
+		 * @return mixed
+		 */
+		public function getStatus()
+		{
+			
+			return $this->status;
+		}
 		
+		
+		
+		/**
+		 * @param mixed $status
+		 */
+		public function setStatus($status): void
+		{
+			
+			$this->status = $status;
+		}
 		/**
 		 * @return mixed
 		 */

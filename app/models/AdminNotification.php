@@ -19,11 +19,11 @@
 		
 		
 		
-		public function create( $record)
+		public function create($record)
 		{
 			
 			try {
-				$query = ' INSERT INTO ' .$this->tableName. ' (title, description, admin,user, type) VALUES (:title, :description, :admin, :user, :type);';
+				$query = ' INSERT INTO ' .$this->tableName. ' (title, description, admin,user, type , status) VALUES (:title, :description, :admin, :user, :type , :status);';
 				
 				$stmt = $this->PDO->prepare($query);
 				
@@ -33,7 +33,7 @@
 				$user_id = $record->user_id;
 				$admin_id = $record->admin_id;
 				$notification_type = $record->notification_type;
-				
+				$status = $record->getStatus() ?? 0;
 				
 				
 				$stmt->execute(
@@ -42,7 +42,8 @@
 						'description' => $description,
 						'admin' => $admin_id,
 						'user' => $user_id,
-						'type' => $notification_type
+						'type' => $notification_type,
+						'status' => $status
 					]
 				);
 				

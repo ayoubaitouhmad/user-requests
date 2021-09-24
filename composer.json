@@ -15,7 +15,9 @@
     "ext-pdo": "*",
     "doctrine/orm": "^2.9",
     "pusher/pusher-php-server": "^7.0",
-    "phpmailer/phpmailer": "^6.5"
+    "phpmailer/phpmailer": "^6.5",
+    "facebook/graph-sdk": "^5.7",
+    "google/apiclient": "^2.0"
   },
   "config": {
     "optimize-autoloader": true

@@ -15,6 +15,7 @@
 	use App\classes\Session;
 	use App\classes\Validator;
 	use App\models\Admin;
+	use App\models\AdminSetting;
 	use App\models\User;
 	use App\models\UserNotification;
 	use Exception;
@@ -71,13 +72,17 @@
 		
 			$notifications = HomeController::AdminNotification();
 			// TODO / send all to view
+			// TODO : get user preferences
+			$setting =new AdminSetting();
+			$settings = $setting->get($this->currentAdmin->admin_id);
 			return view('admin/dashboard/users', compact([
 				'users',
 				'token',
 				'usersRoleCountByUser',
 				'lastFourUsers' ,
 				'admin',
-				'notifications'
+				'notifications',
+				'settings'
 				
 			]));
 			
@@ -204,7 +209,6 @@
 		public function edit()
 		{
 			
-		
 			
 			if (Request::has('post') ) {
 				$request = Request::get('post');
@@ -215,21 +219,21 @@
 						'email' => [
 							'required' => true,
 							'email' => true,
-							'maxLength' => 50,
+							'maxLength' => 100,
 							'minLength' => 5
 						
 						],
 						'name' => [
 							'required' => true,
 							'text' => true,
-							'maxLength' => 50,
+							'maxLength' => 100,
 							'minLength' => 6
 						
 						],
 						'address' => [
 							'required' => true,
 							'address' => true,
-							'maxLength' => 50,
+							'maxLength' => 100,
 							'minLength' => 6
 						
 						],
@@ -305,7 +309,7 @@
 								$oldPhoto = md5($res->user_photo);
 								if ($this->model->update($user)) {
 									$this->uploader->save();
-									deleteFile($oldPhoto);
+									deleteUserImageByFileName($oldPhoto);
 									echo cleanJSON([
 										'title' => UiMessages::VALID,
 										'body' => ''
@@ -346,12 +350,8 @@
 					]);
 				}
 				
-			} else {
-				echo cleanJSON([
-					'title' => 'Errofr',
-					'body' => Request::all()
-				]);
 			}
+			
 		}
 		
 		

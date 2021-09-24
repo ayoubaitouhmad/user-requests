@@ -889,6 +889,31 @@
 		
 		
 		
+		/**
+		 * check if some sign data exists already
+		 * @param $feild
+		 * @param $data
+		 * @param int $type
+		 * @return mixed
+		 */
+		public function isDuplicatedField($feild , $data, int $type = PDO::PARAM_STR)
+		{
+			
+			try {
+				$stmt = $this->PDO->prepare("SELECT COUNT(*) FROM {$this->tableName} where $feild = :field;");
+				$stmt->bindParam(':field', $data, $type);
+				$stmt->execute();
+				return $stmt->fetchColumn();
+			} catch (PDOException $exception) {
+				echo $exception->getMessage();
+				
+				return false;
+			}
+		}
+		
+		
+		
+		
 		public function getUserRequests($id)
 		{
 			
@@ -899,6 +924,146 @@
 			return $this->read($query, $fetchType, $param);
 		}
 		
+		/**
+		 * @param User $user
+		 * @return bool
+		 */
+		public function updateUser(User $user)
+		{
+
+			try {
+				
+				$query = ' ';
+				$query .= "UPDATE {$this->tableName} ";
+				$query .= ' SET ';
+				$query .= ' user_fullname = :name, ';
+				$query .= ' user_gender = :gender, ';
+				$query .= ' user_address = :address, ';
+				$query .= ' user_phoneNumber = :phone, ';
+				$query .= ' user_dateOfBirth = :date, ';
+				$query .= ' user_ville = :city ';
+				$query .= ' WHERE user_id = :id; ';
+				$stmt = $this->PDO->prepare($query);
+				
+				$name = $user->getName();
+				$gender = $user->getGender() === 'male' ? 'm' : 'f';
+				$addresse = $user->getAddress();
+				$phone = $user->getPhoneNumber();
+				$date = $user->getDate();
+				$city = $user->getCity();
+				$id = $user->getId();
+				
+				$stmt->bindParam(':name', $name, PDO::PARAM_STR);
+				$stmt->bindParam(':gender', $gender, PDO::PARAM_STR);
+				$stmt->bindParam(':address', $addresse, PDO::PARAM_STR);
+				$stmt->bindParam(':phone', $phone, PDO::PARAM_STR);
+				$stmt->bindParam(':date', $date, PDO::PARAM_STR);
+				$stmt->bindParam(':city', $city, PDO::PARAM_STR);
+				$stmt->bindParam(':id', $id, PDO::PARAM_STR);
+				
+				
+				
+				$stmt->execute();
+				
+				return $stmt->rowCount() > 0;
+			} catch (Exception $exception) {
+				echo $exception->getMessage();
+				
+				return false;
+			}
+		}
+		
+		
+		
+		/**
+		 * @param $avatar
+		 * @param $id
+		 * @return bool
+		 */
+		public function updateUserAvatar($avatar , $id): bool
+		{
+			try {
+				
+				$query = ' ';
+				$query .= "UPDATE {$this->tableName} ";
+				$query .= ' SET user_photo = :photo';
+				$query .= ' WHERE user_id = :id ;';
+				$stmt = $this->PDO->prepare($query);
+				
+				
+				$stmt->bindParam(':id', $id, PDO::PARAM_STR);
+				$stmt->bindParam(':photo',$avatar, PDO::PARAM_STR);
+				
+				$stmt->execute();
+				
+				return $stmt->rowCount() > 0;
+			} catch (Exception $exception) {
+				echo $exception->getMessage();
+				
+				return false;
+			}
+		}
+		
+		
+		
+		public function updateUserSecurityData(User $user): bool
+		{
+			try {
+				
+				$query = ' ';
+				$query .= "UPDATE {$this->tableName} ";
+				$query .= ' SET user_email = :email, ';
+				$query .= ' user_password = :pass, ';
+				$query .= ' user_secretQuestion = :question, ';
+				$query .= ' user_Response = :res ';
+				$query .= ' WHERE user_id = :id ;';
+				$stmt = $this->PDO->prepare($query);
+				
+				$email = $user->getEmail();
+				$password = $user->getPassword();
+				$question = $user->getSecretQuestion();
+				$response = $user->getResponse();
+				$id = $user->getId();
+				
+				
+				$stmt->bindParam(':email', $email , PDO::PARAM_STR);
+				$stmt->bindParam(':pass',$password , PDO::PARAM_STR);
+				$stmt->bindParam(':question',$question , PDO::PARAM_STR);
+				$stmt->bindParam(':res',$response , PDO::PARAM_STR);
+				$stmt->bindParam(':id',$id, PDO::PARAM_STR);
+				
+				$stmt->execute();
+				
+				return $stmt->rowCount() > 0;
+			} catch (Exception $exception) {
+				echo $exception->getMessage();
+				
+				return false;
+			}
+		}
+		
+		public function updateField(array $field , $id , $field_type = PDO::PARAM_STR,  $id_type = PDO::PARAM_STR ): bool
+		{
+			try {
+				
+				$query = ' ';
+				$query .= "UPDATE {$this->tableName} ";
+				$query .= " SET $field[0] = :pass  ";
+				$query .= ' WHERE user_id = :id ;';
+				$stmt = $this->PDO->prepare($query);
+				
+				$stmt->bindParam(':pass',$field[1] ,$field_type);
+				$stmt->bindParam(':id',$id, $id_type);
+				
+				$stmt->execute();
+				
+				return $stmt->rowCount() > 0;
+			} catch (Exception $exception) {
+				echo $exception->getMessage();
+				
+				return false;
+			}
+		}
 		
 		/*
 				 *

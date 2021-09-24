@@ -15,6 +15,7 @@
 	use App\models\Admin;
 	use App\models\AdminNotification;
 	use App\models\Notification;
+	use App\models\UserSetting;
 	use App\models\User;
 	use App\models\UserNotification;
 	use Exception;
@@ -34,6 +35,9 @@
 				Redirect::To('/');
 			}
 			
+			
+			
+			
 			// TODO : setup
 			$this->init(new User());
 			
@@ -46,6 +50,9 @@
 			} else {
 				Session::remove('user-connected');
 			}
+			
+			
+			
 		
 		}
 		
@@ -67,13 +74,18 @@
 			// TODO / get current user notifications
 			$notification = new AdminNotification();
 			$notifications = $notification->getUserNotification($this->currentUser->user_id);
+			
+			// TODO : get user preferences
+			$setting = new UserSetting();
+			$settings = $setting->get($this->currentUser->user_id);
 		
 
 			// TODO / send all to view
 			return view('user/dashboard/home', compact([
 				'token',
 				'activeUser',
-				'notifications'
+				'notifications',
+				'settings'
 			]));
 		}
 		
@@ -84,6 +96,7 @@
 		public function logout(){
 			if (AxiosHttpRequest::has('token') && $this->tokenManager->verifyToken(AxiosHttpRequest::has('token'))) {
 				Session::remove('user-connected');
+				Session::remove('user-connected-password');
 			}
 		}
 		function resetNotification(){

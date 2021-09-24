@@ -5,7 +5,6 @@
 <!-- page identifier --->
 @section('page-id','admin-dashboard-requests')
 
-
 <!-- bootstrap modals--->
 @section('bootstrap-modals')
     <!-- read request message modal-->
@@ -132,18 +131,15 @@
 
 
 <!-- end navbar infos -->
-@include('inc.adminNotification')
+@include('inc.notifications')
+
 <!-- end navbar infos -->
 
 <!-- main content  -->
 @section('content')
-    <div class="m-3 row">
-        @php
-            var_dump(password_hash('123456789' , PASSWORD_DEFAULT));
-        @endphp
-    </div>
     <!-- page indexer -->
     @include('inc.indexer' , ['page_src' => 'Dashboard','page_index' => 'Requests'])
+
     <!-- charts-->
     <div class="row">
         <div class="col-12  col-xl-6 grid-margin stretch-card">
@@ -180,51 +176,33 @@
                             <tr>
                                 <th></th>
                                 <th>
-                                    <div class="d-flex justify-content-center align-items-center">
-                                     photo
-                                      <span style="font-size: .5rem" class="material-icons">filter_list</span>
 
-                                    </div>
+                                        photo
+
                                 </th>
 
                                 <th>
-                                    <div class="d-flex justify-content-center align-items-center">
-                                        request
-                                        <span style="font-size: .5rem" class="material-icons">filter_list</span>
 
-                                    </div>
+                                    request
 
                                 </th>
-                                <th >
-                                    <div class="d-flex justify-content-center align-items-center">
+                                <th>
+
                                     response
-                                        <span style="font-size: .5rem" class="material-icons">filter_list</span>
-
-                                    </div>
 
                                 </th>
                                 <th>
-                                    <div class="d-flex justify-content-center align-items-center">
-                                         request date
-                                        <span style="font-size: .5rem" class="material-icons">filter_list</span>
-                                    </div>
+
+                                    request date
                                 </th>
                                 <th>
-                                    <div class="d-flex justify-content-center align-items-center">
 
                                     request status
-                                        <span style="font-size: .5rem" class="material-icons">filter_list</span>
-
-                                    </div>
 
                                 </th>
                                 <th>
-                                    <div class="d-flex justify-content-center align-items-center">
 
-                                        request type
-                                        <span style="font-size: .5rem" class="material-icons">filter_list</span>
-
-                                    </div>
+                                    request type
 
                                 </th>
                                 <th>
@@ -243,7 +221,7 @@
                                             <div class="user-infos__-img-fullName">
                                                 <img data-src="{{$request->userPhoto}}"
                                                      alt="profile-image"
-                                                class="preload-img">
+                                                     class="preload-img">
                                                 <p class="requests-list__user-name">{{$request->userName}}</p>
                                                 <input class="requests-list__user-name__hide" type="hidden"
                                                        value="{{$request->userName}}">

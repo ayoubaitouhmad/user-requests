@@ -13,25 +13,25 @@ require('pusher-js/dist/web/pusher.min');
 require('parsleyjs/dist/parsley');
 require('datatables.net/js/jquery.dataTables');
 require('chart.js/dist/chart');
-require('jquery.cookie/jquery.cookie');
 
 
-
-
-// functions
-require('../js/functions/function');
 
 
 // main content
 require('../../assets/js/globals');
 
+// functions
+require('../js/functions/function');
+
+
+
 
 
 // custom js file
-require('../../assets/js/globals/plugins');
 require('../../assets/js/globals/sb-admin');
-require('../../assets/js/globals/lazy-load');
+require('../../assets/js/globals/plugins');
 require('../../assets/js/globals/ajax-requests');
+require('../../assets/js/globals/lazy-load');
 require('../../assets/js/globals/notify');
 
 
@@ -40,6 +40,11 @@ require('./init');
 
 
 // pages :
+
+
+
+/*******************       test    *************************/
+require('./testing/core');
 
 /*******************       admin    *************************/
 require('./admin/all');
@@ -67,6 +72,8 @@ require('./admin/requests/ajax-requests');
 require('./admin/login/ajax-requests');
 
 /*******************       user    *************************/
+// all page
+require('./user/all');
 
 // sign up
 require('./user/signup/signup');
@@ -84,6 +91,14 @@ require('./user/signup/email');
 require('./user/dashboard/requests/ajax-requests');
 require('./user/dashboard/requests/page');
 require('./user/dashboard/requests/charts');
+require('./user/dashboard/requests/plugins');
 
-require('./user/all');
 
+
+// settings
+require('./user/dashboard/settings/plugins');
+require('./user/dashboard/settings/ajax-request');
+require('./user/dashboard/settings/page');
+
+// security
+require('./user/security/security');

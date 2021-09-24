@@ -1,6 +1,6 @@
 (()=>{
     'use strict';
-    window.app.user.dashboard.page = () =>  {
+    window.app.user.dashboard.requests.page = () =>  {
         // open modal to read full requests message
         $('.requests-list__read-request_btn').on('click', function () {
             let modalEl = $('.modal-request__message');

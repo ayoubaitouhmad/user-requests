@@ -81,6 +81,7 @@
 							$user = $this->model->isUser($request->email);
 							if(password_verify($request->password , $user->user_password)){
 								Session::add('user-connected' , $request->email);
+								Session::add('user-connected-password' , $request->password);
 								echo cleanJSON([
 									'header' => UiMessages::VALID,
 									'body' =>''

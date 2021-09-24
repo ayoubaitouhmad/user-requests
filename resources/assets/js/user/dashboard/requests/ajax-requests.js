@@ -1,6 +1,6 @@
 (()=>{
     'use strict';
-    window.app.user.dashboard.ajax = () =>  {
+    window.app.user.dashboard.requests.ajax = () =>  {
         let newRequestFormEl = $('#new-request__form');
         // because submit button outside form we need to submit form manually
         $('#new-request__save').on('click' , function (){

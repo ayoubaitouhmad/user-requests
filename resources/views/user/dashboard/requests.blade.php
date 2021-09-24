@@ -92,28 +92,29 @@
 
 
 
-@include('inc.adminNotification')
-
+@include('inc.notifications')
+@section('side-bar-request' , 'active-page')
 
 <!-- main content  -->
 @section('content')
-    <div class="row m-3">
-        @php
 
 
-           //  echo '<pre>';
-           // var_dump($percentageRequestsByRole);
-           // var_dump($activeUser);
-        @endphp
-    </div>
     <!-- page indexer -->
     @include('inc.indexer' ,  ['page_src' => 'Dashboard /','page_index' => 'Request'])
+    <div class="row">
+        @php
+            echo '<pre>';
+
+            var_dump($settings);
+
+        @endphp
+    </div>
     <!-- charts-->
     <div class="row">
         <div class="col-12  col-xl-6 grid-margin stretch-card">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title">compare number of request by gender in {{date('Y')}}/{{(date('Y')-1)}}</h4>
+                    <h4 class="card-title">Requests By Month chart  {{date('Y')}}</h4>
                     <canvas id="area-chart"></canvas>
                 </div>
             </div>
@@ -122,7 +123,7 @@
         <div class="col-12  col-xl-6 grid-margin grid-margin-lg-0 stretch-card">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title">compare number of request in {{date('Y')}}</h4>
+                    <h4 class="card-title">Compare Requests By Month In {{date('Y')}}</h4>
                     <canvas id="bar-chart"></canvas>
                 </div>
             </div>
@@ -144,8 +145,6 @@
                             <thead>
                             <tr>
                                 <th></th>
-
-
                                 <th>
                                     request
                                 </th>
@@ -161,9 +160,7 @@
                                 <th>
                                     request type
                                 </th>
-                                <th>
 
-                                </th>
                             </tr>
                             </thead>
                             <tbody>
