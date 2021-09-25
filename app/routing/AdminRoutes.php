@@ -23,8 +23,23 @@
 	$router->map('GET', '/admin/dashboard/requests/chart/data', 'App\Controllers\admin\dashboard\RequestController@getChartsData', 'get_charts_data');
 	$router->map('POST', '/admin/dashboard/requests/edit', 'App\Controllers\admin\dashboard\RequestController@edit', 'update_requests');
 	
+	
+	
 	//  settings page
 	$router->map('GET', '/admin/dashboard/setting', 'App\Controllers\admin\dashboard\SettingsController@index', 'settings');
+	$router->map('POST', '/admin/dashboard/settings/edit/profile', 'App\controllers\admin\dashboard\SettingsController@editProfile', 'admin_dashboard_edit_profile');
+	$router->map('POST', '/admin/dashboard/settings/edit/profile/avatar', 'App\controllers\admin\dashboard\SettingsController@editProfileAvatar', 'admin_dashboard_edit_profile_avatar');
+	$router->map('POST', '/admin/dashboard/settings/edit/profile/security', 'App\controllers\admin\dashboard\SettingsController@editPorfilePasswordAndSecurtity', 'admin_dashboard_edit_profile_security');
+	$router->map('POST', '/admin/dashboard/settings/edit/notifications', 'App\controllers\admin\dashboard\SettingsController@editNotifications', 'admin_dashboard_edit_profile_notifications');
+
+
+
+
+
+
+
+
+
 
 // end dashboard
 

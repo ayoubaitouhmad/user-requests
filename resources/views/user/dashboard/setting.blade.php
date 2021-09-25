@@ -3,7 +3,7 @@
 <!-- page title --->
 @section('title','Settings')
 <!-- page identifier --->
-@section('page-id','user-dashboard-setting')
+@section('page-id','user-dashboard-settings')
 
 @include('inc.notifications')
 

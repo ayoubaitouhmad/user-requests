@@ -157,9 +157,12 @@
 
       .nav-item.dropdown {
         #notifications-container{
-          max-height: 70vh;
-          overflow-y : scroll;
-          scrollbar-width: thin;
+          .notifications{
+            max-height: 70vh;
+            overflow-y : scroll;
+            scrollbar-width: thin;
+          }
+
         }
 
         .dropdown-menu {
@@ -410,9 +413,17 @@
   .navbar {
     .navbar-brand-wrapper {
 
-
       .brand-logo-mini {
         padding-top: 0;
+      }
+    }
+    .navbar-toggler.navbar-toggler-right {
+      padding-right: 0 !important;
+      padding-left: 0 !important;
+    }
+    .navbar-nav{
+      li{
+        margin-right: 0 !important;
       }
     }
   }

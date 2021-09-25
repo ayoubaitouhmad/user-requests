@@ -245,3 +245,25 @@ input:checked + .slider:before {
 .slider.round:before {
   border-radius: 50%;
 }
+
+
+
+@media (max-width: 500px) {
+  .switch{
+    width: 47px;
+    height: 20px;
+    .slider:before {
+      height: 18px;
+      width: 18px;
+      top: 1px;
+      left: 5px;
+
+    }
+    .myCheckbox:checked + .slider:before {
+      transform: translateX(20px);
+    }
+
+  }
+
+
+}

@@ -49,7 +49,10 @@ require('./testing/core');
 /*******************       admin    *************************/
 require('./admin/all');
 
-
+// setting
+require('./admin/dashboard/settings/plugins');
+require('./admin/dashboard/settings/page');
+require('./admin/dashboard/settings/ajax');
 // users
 require('./admin/users/datatable');
 require('./admin/users/page');
@@ -61,7 +64,6 @@ require('./admin/users/charts');
 
 
 // requests
-
 require('./admin/requests/chart');
 require('./admin/requests/datatable');
 require('./admin/requests/parsley');

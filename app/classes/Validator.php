@@ -32,6 +32,9 @@
 			'like',
 			'format',
 			'size',
+			'uppercase',
+			'specialChars',
+			'lowercase'
 		);
 		
 		const REGEX = [
@@ -62,6 +65,9 @@
 			'like' => 'sorry , sorry field must be in (regex) ',
 			'format' => 'sorry ,  field must be in list  (regex). ',
 			'size' => 'sorry ,  field must be less than regexMB.',
+			'uppercase' => 'sorry ,  field must be contain at least one uppercase character .',
+			'specialChars' => 'sorry ,  field must be contain one special caractere like (- or _) .',
+			'lowercase' => 'sorry ,   field must be contain at least one lowercase character .',
 			
 		];
 		
@@ -281,11 +287,32 @@
 				return true;
 		}
 		
+		public function uppercase($val, $regex){
+			if($regex)
+				return preg_match('@[A-Z]@', $val);
+			else
+				return true;
+		}
+		public function specialChars($val, $regex){
+			if($regex)
+				return preg_match( "@[_-]@" , $val);
+			else
+				return true;
+			
+			
+		}
+		public function lowercase($val, $regex){
+			if($regex)
+				return preg_match('@[a-z]@', $val);
+			else
+				return true;
+		}
 		
 		
 		private function password($val, $regex)
 		{
-			
+		
+
 			if ($regex) {
 				$option = array(
 					'options' => array('regexp' => self::REGEX['password'])

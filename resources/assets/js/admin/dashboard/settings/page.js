@@ -1,6 +1,5 @@
 (() => {
-    'use strict';
-    window.app.user.dashboard.settings.page = () => {
+    window.app.admin.dashboard.settings.page = () => {
         // variables
         const profileDataFormEl = $('#profile-data-form');
         const saveUserInfosBtnEl = $('#save-user-infos');
@@ -75,7 +74,7 @@
         $('.custom-file-uploader-input').on('change', function () {
 
             let $this = $(this);
-           $this.closest('.profile-content__avatar').find('#save-user-avatar').addClass('active-btn');
+            $this.closest('.profile-content__avatar').find('#save-user-avatar').addClass('active-btn');
             let imgShower = $this.closest('.custom-uploader').find('.custom-uploader__img');
             if (func.isValidImageExt(func.getFileExt($this))) {
                 imgShower.attr('data-src', URL.createObjectURL($this.get(0).files[0]));
@@ -87,25 +86,13 @@
         // show button (save new profile infos)
         $('#profile-data-form .custom-form__control').on('keyup change', function () {
             let check = true;
-            let phone = $('#user-phone');
-            let address = $('#user-address');
-            let city = $('#user-first-city');
-            let gender = $('#user-first-gender');
-            let birth = $('#user-birth');
+
             let fname = $('#user-first-name');
             let lname = $('#user-last-name');
             if (
-                phone.val() === '' ||
-                address.val() === '' ||
-                city.val() === '' ||
-                gender.val() === '' ||
-                birth.val() === '' ||
                 fname.val() === '' ||
                 lname.val() === ''
             ) {
-
-
-                console.log("fd");
                 check = false;
             }
             check ?
@@ -119,14 +106,11 @@
             let check = true;
             let email = $('#user-email');
             let password = $('#user-password');
-            let question = $('#user-question');
-            let response = $('#user-response');
+
 
             if (
                 email.val() === '' ||
-                password.val() === '' ||
-                question.val() === '' ||
-                response.val() === ''
+                password.val() === ''
 
             ) {
                 check = false;
@@ -136,20 +120,6 @@
                 saveUserSecurityData.removeClass('active-btn');
 
         });
-
-
-        $("#user-first-city option").each(function () {
-            let city = $("#user-first-city").attr('data-src');
-            if (city === $(this).text()) {
-                console.log(city);
-                $("#user-first-city").val($(this).val())
-            }
-        });
-
-
-
-
-
 
 
 

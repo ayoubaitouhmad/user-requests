@@ -11,6 +11,11 @@
 		
 		private $lastNname;
 		
+		private $username;
+		
+		
+		
+	
 		private $address;
 		
 		private $city;
@@ -268,6 +273,28 @@
 			
 			$this->photo = $photo;
 		}
+		
+		
+		/**
+		 * @return mixed
+		 */
+		public function getUsername()
+		{
+			
+			return $this->username;
+		}
+		
+		
+		
+		/**
+		 * @param mixed $username
+		 */
+		public function setUsername($username): void
+		{
+			
+			$this->username = $username;
+		}
+		
 		
 		
 	}

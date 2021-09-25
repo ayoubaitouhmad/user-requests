@@ -2,7 +2,7 @@
     <div class="navbar-brand-wrapper d-flex justify-content-center">
         <div class="navbar-brand-inner-wrapper d-flex justify-content-between align-items-center w-100">
             <a class="navbar-brand brand-logo" href="/admin">
-                <img class="brand-logo__img css-transitions-only-after-page-load "
+                <img  class="brand-logo__img css-transitions-only-after-page-load "
                      src="/img/logo.svg"
                      alt="">
             </a>
@@ -45,7 +45,7 @@
             </li>
             <li class="nav-item nav-profile dropdown">
                 <a class="nav-link  dropdown-toggle" href="#" data-toggle="dropdown" id="profileDropdown">
-                    <img src="{{$admin->admin_photo ?? ''}}" class="css-transitions-only-after-page-load" alt="profile"/>
+                    <img id="admin-profile-photo" src="{{$admin->admin_photo ?? ''}}" class="css-transitions-only-after-page-load" alt="profile"/>
                     <span class="nav-profile-name">{{$admin->admin_name ?? ''}}</span>
                 </a>
                 <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">

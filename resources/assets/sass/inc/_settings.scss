@@ -48,8 +48,8 @@
               transition: color 1s ease-in;
 
               @media (max-width: 767px) {
-                padding-left:0 ;
-                padding-right:0 ;
+                padding-left: 0;
+                padding-right: 0;
               }
               @media (max-width: 490px) {
                 flex-direction: column;
@@ -475,7 +475,7 @@
                   right: 1% !important;
                 }
 
-                .parsley-errors-list + .material-icons{
+                .parsley-errors-list + .material-icons {
                   bottom: 28%;
                 }
 
@@ -556,4 +556,49 @@
   border-color: red !important;
   border: 1.5px solid #f40707 !important;
   box-shadow: 0 0 3px #e8241a !important;
+}
+
+@media (max-width: 500px) {
+  .settings {
+
+    .settings-item {
+      padding: 0;
+
+
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #notification {
+      .notifications-settings__item{
+
+      padding: 0;
+      }
+    }
+
+    .settings-item_content {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .settings-content__item {
+      padding: 0;
+
+      .row {
+        .col-12 {
+          padding: 0 !important;
+
+        }
+      }
+    }
+
+    .ui-settings__item {
+      padding: 0;
+    }
+  }
 }

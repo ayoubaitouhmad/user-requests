@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/css/app.css?=<?php echo time();?>">
     <title>@yield('title')</title>
 </head>
-<body page-id="@yield('page-id')"  page-token="{{$token}}" class="@yield('body-class') ">
+<body page-id="@yield('page-id')"  page-token="{{$token}}" class=" @if(isset($settings->toggle_sidebar)) {{$settings->toggle_sidebar === 1 ? 'sidebar-icon-only' : ''}} @endif @yield('body-class') ">
 <div class="app">
 
     @yield('bootstrap-modals')

@@ -129,4 +129,55 @@
 			}
 			
 		}
+		
+		
+		public function editColumn(array $field ,array $id ){
+			try {
+				
+				$query = " UPDATE {$this->tableName} ";
+				$query .= " SET $field[0] = :field  ";
+				$query .= ' WHERE admin_id = :id ;';
+				$stmt = $this->PDO->prepare($query);
+				$stmt->bindParam(':field',$field[1] ,$field[2]);
+				$stmt->bindParam(':id',$id[0], $id[1]);
+				
+				$stmt->execute();
+				
+				return $stmt->rowCount() > 0;
+			} catch (PDOException $exception) {
+				echo $exception->getMessage();
+				
+				return false;
+			}
+			
+		}
+		
+		public function editSecurityData(Admin $admin): bool
+		{
+			try {
+				
+				$query = " UPDATE {$this->tableName} ";
+				$query .= " SET admin_password = :pass,  ";
+				$query .= "  admin_username = :username  ";
+				$query .= ' WHERE admin_id = :id ;';
+				$stmt = $this->PDO->prepare($query);
+				
+				$username = $admin->getUsername();
+				$pass = $admin->getPassword();
+				$id = $admin->getId();
+				
+				$stmt->bindParam(':pass',  $pass,PDO::PARAM_STR);
+				$stmt->bindParam(':username',  $username,PDO::PARAM_STR);
+				$stmt->bindParam(':id', $id, PDO::PARAM_STR);
+				
+				$stmt->execute();
+				
+				return $stmt->rowCount() > 0;
+			} catch (PDOException $exception) {
+				echo $exception->getMessage();
+				
+				return false;
+			}
+			
+		}
 	}

@@ -1,8 +1,11 @@
 (function (){
     "use strict";
     window.app = {
-        global : {},
         admin : {
+            dashboard :{
+                settings : {},
+                requests : {}
+            },
             users:{},
             requests : {},
             login:{}

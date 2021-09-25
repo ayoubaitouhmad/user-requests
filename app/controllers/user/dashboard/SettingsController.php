@@ -280,8 +280,6 @@
 		 */
 		public function editPorfilePasswordAndSecurtity()
 		{
-			
-			
 			if (AxiosHttpRequest::has('action') && AxiosHttpRequest::hasValue('action', 'edit') && !empty(AxiosHttpRequest::getAuthorizationToken())) {
 				$token = AxiosHttpRequest::getAuthorizationToken();
 				

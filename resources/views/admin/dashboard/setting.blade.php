@@ -5,7 +5,7 @@
 <!-- page title --->
 @section('title','Admin dashboard - Setting')
 <!-- page identifier --->
-@section('page-id','admin-dashboard-setting')
+@section('page-id','admin-dashboard-settings')
 
 
 
@@ -19,6 +19,7 @@
     <!-- page indexer -->
 
     @include('inc.indexer' , ['page_src' => 'Home'])
+
 
 
 
@@ -77,7 +78,7 @@
                                 <div class="profile-content__avatar settings-content__item d-flex flex-column justify-content-start align-items-center">
                                     <div class="custom-uploader">
                                         <img class="custom-uploader__img preload-img"
-                                             data-src="{{$activeUser->user_photo ?? '/img/unknown.png'}}"
+                                             data-src="{{$admin->admin_photo ?? '/img/unknown.png'}}"
                                              alt="">
                                         <div class="custom-uploader__file">
                                             <div class="custom-file-uploader ">
@@ -109,10 +110,11 @@
                                                         id="user-first-name"
                                                         class="w-100 custom-form__control"
                                                         value="{{isset($admin->admin_name) ? implode(' ', array_slice(explode(' ', $admin->admin_name), 0, 1)) : ''}}"
-                                                        required
+
+                                                        minlength="2"
+                                                        maxlength="25"
                                                         data-parsley-pattern="/^[a-zA-Z\s]+$/"
                                                         data-parsley-error-message="sorry, this entry can only contain character and spaces."
-                                                        data-parsley-maxlength="150"
                                                         data-parsley-trigger="keyup">
                                             </label>
                                         </div>
@@ -124,12 +126,14 @@
                                                         type="text"
                                                         id="user-last-name"
                                                         class="w-100 custom-form__control"
-                                                        value="{{isset($admin->admin_name) ?implode(' ', array_slice(explode(' ', $admin->admin_name), 1, 2)) : ''}}"
-                                                        required
+                                                        value="{{isset($admin->admin_name) ? implode(' ', array_slice(explode(' ', $admin->admin_name), 1, 2)) : ''}}"
+
+                                                        minlength="2"
+                                                        maxlength="25"
                                                         data-parsley-pattern="/^[a-zA-Z\s]+$/"
                                                         data-parsley-error-message="sorry, this entry can only contain character and spaces."
-                                                        data-parsley-maxlength="150"
-                                                        data-parsley-trigger="keyup">
+                                                        data-parsley-trigger="keyup"
+                                                >
                                             </label>
                                         </div>
 
@@ -171,7 +175,7 @@
                                         </label>
                                     </div>
                                 </div>
-                                <div class="col-12 ui-settings__item  ">
+                                <div class="col-12 ui-settings__item">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span class="field-title">Hide Notifications</span>
                                         <label class="switch" id="get-notification">
@@ -207,11 +211,11 @@
                                             <input
                                                     class="myCheckbox"
 
-                                                    @if(isset($settings->notifiy_when_user_send_request) and $settings->notifiy_when_user_send_request === 1)
+                                                    @if(isset($settings->notifiy_when_new_request) and $settings->notifiy_when_new_request === 1)
                                                     checked
                                                     @endif
                                                     type="checkbox"
-                                                    id="notify-self-send"
+                                                    id="new-request"
 
                                             >
                                             <span class="slider round"></span>
@@ -225,11 +229,11 @@
                                         <label class="switch" id="get-notification">
                                             <input
                                                     class="myCheckbox"
-                                                    @if(isset($settings->notifiy_when_admin_send_feedback) and $settings->notifiy_when_admin_send_feedback === 1)
+                                                    @if(isset($settings->notifiy_when_new_registre) and $settings->notifiy_when_new_registre === 1)
                                                     checked
                                                     @endif
                                                     type="checkbox"
-                                                    id="notify-feedback"
+                                                    id="new-registre"
 
                                             >
                                             <span class="slider round"></span>
@@ -237,23 +241,9 @@
                                     </div>
                                 </div>
 
-                                <div class="col-12 notifications-settings__item ">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="field-title">when user security infos changed</span>
-                                        <label class="switch" id="get-notification">
-                                            <input
-                                                    class="myCheckbox"
-                                                    @if(isset($settings->notifiy_when_securuty_info_changed) and $settings->notifiy_when_securuty_info_changed === 1)
-                                                    checked
-                                                    @endif
-                                                    type="checkbox"
-                                                    id="notify-password-change"
 
-                                            >
-                                            <span class="slider round"></span>
-                                        </label>
-                                    </div>
-                                </div>
+
+
 
                             </div>
                         </div>
@@ -269,10 +259,10 @@
 
                                 <form action="" id="security-data-form">
                                     <div class="alert alert-dismissible  errors-messages d-none" role="alert">
-                                        <strong class="modal-error-title">error</strong>
-                                        <span class="modal-error-body">fuck you </span>
+                                        <strong class="modal-error-title"></strong>
+                                        <span class="modal-error-body"> </span>
                                     </div>
-                                    <div class="col-12 row   security-content__item">
+                                    <div class="col-12 row security-content__item">
                                         <div class="col-12">
                                             <label class="w-100">
                                                 <span class="field-title__inputs">Username<span style="color: red">*</span></span>
@@ -280,13 +270,13 @@
                                                         type="text"
                                                         id="user-email"
                                                         class="w-100 custom-form__control"
-                                                        value="{{$activeUser->user_email ?? ''}}"
+                                                        value="{{$admin->admin_username ?? ''}}"
                                                         required
-                                                        maxlength="100"
-                                                        minlength="5"
-                                                        data-parsley-type="Username"
-                                                        data-parsley-error-message="sorry ,this entry can only contain a valid email like(name@domain.com).."
+                                                        data-parsley-pattern="/^[a-zA-Z0-9_-]+$/"
                                                         data-parsley-required-message="sorry, this entry is required."
+                                                        data-parsley-error-message="sorry, you need to entre valid username contains (number,letters) upper and lower case."
+                                                        maxlength="50"
+                                                        minlength="5"
                                                         data-parsley-trigger="keyup"
                                                 >
 
@@ -296,14 +286,13 @@
                                     <div class="col-12  row  security-content__item">
                                         <div class="col-12 ">
                                             <label class="w-100 password-container ">
-                                                <span class="field-title__inputs">Password <span
+                                                <span class="field-title__inputs">Password<span
                                                             style="color: red">*</span></span>
                                                 <input
                                                         type="password" id="user-password"
                                                         class="w-100 custom-form__control"
-                                                        value="{{$activeUser->password ?? ''}}"
+                                                        value="{{$admin->admin_password ?? ''}}"
                                                         required
-                                                        data-parsley-pattern="/^(?:(?:(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]))|(?:(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}[]:;<>,.?/~_+-=|\]))|(?:(?=.*[0-9])(?=.*[A-Z])(?=.*[*.!@$%^&(){}[]:;<>,.?/~_+-=|\]))|(?:(?=.*[0-9])(?=.*[a-z])(?=.*[*.!@$%^&(){}[]:;<>,.?/~_+-=|\]))).{8,32}$/"
                                                         data-parsley-required-message="sorry, this entry is required."
                                                         data-parsley-error-message="sorry, you need to entre strong password contains (number,letters) upper and lower case."
                                                         maxlength="50"

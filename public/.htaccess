@@ -3,7 +3,11 @@
         Options -MultiViews -Indexes
     </IfModule>
 
+
+
     RewriteEngine On
+
+
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
@@ -18,4 +22,23 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+</IfModule>
+
+# Extra Security Headers
+<IfModule mod_headers.c>
+    Header set X-XSS-Protection "1; mode=block"
+    Header always append X-Frame-Options SAMEORIGIN
+    Header set X-Content-Type-Options nosniff
+
+
+
+     # WEEK
+        <FilesMatch "\.(jpg|jpeg|png|gif|swf)$">
+            Header set Cache-Control "max-age=604800, public"
+        </FilesMatch>
+
+        # WEEK
+        <FilesMatch "\.(js|css|swf)$">
+            Header set Cache-Control "max-age=604800"
+        </FilesMatch>
 </IfModule>

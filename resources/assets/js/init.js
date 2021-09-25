@@ -27,6 +27,12 @@
                 window.app.admin.users.ajaxRequest();
                 window.app.admin.all();
                 break;
+            case 'admin-dashboard-settings' :
+                window.app.admin.dashboard.settings.plugins();
+                window.app.admin.dashboard.settings.page();
+                window.app.admin.dashboard.settings.ajax();
+                window.app.admin.all();
+                break;
             case 'admin-login' :
                 window.app.admin.login.ajaxRequest();
                 break;
@@ -63,7 +69,7 @@
                 window.app.user.all();
             }
                 break;
-            case  'user-dashboard-setting': {
+            case  'user-dashboard-settings': {
                 window.app.user.all();
                 window.app.user.dashboard.settings.plugins();
                 window.app.user.dashboard.settings.ajaxRequest();
