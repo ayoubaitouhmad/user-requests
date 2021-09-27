@@ -99,6 +99,7 @@
 						],
 						'role' => [
 							'required' => true,
+							'like' => ['developer web', 'developer desktop' ,'project chef' ,'ui analysis' ,'designer']
 						],
 						'secretQuestion' => [
 							'required' => true,
@@ -107,7 +108,8 @@
 						],
 						'date' => [
 							'required' => true,
-							'date' => true
+							'date' => true,
+							'date_between' => [date('Y') -18 -40 . '-01-01' ,date('Y') - 18 . '-01-01'] // between 18 and 40 year
 						],
 						'city' => [
 							'required' => true,
@@ -120,17 +122,19 @@
 					
 					]);
 					
-					
-					$this->uploader = new UploadImage(Request::all(true)['file']['photo']);
-					if (!$this->uploader->isValidType() || !$this->uploader->isValidSize()) {
-						$this->errorHandler->addError('image', 'sorry ,  image must be (jpg,jpeg,webp,png) and size 2mg');
+					if (isset(Request::all(true)['file']['photo'])){
+						$this->uploader = new UploadImage(Request::all(true)['file']['photo']);
+						if (!$this->uploader->isValidType() || !$this->uploader->isValidSize()) {
+							$this->errorHandler->addError('image', 'sorry ,  image must be (jpg,jpeg,webp,png) and size 2mg');
+						}
 					}
 					
+			
 					
 					if (!is_array($this->errorHandler->all())) {
 						$user = new User();
 						$currentUserData = Session::get('currentSignUp');
-						
+
 						// TODO : Generate id
 						$user->setId(generateId($currentUserData['name']));
 						// TODO: GET THE PREV DATA FROM SESSION
@@ -146,16 +150,21 @@
 						$user->setDate($request->date);
 						$user->setCity($request->city);
 						$user->setResponse($request->response);
-						$user->setPhoto($user->generateUserPhotoName());
-						
-						
-						
+						if (isset(Request::all(true)['file']['photo'])) {
+							$user->setPhoto($user->generateUserPhotoName());
+						}
+
+
+
 						// TODO // TRY ADD USER
 						if ($this->model->createUserProfile($user)) {
 							// TODO : UPLOAD IMAGE TO DIR
-							$this->uploader->setFileName($user->getPhoto());
-							$this->uploader->save();
-							
+							if (isset(Request::all(true)['file']['photo'])){
+								$this->uploader->setFileName($user->getPhoto());
+								$this->uploader->save();
+
+							}
+
 							// TODO : NOTIFY ADMIN
 							$title = 'new signup';
 							$description = 'user ' . $user->getName() . " ({$user->getEmail()}) " . ' has just registered.' ;
@@ -164,7 +173,7 @@
 							$notification->setDescription($description);
 							$notification->setUserId($user->getId());
 							$notification->setNotificationType(1);
-							
+
 							if ($notification->create($notification)) {
 								// TODO : SEND NOTIFICATION
 								PushNotification::send(PushNotification::adduser, [
@@ -175,6 +184,8 @@
 								// TODO : END SIGNUP ANS START SIGNING SESSION
 								Session::remove('currentSignUp');
 								Session::add('user-connected', $user->getEmail());
+								Session::add('user-connected-password' ,$currentUserData['password']);
+
 								echo cleanJSON([
 									'header' => 'done',
 									'body' => ''
@@ -185,23 +196,24 @@
 									'body' => UiMessages::error()
 								]);
 							}
-							
+
 						} else {
 							echo cleanJSON([
 								'header' => UiMessages::CANCEL,
 								'body' => UiMessages::crudError('add')
 							]);
 						}
-						
-						
-						
-					} else {
+
+
+
+					}
+					else {
 						echo cleanJSON([
 							'header' => UiMessages::NOT_VALID,
 							'body' => $this->errorHandler->all()
 						]);
 					}
-					
+				
 				}
 				else {
 					echo cleanJSON([

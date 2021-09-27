@@ -6,6 +6,7 @@
 	
 	use App\classes\base\Controller;
 	use App\classes\base\UploadImage;
+	use App\classes\PushNotification;
 	use App\classes\UiMessages;
 	use App\classes\CSRF;
 	use App\classes\ErrorHandler;
@@ -15,19 +16,18 @@
 	use App\classes\Session;
 	use App\classes\Validator;
 	use App\models\Admin;
+	use App\models\AdminNotification;
 	use App\models\AdminSetting;
 	use App\models\User;
 	use App\models\UserNotification;
 	use Exception;
+	use Google\Service\ArtifactRegistry\UploadAptArtifactMediaResponse;
 	
 	/**
 	 *
 	 */
-	class UsersController extends  Controller
+	class UsersController extends Controller
 	{
-		
-		
-		
 		
 		
 		/**
@@ -35,7 +35,7 @@
 		 */
 		public function __construct()
 		{
-
+			
 			if (!isAuthenticated()) {
 				Redirect::To('/admin/login');
 			}
@@ -45,7 +45,7 @@
 			$admin = new Admin();
 			$username = Session::get('admin-connected');
 			$this->currentAdmin = $admin->get($username);
-			$this->currentAdmin->admin_photo  = getFileFromDirByName($this->currentAdmin->admin_photo);
+			$this->currentAdmin->admin_photo = getFileFromDirByName($this->currentAdmin->admin_photo);
 			
 		}
 		
@@ -59,6 +59,7 @@
 		 */
 		public function index()
 		{
+			
 			// TODO / get users list
 			$usersRoleCountByUser = $this->model->usersRoleCountByUser();
 			$lastFourUsers = User::getUserImage($this->model->getLastFourUsers());
@@ -69,25 +70,25 @@
 			// TODO / get current admin infos
 			$admin = $this->currentAdmin;
 			// TODO / get  notifications list
-		
+			
 			$notifications = HomeController::AdminNotification();
 			// TODO / send all to view
 			// TODO : get user preferences
-			$setting =new AdminSetting();
+			$setting = new AdminSetting();
 			$settings = $setting->get($this->currentAdmin->admin_id);
+			
 			return view('admin/dashboard/users', compact([
 				'users',
 				'token',
 				'usersRoleCountByUser',
-				'lastFourUsers' ,
+				'lastFourUsers',
 				'admin',
 				'notifications',
 				'settings'
-				
+			
 			]));
 			
 		}
-		
 		
 		
 		
@@ -98,10 +99,10 @@
 		{
 			
 			if (
-					AxiosHttpRequest::has('action') &&
-					AxiosHttpRequest::hasValue('action' , 'add') &&
-					AxiosHttpRequest::has('data') &&
-					!empty(AxiosHttpRequest::getAuthorizationToken())
+				AxiosHttpRequest::has('action') &&
+				AxiosHttpRequest::hasValue('action', 'add') &&
+				AxiosHttpRequest::has('data') &&
+				!empty(AxiosHttpRequest::getAuthorizationToken())
 			) {
 				if ($this->tokenManager->verifyToken(AxiosHttpRequest::getAuthorizationToken())) {
 					$postRequest = AxiosHttpRequest::all()->data;
@@ -128,11 +129,11 @@
 						$email = $postRequest->email;
 						$password = $postRequest->password;
 						$phone = $postRequest->phone;
-						if ($this->model->isDuplicatedData($email , $phone) === 0 ) {
+						if ($this->model->isDuplicatedData($email, $phone) === 0) {
 							$user = new User();
 							$user->setName($name);
 							$user->setEmail($email);
-							$user->setPassword(password_hash($password , PASSWORD_DEFAULT));
+							$user->setPassword(password_hash($password, PASSWORD_DEFAULT));
 							$user->setPhoneNumber($phone);
 							if ($user->create($user)) {
 								echo cleanJSON([
@@ -148,7 +149,7 @@
 						} else {
 							echo cleanJSON([
 								'header' => UiMessages::USED,
-								'body' => UiMessages::adminAddUser('email or password ')
+								'body' => UiMessages::adminAddUser('Email or Phone ')
 							]);
 						}
 					} else {
@@ -163,7 +164,7 @@
 						'body' => UiMessages::error()
 					]);
 				}
-
+				
 			} else {
 				echo cleanJSON([
 					'header' => UiMessages::ERROR,
@@ -209,13 +210,11 @@
 		public function edit()
 		{
 			
-			
-			if (Request::has('post') ) {
+			if (Request::has('post')) {
 				$request = Request::get('post');
 				// TODO : check if this token exists in session
 				if ($this->tokenManager->verifyToken(AxiosHttpRequest::getAuthorizationToken())) {
 					$this->validator->add($request, [
-						
 						'email' => [
 							'required' => true,
 							'email' => true,
@@ -226,7 +225,7 @@
 						'name' => [
 							'required' => true,
 							'text' => true,
-							'maxLength' => 100,
+							'maxLength' => 50,
 							'minLength' => 6
 						
 						],
@@ -234,7 +233,7 @@
 							'required' => true,
 							'address' => true,
 							'maxLength' => 100,
-							'minLength' => 6
+							'minLength' => 10
 						
 						],
 						'city' => [
@@ -247,7 +246,8 @@
 						],
 						'date' => [
 							'required' => true,
-							'date' => true
+							'date' => true,
+							'date_between' => [date('Y') - 18 - 40 . '-01-01', date('Y') - 18 . '-01-01'] // between 18 and 40 year
 						
 						],
 						'phone' => [
@@ -258,25 +258,25 @@
 						],
 						'role' => [
 							'required' => true,
-						
+							'like' => ['developer web', 'developer desktop', 'project chef', 'ui analysis', 'designer']
 						
 						],
 						'account' => [
 							'required' => true,
-						
+							'like' => ['active', 'inactive']
 						
 						],
 						'question' => [
 							'required' => true,
 							'text' => true,
 							'maxLength' => 100,
-							'minLength' => 6
+							'minLength' => 1
 						
 						],
 						'response' => [
 							'required' => true,
 							'maxLength' => 100,
-							'minLength' => 6
+							'minLength' => 1
 						
 						],
 					
@@ -297,40 +297,117 @@
 						$user->setCompteEtat($request->account);
 						$user->setSecretQuestion($request->question);
 						$user->setResponse($request->response);
-						if($user->isDuplicatedData($user->getEmail() ,$user->getPhoneNumber()) == 1){
+						// TODO : check if user account status changed
+						$userToUpdate = $user->get($user->getId());
+						$isAccountStatusChanged = isset($userToUpdate) && $userToUpdate->user_compteEtat === $request->account;
+						if ($user->isDuplicatedData($user->getEmail(), $user->getPhoneNumber()) == 1) {
 							// TODO: check  if user want update photo
 							if ($updatePhoto) {
-								// TODO: update all filed and photo
-								$fileName = $user->getName() . '' . date('y-m-d-h-i-s');
+								
 								$this->uploader = new UploadImage(Request::all(true)['file']['photo']);
-								$this->uploader->setFileName($fileName);
-								$user->setPhoto($fileName);
-								$res = $user->get($user->getId());
-								$oldPhoto = md5($res->user_photo);
+								$this->validator->add(Request::all(true)['file'], [
+									'photo' => [
+										'format' => UploadImage::imgFormatAccept,
+										'size' => UploadImage::FILE_SIZE / 1024 / 1024
+									]
+								]);
+								if (!is_array($this->errorHandler->all())) {
+									// TODO: update all infos and photo
+									$fileName = $user->getName() . '' . date('y-m-d-h-i-s');
+									$this->uploader = new UploadImage(Request::all(true)['file']['photo']);
+									$this->uploader->setFileName($fileName);
+									$user->setPhoto($fileName);
+									$res = $user->get($user->getId());
+									$oldPhoto = md5($res->user_photo);
+									if ($this->model->update($user)) {
+										$this->uploader->save();
+										// TODO : notify user when acount status changed
+										deleteUserImageByFileName($oldPhoto);
+										if (!$isAccountStatusChanged) {
+											$title = "Account Notification";
+											$body = "";
+											if ($request->account === 'active') {
+												$body = "Your account has been activated successfuly.";
+												PushNotification::send($request->email . '_account_status_changed', [
+													'header ' => $title,
+													'body ' => $body
+												]);
+											} else {
+												$body = "Your account has been disabled.";
+												PushNotification::send($request->email . '_account_status_changed', [
+													'header ' => $title,
+													'body ' => $body
+												]);
+											}
+											$userNotification = new AdminNotification();
+											$userNotification->setTitle($title);
+											$userNotification->setDescription($body);
+											$userNotification->setUserId($user->getId());
+											$userNotification->setAdminId($this->currentAdmin->admin_id);
+											$userNotification->setNotificationType(5);
+											$userNotification->create($userNotification);
+											
+										}
+										echo cleanJSON([
+											'title' => UiMessages::VALID,
+											'body' => Request::all(true)['file']
+										]);
+									} else {
+										echo cleanJSON([
+											'title' => UiMessages::CANCEL,
+											'body' => 'nothing changed !!, please change data before click on save button'
+										]);
+									}
+									
+								} else {
+									echo cleanJSON([
+										'title' => UiMessages::NOT_VALID,
+										'body' => $this->errorHandler->all()
+									]);
+								}
+								
+							} else {
+								// TODO : notify user when acount status changed
+								if (!$isAccountStatusChanged) {
+									$title = "Account Notification";
+									$body = "";
+									if ($request->account === 'active') {
+										$body = "Your account has been activated successfuly.";
+										PushNotification::send($request->email . '_account_status_changed', [
+											'header ' => $title,
+											'body ' => $body
+										]);
+									} else {
+										$body = "Your account has been disabled.";
+										PushNotification::send($request->email . '_account_status_changed', [
+											'header ' => $title,
+											'body ' => $body
+										]);
+									}
+									$userNotification = new AdminNotification();
+									$userNotification->setTitle($title);
+									$userNotification->setDescription($body);
+									$userNotification->setUserId($user->getId());
+									$userNotification->setAdminId($this->currentAdmin->admin_id);
+									$userNotification->setNotificationType(5);
+									$userNotification->create($userNotification);
+									
+								}
+								// TODO: update all filed without photo
 								if ($this->model->update($user)) {
-									$this->uploader->save();
-									deleteUserImageByFileName($oldPhoto);
 									echo cleanJSON([
 										'title' => UiMessages::VALID,
-										'body' => ''
+										'body' => $request
 									]);
 								} else {
 									echo cleanJSON([
-										'title' => UiMessages::ERROR,
-										'body' => UiMessages::crudError('update')
+										'title' => UiMessages::CANCEL,
+										'body' => 'nothing changed !!, please change data before click on save button'
 									]);
 								}
 								
 							}
-							else {
-								// TODO: update all filed without photo
-								$user->update($user);
-								echo cleanJSON([
-									'title' => UiMessages::VALID,
-									'body' => ' '
-								]);
-							}
-						}else{
+						} else {
 							echo cleanJSON([
 								'title' => UiMessages::USED,
 								'body' => UiMessages::used('email or password')
@@ -339,13 +416,13 @@
 						
 					} else {
 						echo cleanJSON([
-							'title' => 'validator',
+							'title' => UiMessages::NOT_VALID,
 							'body' => $this->errorHandler->all()
 						]);
 					}
 				} else {
 					echo cleanJSON([
-						'title' => 'Error',
+						'title' => UiMessages::ERROR,
 						'body' => UiMessages::error()
 					]);
 				}
@@ -362,22 +439,30 @@
 		public function destroy()
 		{
 			
-			if (AxiosHttpRequest::has('type') && AxiosHttpRequest::hasValue('type', 'post') && !empty(AxiosHttpRequest::getAuthorizationToken())) {
+			if (AxiosHttpRequest::has('action') &&
+				AxiosHttpRequest::hasValue('action', 'delete') &&
+				!empty(AxiosHttpRequest::getAuthorizationToken()) &&
+				AxiosHttpRequest::all()->data->id_enc) {
 				if ($this->tokenManager->verifyToken(AxiosHttpRequest::getAuthorizationToken())) {
 					if (AxiosHttpRequest::has('data')) {
-						$id = dec(AxiosHttpRequest::get('data', 'id_enc'));
+						$post = AxiosHttpRequest::all()->data;
+						$id = dec($post->id_enc);
 						$user = new User();
+						
+						
 						if ($user->delete($id)) {
 							echo cleanJSON([
 								'header' => UiMessages::VALID,
-								'body' => $id
+								'body' => ''
 							]);
 						} else {
 							echo cleanJSON([
 								'header' => UiMessages::CANCEL,
-								'body' => $id
+								'body' => UiMessages::crudError('delete')
 							]);
 						}
+						
+						
 					}
 					
 					
@@ -404,6 +489,7 @@
 		 */
 		public function charts()
 		{
+			
 			echo cleanJSON([
 				'body' =>
 					[
@@ -415,7 +501,6 @@
 					]
 			]);
 		}
-		
 		
 		
 	}

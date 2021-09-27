@@ -22,7 +22,7 @@
 
 
          // open modal to read full requests message
-        $('.requests-list__read-request_btn').on('click', function () {
+        $('.read-more').on('click', function () {
             let modalEl = $('.modal-request__message');
             let $this = $(this);
             let requestMessageContainerEl = $this.siblings('input[type="hidden"]');
@@ -49,7 +49,7 @@
 
 
         // get request all data
-        $('.dropdown-menu__check-request').on('click', function () {
+        $(document.body).on('click', '.dropdown-menu__check-request', function (e) {
             let $this = $(this);
             let thisParent = $this.closest('tr');
             let modalEl = $('.modal-requests__full-data');
@@ -85,8 +85,8 @@
             statusDestinationEl.val(statusContainerEl.val());
 
 
-
         });
+
 
         // delete request
         $('.dropdown-menu__delete-request').on('click', function () {
@@ -97,6 +97,13 @@
         $('#modal-btn__save').on('click', function (e) {
             form.submit();
         });
+
+
+
+
+
+
+
 
 
 

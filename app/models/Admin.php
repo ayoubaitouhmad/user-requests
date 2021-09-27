@@ -2,6 +2,7 @@
 	
 	namespace App\models;
 	
+	use App\classes\UserInfo;
 	use App\data\database;
 	use App\interfaces\CrudInterface;
 	use App\models\base\Person;
@@ -180,4 +181,59 @@
 			}
 			
 		}
+		
+		
+		public function visiteurQueries($today = false)
+		{
+			try {
+				if ($today){
+					$query = 'select  count(ip) from visitors where cast(date as date ) = curdate() group by ip' ;
+				}else{
+					$query = "select  count(ip)  from visitors group by ip;";
+				}
+				
+				$stmt = $this->PDO->query($query);
+				return $stmt->fetchColumn(0);
+			} catch (PDOException $exception) {
+				echo $exception->getMessage();
+				
+				return false;
+			}
+			
+			
+		}
+		public function addIp(): bool
+		{
+			try {
+				$userInfo = new UserInfo();
+				$ip  =$userInfo->getIp();
+				$query = "insert into visitors (ip) values(:ip)";
+				$stmt = $this->PDO->prepare($query);
+				$stmt->bindParam(':ip' , $ip , PDO::PARAM_STR);
+				$stmt->execute();
+				return $stmt->rowCount();
+			} catch (PDOException $exception) {
+				echo $exception->getMessage();
+				
+				return false;
+			}
+			
+			
+		}
+		
+		
+		public function count($query){
+			try {
+				$stmt = $this->PDO->query($query);
+				return $stmt->fetchColumn();
+			} catch (PDOException $exception) {
+				echo $exception->getMessage();
+				
+				return false;
+			}
+			
+		}
+		
+		
+		
 	}

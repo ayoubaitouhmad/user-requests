@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="icon" href="/img/icon.svg">
     <link rel="stylesheet" href="/css/app.css?=<?php echo time();?>">
-    <title>confirm email</title>
+    <title>Sign Up email</title>
 </head>
 <body page-id="user-login" page-token="{{$token ?? ''}}">
 
@@ -15,7 +15,7 @@
 
     <div class="card shadow">
         <div class="logo d-flex  justify-content-center align-items-center ">
-            <img style="height: 5rem " class="img-fluid" src="/img/logo2.png" alt="">
+            <img style="height: 5rem " class="img-fluid preload-img" data-src="/img/logo.svg" alt="">
         </div>
         <div class="card-body">
             <div class="login-container">
@@ -37,7 +37,7 @@
                     <form action="" class="login-container__form d-flex flex-column" id="login-form">
                         <div class="form-item">
                             <label>
-                                password <span style="color: red">*</span>
+                                Email <span style="color: red">*</span>
                                 <input
                                         type="text"
                                         placeholder="Email"

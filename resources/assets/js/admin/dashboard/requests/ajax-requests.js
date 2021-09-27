@@ -3,8 +3,10 @@
     window.app.admin.requests.ajaxRequest = () => {
         // update request / answer request
         const form = $('#handle-user-request');
+        const modalBtnSave = $('#modal-btn__save');
         form.on('submit', function (e) {
             e.preventDefault();
+            modalBtnSave.prop('disabled', false);
             let requestId = $('#encContainer').val();
             let token = $('body').attr('page-token');
             let requestStatusEl = form.find('select');
@@ -12,7 +14,7 @@
 
 
             if (form.parsley().isValid()) {
-
+                modalBtnSave.prop('disabled', true);
                 axios({
                     method: 'post',
                     url: '/admin/dashboard/requests/edit',
@@ -21,26 +23,29 @@
                         'data': {
                             'req_id': requestId,
                             'status': requestStatusEl.val(),
-                            'response' : requestResponseEl.val()
+                            'response': requestResponseEl.val()
                         },
                     },
-                    headers : {
-                        'Authorization' : token,
+                    headers: {
+                        'Authorization': token,
                         'Accept': 'application/json'
                     }
 
                 })
                     .then(res => {
-                        handleReturnData(res.data);
-                        console.log(res.data);
+                        handleReturnData(res.data)
                     })
-                    .catch(error => console.log(error.message));
+                    .catch(error => {
+                        modalBtnSave.prop('disabled', false);
+                    });
 
             }
         })
 
         function handleReturnData({header, body}) {
+            modalBtnSave.prop('disabled', false);
             let parentEl = form.closest('.modal');
+            modalBtnSave.prop('disabled', false);
             let errorMessagesEl = parentEl.find('.user-form-messages');
             let messageTitleEl = errorMessagesEl.children('.modal-error-title');
             let messageBodyEl = errorMessagesEl.children('.modal-error-body');
@@ -51,7 +56,6 @@
                     func.resetScrolling();
                     func.refreshPage();
                     func.reloadPageContent('/admin/dashboard/requests');
-
 
 
                     break;

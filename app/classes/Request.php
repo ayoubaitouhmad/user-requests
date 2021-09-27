@@ -39,7 +39,7 @@ class Request
     public static function hasValue($key , $value)
     {
         $all = self::all();
-        return $all->$key->$value ?? false;
+        return isset($all->$key->$value);
     }
 
 

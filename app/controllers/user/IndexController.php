@@ -5,6 +5,7 @@
 	use App\classes\Redirect;
 	use App\classes\Session;
 	use App\interfaces\Controller;
+	use App\models\Admin;
 	
 	class IndexController implements Controller
 	{
@@ -20,6 +21,8 @@
 		
 		public function index()
 		{
+			$admin = new Admin();
+			$admin->addIp();
 //			Session::add('user-connected' , 'ddgfd');
 			return view('user/index');
 		}

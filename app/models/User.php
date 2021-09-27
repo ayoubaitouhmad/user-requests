@@ -474,7 +474,7 @@
 		{
 			
 			try {
-				$query = "SELECT * FROM ".$this->tableName . "  order by created_at DESC";
+				$query = "SELECT * FROM $this->tableName where deleted_at is  null  order by created_at DESC";
 				$stmt = $this->PDO->query($query);
 				
 				return $stmt->fetchAll(PDO::FETCH_OBJ);
@@ -550,7 +550,7 @@
 			
 			if ($this->get($user->getId()) !== null) {
 				try {
-					$withPhoto = $user->getPhoto() !== null;
+					$withPhoto = $user->getPhoto() !== null &&   $user->getPhoto() !== "";
 					
 					$query = '';
 					$query = " UPDATE {$this->tableName} ";
@@ -563,7 +563,7 @@
 					$query .= ' user_phoneNumber = :phoneNumber , ';
 					$query .= ' user_email = :email , ';
 					$query .= ' user_password = :password , ';
-					$withPhoto ? $query .= ' user_photo = :photo , ' : $query .= '';
+	 if($withPhoto) $query .= ' user_photo = :photo , ' ;
 					$query .= ' user_role = :role , ';
 					$query .= ' user_compteEtat = :compteEtat , ';
 					$query .= ' user_secretQuestion = :secretQuestion , ';
@@ -606,7 +606,6 @@
 					$stmt->bindParam(':response', $Response, PDO::PARAM_STR);
 					$stmt->bindParam(':target', $target, PDO::PARAM_STR);
 					$stmt->execute();
-					
 					return $stmt->rowCount() > 0;
 					
 				} catch (PDOException $exceptione) {
@@ -629,11 +628,12 @@
 		{
 			
 			try {
-				$query = 'DELETE FROM users where user_id = :id';
+				$query = "UPDATE  $this->tableName SET deleted_at = :date  where user_id = :id";
 				$stmt = $this->PDO->prepare($query);
-				$stmt->bindParam(':id', $id, PDO::PARAM_INT);
+				$date = date('Y-m-d h:i:s');
+				$stmt->bindParam(':id', $id, PDO::PARAM_STR);
+				$stmt->bindParam(':date', $date, PDO::PARAM_STR);
 				$stmt->execute();
-				
 				return $stmt->rowCount() > 0;
 			} catch (PDOException $exception) {
 				return $exception->getMessage();
@@ -705,7 +705,7 @@
 				$email = $record->getEmail();
 				$password = $record->getPassword();
 				
-				$photo = $record->getPhoto();
+				$photo = $record->getPhoto() ?? ' ';
 				$role = $record->getRole();
 				$secretQuestion = $record->getSecretQuestion();
 				$response = $record->getResponse();
@@ -917,7 +917,7 @@
 		public function getUserRequests($id)
 		{
 			
-			$query = 'select * from  request where user_id= :id order by  request_date desc;';
+			$query = 'select * from  request where user_id= :id order by  request_date DESC;';
 			$fetchType = PDO::FETCH_OBJ;
 			$param = [':id' => [$id, PDO::PARAM_INT]];
 			

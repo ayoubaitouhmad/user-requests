@@ -27,11 +27,8 @@
 	/**
 	 *  request controller for controller data come from request table in db
 	 */
-	class RequestController extends  Controller
+	class RequestController extends Controller
 	{
-		
-		
-		
 		
 		
 		/**
@@ -39,6 +36,7 @@
 		 */
 		public function __construct()
 		{
+			
 			if (!isAuthenticated()) {
 				Redirect::To('/admin/login');
 			}
@@ -49,8 +47,8 @@
 			$admin = new Admin();
 			$username = Session::get('admin-connected');
 			$this->currentAdmin = $admin->get($username);
-			$this->currentAdmin->admin_photo  = getFileFromDirByName($this->currentAdmin->admin_photo);
-		
+			$this->currentAdmin->admin_photo = getFileFromDirByName($this->currentAdmin->admin_photo);
+			
 		}
 		
 		
@@ -63,9 +61,11 @@
 		public function index()
 		{
 			
+			flush();
+			
 			// TODO / get requests list and summary data (view thing)
-			$requests= $this->model ->all(); // get all requests
-			$requestsPercentageByType = $this->model ->getCountRequestsByType(); // get data for charts
+			$requests = $this->model->all(); // get all requests
+			$requestsPercentageByType = $this->model->getCountRequestsByType(); // get data for charts
 			/**
 			 *  get last for request and send it to get user photo
 			 *  because user photo encrypted ,  we need to decrypted to get photo
@@ -79,8 +79,9 @@
 			// TODO / notifications list
 			$notifications = HomeController::AdminNotification();
 			// TODO : get user preferences
-			$setting =new AdminSetting();
+			$setting = new AdminSetting();
 			$settings = $setting->get($this->currentAdmin->admin_id);
+			
 			// TODO / send all to view
 			return view('admin/dashboard/requests', compact([
 				'requests',
@@ -94,7 +95,7 @@
 		}
 		
 		
-
+		
 		/**
 		 *  controller for
 		 * send data come from stored procedure to making chart work
@@ -102,6 +103,7 @@
 		 */
 		public function getChartsData()
 		{
+			
 			echo cleanJSON([
 				'header' => 'done',
 				'body' => [
@@ -123,7 +125,7 @@
 		public function edit()
 		{
 			
-		
+			
 			if (AxiosHttpRequest::has('action') && AxiosHttpRequest::hasValue('action', 'post') && !empty(AxiosHttpRequest::getAuthorizationToken())) {
 				$postRequest = AxiosHttpRequest::all()->data;
 				$token = AxiosHttpRequest::getAuthorizationToken();
@@ -132,9 +134,11 @@
 						'status' => [
 							'required' => true,
 							'maxLength' => 40,
-							'minLength' => 5
+							'minLength' => 5,
+							'like' => ['Change Role' ,' Vacation' ,'Emergency']
 						],
-							'response' => [
+
+						'response' => [
 							'required' => true,
 							'minLength' => 5
 						]
@@ -148,7 +152,7 @@
 						
 						if ($this->model->update($req)) {
 							
-						
+							
 							$fullRequest = $this->model->get(dec($postRequest->req_id));
 							$user = new User();
 							$user = $user->get($fullRequest->user_id);
@@ -159,14 +163,14 @@
 							
 							
 							$description = implode(' ', array_slice(explode(' ', $data->response), 0, 5)) . '...';
-							$title = $this->currentAdmin->admin_name .' update your request';
+							$title = $this->currentAdmin->admin_name . ' update your request';
 							$userNotification = new AdminNotification();
 							$userNotification->setTitle($title);
 							$userNotification->setDescription($description);
 							$userNotification->setUserId($user->user_id);
 							$userNotification->setAdminId($this->currentAdmin->admin_id);
 							$userNotification->setNotificationType(3);
-							if($settings->notifiy_when_admin_send_feedback === 0){
+							if ($settings->notifiy_when_admin_send_feedback === 0) {
 								$userNotification->setStatus(1);
 							}
 							$userNotification->create($userNotification);
@@ -176,7 +180,7 @@
 								'header ' => $title,
 								'body ' => $description,
 								'photo' => $this->currentAdmin->admin_photo,
-								
+							
 							]);
 							echo cleanJSON([
 								
@@ -188,7 +192,7 @@
 							echo cleanJSON([
 								'header' => UiMessages::CANCEL,
 								'body' => UiMessages::crudError('updat'),
-								
+							
 							]);
 						}
 						

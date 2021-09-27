@@ -24,7 +24,6 @@
 	{
 		
 		
-		
 		public function __construct()
 		{
 			
@@ -34,19 +33,23 @@
 			
 			// TODO : setup
 			$this->init(new Request());
-			$this->model = new Request();
-			$this->tokenManager = new CSRF();
-			$this->errorHandler = new ErrorHandler();
-			$this->validator = new Validator($this->errorHandler);
 			
 			// TODO : get current user infos
 			$user = new User();
 			$this->currentUser = $user->getByEmail(Session::get('user-connected'));
-			if (!$this->currentUser === false) {
+			if ($this->currentUser !== false) {
 				$this->currentUser->user_photo = getFileFromDirByName($this->currentUser->user_photo);
-			} else {
+				if($this->currentUser->user_compteEtat  !== 'active'){
+					Redirect::To('/user/dashboard');
+				}
+			}else{
 				Session::remove('user-connected');
 			}
+			
+			
+			
+			
+			
 			
 		}
 		
@@ -55,21 +58,14 @@
 		public function index()
 		{
 			
-		
-			
-		
-			
-			
-			
 			
 			// TODO : get page token
 			$token = $this->tokenManager->token();
 			
-			
 			// TODO : get current user requests
 			$user = new User;
 			$requests = $user->getUserRequests($this->currentUser->user_id);
-			$percentageRequestsByRole =$user->proc_PercentageRequestsByRole($this->currentUser->user_id);
+			$percentageRequestsByRole = $user->proc_PercentageRequestsByRole($this->currentUser->user_id);
 			
 			// TODO : get user notifications
 			$notification = new AdminNotification();
@@ -93,7 +89,6 @@
 			
 			
 			
-			
 		}
 		
 		
@@ -103,6 +98,7 @@
 		 */
 		public function getchartsData()
 		{
+			
 			$user = new User();
 			$requestPercentageCurrYear = $user->userRequestsPercentage($this->currentUser->user_id, '2021');
 			$requestPercentageLastYear = $user->userRequestsPercentage($this->currentUser->user_id, '2020');
@@ -125,12 +121,13 @@
 		 */
 		public function store()
 		{
+			
 			if (AxiosHttpRequest::has('action') && AxiosHttpRequest::hasValue('action', 'add') && !empty(AxiosHttpRequest::getAuthorizationToken())) {
 				$token = AxiosHttpRequest::getAuthorizationToken();
 				
-				if($this->tokenManager->verifyToken($token)){
-					$post  = AxiosHttpRequest::all()->data;
-					$this->validator->add($post , [
+				if ($this->tokenManager->verifyToken($token)) {
+					$post = AxiosHttpRequest::all()->data;
+					$this->validator->add($post, [
 						'pretext' => [
 							'required' => true,
 							'text' => true,
@@ -140,19 +137,19 @@
 							'required' => true,
 							'text' => true,
 							'maxLength' => 20,
-							'like' => ['task done' , 'change role' , 'emergency' ,'vacation']
+							'like' => ['task done', 'change role', 'emergency', 'vacation']
 						],
-						
+					
 					]);
-					if(!is_array($this->errorHandler->all())){
+					if (!is_array($this->errorHandler->all())) {
 						$request = new Request();
 						$request->setPretext($post->pretext);
 						$request->setType($post->type);
 						$request->setUser($this->currentUser->user_id);
-						if($this->model->create($request)){
+						if ($this->model->create($request)) {
 							// TODO : NOTIFY ADMIN
 							$title = 'new request';
-							$description = 'user ' . $this->currentUser->user_fullname .'has just send new request' ;
+							$description = 'user ' . $this->currentUser->user_fullname . 'has just send new request';
 							$notification = new UserNotification();
 							$notification->setTitle($title);
 							$notification->setDescription($description);
@@ -170,7 +167,7 @@
 							
 							// TODO : NOTIFY USER
 							$title = 'new request';
-							$description = 'You  has send new requests' ;
+							$description = 'You  has send new requests';
 							$notification = new AdminNotification();
 							$notification->setTitle($title);
 							$notification->setDescription($description);
@@ -179,7 +176,7 @@
 							$notification->setNotificationType(2);
 							$notification->create($notification);
 							// TODO : SEND NOTIFICATION
-							PushNotification::send($this->currentUser->user_email.'_new_request', [
+							PushNotification::send($this->currentUser->user_email . '_new_request', [
 								'title ' => $title,
 								'description' => $description,
 								'photo' => ''
@@ -187,34 +184,32 @@
 							
 							
 							
-							
 							echo cleanJSON([
 								'header' => UiMessages::VALID,
 								'body' => ''
 							]);
-						}else{
+						} else {
 							echo cleanJSON([
 								'header' => UiMessages::CANCEL,
 								'body' => ''
 							]);
 						}
 						
-					}else{
+					} else {
 						echo cleanJSON([
 							'header' => UiMessages::NOT_VALID,
 							'body' => $this->errorHandler->all()
 						]);
 					}
 					
-				}else{
+				} else {
 					echo cleanJSON([
 						'header' => UiMessages::ERROR,
 						'body' => UiMessages::error()
 					]);
 				}
 				
-			}
-			else{
+			} else {
 				echo cleanJSON([
 					'header' => UiMessages::ERROR,
 					'body' => UiMessages::error()

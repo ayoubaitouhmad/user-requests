@@ -2,11 +2,20 @@
     "use strict";
     window.app.admin.requests.charts = () => {
         // get charts data from server
-        window.axios.get('/admin/dashboard/requests/chart/data')
-            .then(response => {
-                getData(response.data);
-            })
-            .catch(error => console.log(error));
+        (async ()=>{
+            try {
+                const response = await axios.get('/admin/dashboard/requests/chart/data');
+                getData(response.data)
+            } catch (error) {
+                console.error(error);
+            }
+        })();
+
+        // window.axios.get('/admin/dashboard/requests/chart/data')
+        //     .then(response => {
+        //         getData(response.data);
+        //     })
+        //     .catch(error => console.log(error));
 
         //handle data
         function getData(data) {

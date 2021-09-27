@@ -1,9 +1,9 @@
 (() => {
     "use strict";
     window.app.user.signup.profile = () => {
+        console.log('hi im in profile ');
         const inputs = $('.custom-form__control');
         let profileFormEl = $('#profile-form');
-
         profileFormEl[0].reset();
 
         inputs.on('change focus focusout keyup copy paste cut', function (event) {
@@ -51,13 +51,13 @@
 
 
 
+
         // Submit from
+            let btnSubmitEl = profileFormEl.find('#submit-form');
         profileFormEl.on('submit', function (e) {
             e.preventDefault();
-            profileFormEl.find('input[type="submit"]').attr('disabled' , true);
             let token = $('body').attr('page-token');
             let data = new FormData();
-
             data.append('gender', $('#user-signup-gender').val());
             data.append('address', $('#user-signup-address').val());
             data.append('role', $('#user-signup-role').val());
@@ -67,10 +67,10 @@
             data.append('response', $('#user-signup-response').val());
             let fileEl = $('#user-signup-photo');
             let _isFile = func.isFile(fileEl);
-            _isFile ? data.append('photo', fileEl[0].files[0]) :
-                data.append('photo', ' ');
+            if(_isFile) data.append('photo', fileEl[0].files[0]);
             if (profileFormEl.parsley().isValid()) {
-                axios({
+
+                window.axios({
                     url: '/user/signup/profile/save',
                     method: 'post',
                     data: data,
@@ -80,17 +80,14 @@
                         'Authorization': token
                     }
                 })
-                    .then(response => {
-                        console.log(response.data);
+                    .then(response =>{
                         HandleProfileFormElReturnData(response.data)
                     })
                     .catch(error => console.log(error));
             }
 
         });
-
         function HandleProfileFormElReturnData({header, body}) {
-            profileFormEl.find('input[type="submit"]').attr('disabled' , true);
             let errorMessagesEl = profileFormEl.find('.errors-messages');
             let messageTitleEl = errorMessagesEl.children('.modal-error-title');
             let messageBodyEl = errorMessagesEl.children('.modal-error-body');
@@ -101,7 +98,7 @@
                     break;
                 case 'validation':
                     errorMessagesEl.removeClass('d-none');
-                    func.setClass(errorMessagesEl, 'alert-warning', 'alert-danger');
+                    func.setClassAdvanced(errorMessagesEl, 'alert-info');
                     if (body === "") {
                         errorMessagesEl.addClass('d-none');
                     } else {
@@ -120,7 +117,7 @@
                 case 'used':
 
                     errorMessagesEl.removeClass('d-none');
-                    func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
+                    func.setClassAdvanced(errorMessagesEl, 'alert-warning');
                     messageTitleEl
                         .html(body.substring(0, body.indexOf(',')) + ',');
 
@@ -131,7 +128,7 @@
 
                 case 'error':
                     errorMessagesEl.removeClass('d-none');
-                    func.setClass(errorMessagesEl, 'alert-warning', 'alert-danger');
+                    func.setClassAdvanced(errorMessagesEl, 'alert-danger');
                     $('.modal-error-title')
                         .html(body.substring(0, body.indexOf(',')) + ',');
 

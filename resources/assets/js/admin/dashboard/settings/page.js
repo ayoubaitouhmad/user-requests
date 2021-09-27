@@ -70,18 +70,7 @@
         });
 
 
-        // show button (save new avatar)
-        $('.custom-file-uploader-input').on('change', function () {
 
-            let $this = $(this);
-            $this.closest('.profile-content__avatar').find('#save-user-avatar').addClass('active-btn');
-            let imgShower = $this.closest('.custom-uploader').find('.custom-uploader__img');
-            if (func.isValidImageExt(func.getFileExt($this))) {
-                imgShower.attr('data-src', URL.createObjectURL($this.get(0).files[0]));
-                func.lazy();
-            }
-
-        });
 
         // show button (save new profile infos)
         $('#profile-data-form .custom-form__control').on('keyup change', function () {

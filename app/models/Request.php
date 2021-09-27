@@ -299,7 +299,6 @@
 		
 		public function gelAllRequestFullData(array $requests): array
 		{
-			
 			$user = new User();
 			foreach ($requests as $req) {
 				$id = $req->user_id;

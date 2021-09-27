@@ -5,3 +5,36 @@
   line-height: 1;
 }
 
+
+
+
+.custom-badge{
+  padding: 0.310rem 0.962rem !important;
+  border-radius: 1px !important;
+  font-weight: 400;
+}
+
+.custom-badge__pending{
+  color: #FEB748;
+  background-color: #FFF0D7;
+}
+
+.custom-badge__success{
+  color: #219754;
+  background-color: #E5F5E9;
+}
+
+.custom-badge__postpone{
+  color: #8793A0;
+  background-color: #EFF3F6;
+}
+.custom-badge__empty{
+  color: #0C3666;
+  background-color: #EFF6FB;
+}
+
+
+.custom-badge__dager{
+  color: #E92C2C;
+  background-color: #FFEBEB;
+}

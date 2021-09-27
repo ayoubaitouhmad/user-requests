@@ -109,17 +109,16 @@
                                     required
                                     data-parsley-pattern="/^[a-zA-Z0-9\s.,:-_()?!]*$/"
                                     data-parsley-required-message="sorry, response is required."
-                                    {{--                                    data-parsley-maxlength="150"--}}
-                                    {{--                                    data-parsley-minlength="10"--}}
+                                    minlength="5"
                                     data-parsley-trigger="keyup"
                             ></textarea>
                             </div>
                         </div>
                     </form>
                 </div>
+                <hr class="m-2">
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" id="modal-btn__save" class="btn btn-primary">Save</button>
+                    <button type="button" id="modal-btn__save" class="base-button icon-button">Save</button>
                 </div>
             </div>
         </div>
@@ -137,13 +136,14 @@
 
 <!-- main content  -->
 @section('content')
+
     <!-- page indexer -->
-    @include('inc.indexer' , ['page_src' => 'Dashboard','page_index' => 'Requests'])
+    @include('inc.indexer' , ['page_src' => 'Dashboard','sep' => '|' ,'page_index' => 'Requests'])
 
     <!-- charts-->
     <div class="row">
         <div class="col-12  col-xl-6 grid-margin stretch-card">
-            <div class="card">
+            <div class="card shadow">
                 <div class="card-body">
                     <h4 class="card-title">compare number of request by gender in {{date('Y')}}/{{(date('Y')-1)}}</h4>
                     <canvas id="area-chart"></canvas>
@@ -152,7 +152,7 @@
         </div>
 
         <div class="col-12  col-xl-6 grid-margin grid-margin-lg-0 stretch-card">
-            <div class="card">
+            <div class="card shadow">
                 <div class="card-body">
                     <h4 class="card-title">compare number of request in {{date('Y')}}</h4>
                     <canvas id="bar-chart"></canvas>
@@ -171,13 +171,13 @@
                         <h4 class="card-title">users requests</h4>
                     </div>
                     <div class="table-responsive pt-3">
-                        <table class="table" id="requests-list">
+                        <table class="table custom-table" id="requests-list">
                             <thead>
                             <tr>
                                 <th></th>
                                 <th>
 
-                                        photo
+                                    photo
 
                                 </th>
 
@@ -211,92 +211,91 @@
                             </tr>
                             </thead>
                             <tbody>
-
                             @if(isset($requests) and is_array($requests))
                                 @php($i = 0)
                                 @foreach($requests as $request)
                                     <tr row-id="{{$request->request_id ?? ''}} ">
-                                        <td>{{++$i}}</td>
+                                        <td>{{$i}}</td>
                                         <td>
-                                            <div class="user-infos__-img-fullName">
-                                                <img data-src="{{$request->userPhoto}}"
+                                            <div class="user-infos__img-fullName">
+                                                <img  data-src="{{$request->userPhoto ?? ''}}"
                                                      alt="profile-image"
                                                      class="preload-img">
-                                                <p class="requests-list__user-name">{{$request->userName}}</p>
+                                                <span class="requests-list__user-name">{{$request->userName?? ''}}</span>
                                                 <input class="requests-list__user-name__hide" type="hidden"
-                                                       value="{{$request->userName}}">
+                                                       value="{{$request->userName?? ''}}">
                                             </div>
-
                                         </td>
                                         <td>
-                                            @if(empty($request->request_pretext))
-                                                Empty
+                                            @if(empty($request->request_pretext?? ''))
+                                                <span class="custom-badge custom-badge__empty"> Empty</span>
                                             @else
                                                 @php($fewWord =  implode(' ', array_slice(explode(' ', $request->request_pretext), 0, 4)))
                                                 <p>
                                                     {{$fewWord}}...
                                                     <input class="requests-list__reason__hide" type="hidden"
-                                                           value="{{$request->request_pretext}}">
-                                                    <button class="requests-list__read-request_btn alert-link d-block ">
+                                                           value="{{$request->request_pretext?? ''}}">
+                                                    <span class="read-more alert-link d-block ">
                                                         read more
-                                                    </button>
+                                                    </span>
                                                 </p>
                                             @endif
                                         </td>
                                         <td>
-                                            @if(empty($request->request_response))
-                                                <span class="badge badge-info">No response yet</span>
+                                            @if(empty($request->request_response?? ''))
+                                                <span class="custom-badge custom-badge__empty"> Empty</span>
                                             @else
                                                 @php($fewWord =  implode(' ', array_slice(explode(' ', $request->request_response), 0, 4)))
                                                 <p>
                                                     {{$fewWord}}...
                                                     <input type="hidden" class="requests-list__response__hide"
-                                                           value="{{$request->request_response}}">
-                                                    <button class="requests-list__read-request_btn alert-link d-block ">
+                                                           value="{{$request->request_response?? ''}}">
+                                                    <button class="read-more alert-link d-block ">
                                                         read more
                                                     </button>
                                                 </p>
                                             @endif
                                         </td>
                                         <td>
-                                            {{$request->request_date}}
+                                            {{$request->request_date ?? ''}}
                                             <input type="hidden" class="requests-list__date__hide"
                                                    value="{{$request->request_date}}">
                                             <span class="request-time">
 
-                                                {{ date('D', strtotime($request->request_date)) }}
+                                                {{ date('D', strtotime($request->request_date ?? '')) }}
                                                 ,
-                                                {{date('h:s' ,strtotime($request->request_date))}}
+                                                {{date('h:s' ,strtotime($request->request_date ?? ''))}}
                                                 PM
                                             </span>
                                         </td>
-
                                         <td>
                                             <input type="hidden" class="requests-list__status__hide"
-                                                   value="{{$request->request_status}}">
-                                            @switch($request->request_status)
-                                                @case('approve')
-                                                <span class="badge badge-success">approve</span>
-                                                @break
+                                                   value="{{$request->request_status ?? ''}}">
+                                            @if(isset($request->request_status))
+                                                @switch($request->request_status)
+                                                    @case('approve')
+                                                    <span class="custom-badge custom-badge__success"> approved</span>
+                                                    @break
 
-                                                @case('reject')
-                                                <span class="badge badge-danger">reject</span>
-                                                @break
+                                                    @case('reject')
+                                                    <span class="custom-badge custom-badge__dager"> rejected</span>
+                                                    @break
 
-                                                @case('postpone')
-                                                <span class="badge badge-secondary">postpone</span>
-                                                @break
+                                                    @case('postpone')
+                                                    <span class="custom-badge custom-badge__postpone"> postpone</span>
+                                                    @break
 
-                                                @case('pending')
-                                                <span class="badge badge-warning">pending</span>
-                                                @break
+                                                    @case('pending')
+                                                    <span class="custom-badge custom-badge__pending"> pending</span>
+                                                    @break
 
-                                            @endswitch
+                                                @endswitch
+                                            @endif
                                         </td>
                                         <td class="material-icons_container">
-                                            @if(!empty($request->request_type))
+                                            @if(!empty($request->request_type ))
                                                 <input type="hidden" class="requests-list__type__hide"
-                                                       value="{{$request->request_type}}">
+                                                       value="{{$request->request_type  ?? ''}}">
                                                 @switch($request->request_type)
                                                     @case('change role')
                                                     <span class="material-icons" style="color: #000">work</span>
@@ -321,19 +320,28 @@
                                         </td>
                                         <td>
 
-                                            <div class="dropdown w-25">
-                                                <span class="material-icons cell-menu__ico" data-toggle="dropdown">more_vert</span>
-                                                <div class="cell-menu__submenu dropdown-menu d-none"
-                                                     aria-labelledby="dropdownMenuButton">
-                                                    <button class="dropdown-menu__check-request dropdown-item" href="#">
-                                                        <span class="material-icons">check</span>
-                                                    </button>
-                                                    <button class="dropdown-menu__delete-request dropdown-item"
-                                                            href="#">
-                                                        <span class="material-icons">delete</span>
-                                                    </button>
+                                            <div class="btn-group dropleft">
+                                                <button type="button" class="dropdown-user__action dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    <span class="material-icons cell-menu__ico">more_vert</span>
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    <button class="dropdown-item dropdown-menu__check-request" type="button">Edit</button>
+                                                    <button class="dropdown-item dropdown-menu__delete-request" type="button">Delete</button>
                                                 </div>
                                             </div>
+{{--                                            <div class="dropdown w-25">--}}
+{{--                                                <span class="material-icons cell-menu__ico" data-toggle="dropdown">more_vert</span>--}}
+{{--                                                <div class="cell-menu__submenu dropdown-menu d-none"--}}
+{{--                                                     aria-labelledby="dropdownMenuButton">--}}
+{{--                                                    <button class="dropdown-menu__check-request dropdown-item" href="#">--}}
+{{--                                                        <span class="material-icons">check</span>--}}
+{{--                                                    </button>--}}
+{{--                                                    <button class="dropdown-menu__delete-request dropdown-item"--}}
+{{--                                                            href="#">--}}
+{{--                                                        <span class="material-icons">delete</span>--}}
+{{--                                                    </button>--}}
+{{--                                                </div>--}}
+{{--                                            </div>--}}
 
                                         </td>
                                     </tr>
@@ -350,7 +358,7 @@
         <div class="col-12 col-md-4   col-xl-3 grid-margin stretch-card request-summary">
 
             <!-- short summary | request order by type -->
-            <div class="card ">
+            <div class="card shadow ">
                 <div class="card-body ">
                     <h5 class="card-title">SHORT SUMMARY</h5>
                     <div class="request-short-summary">
@@ -389,19 +397,19 @@
 
                             <!-- change role -->
                                 <div class="progress-bar" role="progressbar"
-                                     style="width: {{$role->percentage}}%; background-color: #423891;"
+                                     style="width: {{$role->percentage ?? 0}}%; background-color: #423891;"
                                      aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
                                 <!--  task done -->
                                 <div class="progress-bar" role="progressbar"
-                                     style="width:   {{$task->percentage}}%; background-color: #34A7FE;"
+                                     style="width:   {{$task->percentage ?? 0}}%; background-color: #34A7FE;"
                                      aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"></div>
                                 <!-- vacation -->
                                 <div class="progress-bar" role="progressbar"
-                                     style="width: {{$vacation->percentage}}%; background-color: #FBA07C;"
+                                     style="width: {{$vacation->percentage ?? 0}}%; background-color: #FBA07C;"
                                      aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
                                 <!-- emergency -->
                                 <div class="progress-bar" role="progressbar"
-                                     style="width: {{$emergency->percentage}}%; background-color: #EE4B70;"
+                                     style="width: {{$emergency->percentage ?? 0}}%; background-color: #EE4B70;"
                                      aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
                             </div>
 
@@ -423,7 +431,7 @@
                                         <span class="key-name"> Tasks </span>
                                     </div>
                                     <div class="left">
-                                        <span class="key-count">{{$task->count}}</span>
+                                        <span class="key-count">{{$task->count ?? ''}}</span>
                                         <span class="key-percentage"> {{$task->percentage ?? ''}}%</span>
                                     </div>
                                 </li>
@@ -457,7 +465,7 @@
             </div>
 
             <!-- short summary | last requests -->
-            <div class="card" style="margin-top: 15px;">
+            <div class="card shadow" style="margin-top: 15px;">
                 <div class="card-body ">
                     <div class="last-requests">
                         <h6 class="card-title">last requests</h6>
@@ -465,20 +473,25 @@
                             @foreach($lastFourRequests as $request)
                                 <div class="last-requests-data">
                                     <div class="left-side">
-                                        <img class="preload-img" src="" data-src="{{$request->user_photo}}"
+                                        <img class="preload-img" src="" data-src="{{$request->user_photo !== null && $request->user_photo !== '' ?$request->user_photo : '/img/unknown.png'}}"
                                              alt="">
                                         <div class="infos">
                                             <div class="name">{{$request->user_fullname}}</div>
                                             <div class="date">
-                                                @php($date = date('D M', strtotime($request->request_date)))
-                                                @php($time = date('h:i', strtotime($request->request_date)))
+                                                @if($request->request_date !== null && $request->request_date !== "")
+                                                    @php($date = date('D M', strtotime($request->request_date )))
+                                                    @php($time = date('h:i', strtotime($request->request_date )))
 
-                                                {{$date}}, AT {{$time}}
+                                                    {{$date}}, AT {{$time}}
+                                                @else
+                                                    <span class="custom-badge custom-badge__empty"> Empty</span>
+                                                @endif
+
                                             </div>
                                         </div>
                                     </div>
                                     <div class="right-side">
-                                        <span class="count">{{$request->count}}</span>
+                                        <span class="count">{{$request->count !== null && $request->count !== "" ? $request->count : ''}}</span>
                                         <span class="material-icons last-requests__ico">beenhere</span>
                                     </div>
 

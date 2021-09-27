@@ -1,6 +1,7 @@
 // dependency
 require('jquery');
 require('bootstrap/dist/js/bootstrap');
+require('feather-icons/dist/feather');
 
 // js plugins plugins
 require('axios')
@@ -11,7 +12,7 @@ require('pusher-js/dist/web/pusher.min');
 
 // jquery plugins
 require('parsleyjs/dist/parsley');
-require('datatables.net/js/jquery.dataTables');
+require('datatables.net/js/jquery.dataTables.min');
 require('chart.js/dist/chart');
 
 
@@ -54,21 +55,21 @@ require('./admin/dashboard/settings/plugins');
 require('./admin/dashboard/settings/page');
 require('./admin/dashboard/settings/ajax');
 // users
-require('./admin/users/datatable');
-require('./admin/users/page');
-require('./admin/users/ajax-requests');
-require('./admin/users/charts');
+require('./admin/dashboard/users/datatable');
+require('./admin/dashboard/users/page');
+require('./admin/dashboard/users/ajax-requests');
+require('./admin/dashboard/users/charts');
 
 
 
 
 
 // requests
-require('./admin/requests/chart');
-require('./admin/requests/datatable');
-require('./admin/requests/parsley');
-require('./admin/requests/page');
-require('./admin/requests/ajax-requests');
+require('./admin/dashboard/requests/chart');
+require('./admin/dashboard/requests/datatable');
+require('./admin/dashboard/requests/parsley');
+require('./admin/dashboard/requests/page');
+require('./admin/dashboard/requests/ajax-requests');
 
 // login
 require('./admin/login/ajax-requests');

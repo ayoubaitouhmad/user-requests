@@ -34,7 +34,8 @@
 			'size',
 			'uppercase',
 			'specialChars',
-			'lowercase'
+			'lowercase',
+			'date_between'
 		);
 		
 		const REGEX = [
@@ -68,6 +69,7 @@
 			'uppercase' => 'sorry ,  field must be contain at least one uppercase character .',
 			'specialChars' => 'sorry ,  field must be contain one special caractere like (- or _) .',
 			'lowercase' => 'sorry ,   field must be contain at least one lowercase character .',
+			'date_between' => 'sorry ,   field must be between (regex) .',
 			
 		];
 		
@@ -122,8 +124,19 @@
 								}
 								if (str_contains($message, 'regex')) {
 									if(is_array($regex)){
-										$regex = implode(",",$regex);
-										$message = str_replace('regex', $regex, $message);
+										if(count($regex) > 2){
+											$regex = implode(",",$regex);
+											$message = str_replace('regex', $regex, $message);
+										}
+										else{
+											if(count($regex) === 2){
+												$regex = $regex[0] . ' and ' . $regex[1];
+												$message = str_replace('regex', $regex, $message);
+											}else{
+												$message = $regex;
+											}
+										}
+										
 										
 									}else{
 										$message = str_replace('regex', $regex, $message);
@@ -265,7 +278,8 @@
 		
 		private function gender($val, $regex)
 		{
-			
+			$val = strtolower($val);
+			$val = trim($val);
 			if ($regex) {
 				return $val == 'male' || $val == 'female';
 			} else
@@ -308,8 +322,7 @@
 				return true;
 		}
 		
-		
-		private function password($val, $regex)
+		private function password($val, $regex): bool
 		{
 		
 
@@ -323,12 +336,24 @@
 				return true;
 		}
 		
+		private function date_between($val, $regex): bool
+		{
+			if (is_array($regex) && count($regex)){
+				$dateToCompare = $val;
+				$startdate = date('Y-m-d', strtotime($regex[0]));
+				$enddate = date('Y-m-d', strtotime($regex[1]));
+				return $dateToCompare <= $enddate && $dateToCompare >= $startdate;
+			}else{
+				return true;
+			}
+		}
+		
 		
 		
 		
 		
 		public  function like($val, $regex){
-			return in_array($val , $regex);
+			return in_array(strtolower($val) , $regex);
 		}
 		
 	

@@ -27,7 +27,7 @@
 </div>
 <audio id="audio" src="/sound/notification/notify.ogg" controls style="display: none"></audio>
 
-<script async  src="/js/app.js?version=<?php echo time();?>"></script>
+<script async  src="/js/app.js?v=<?php echo time();?>"></script>
 
 </body>
 </html>

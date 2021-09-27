@@ -186,7 +186,7 @@
 
       &::-webkit-scrollbar {
         width: 4px;
-
+        height: 4px;
       }
 
       &::-webkit-scrollbar-thumb {
@@ -301,7 +301,7 @@
 
           .profile-content__avatar {
             position: relative;
-
+            margin-bottom: 2rem;
             .custom-uploader {
               display: inline-block;
               position: relative;
@@ -494,6 +494,23 @@
 
 
 }
+
+[page-id="user-dashboard-settings"]{
+  .settings-items.hide{
+
+      input,
+      select
+      {
+        pointer-events: none;
+        border: 1px solid grey;
+        background-color: lightgrey;
+      }
+    }
+
+
+
+}
+
 
 
 @keyframes dropdownAnimation_height {

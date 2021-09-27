@@ -1,0 +1,5 @@
+Index : new style (footer ...)
+
+reqponsive to this pages :
+admin login
+user login , sign up , reset pass

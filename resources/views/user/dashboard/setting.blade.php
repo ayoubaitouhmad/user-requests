@@ -12,13 +12,15 @@
 <!-- main content  -->
 @section('content')
     <!-- page indexer -->
-    @include('inc.indexer' ,  ['page_src' => 'Dashboard /','page_index' => 'Settings'])
+    @include('inc.indexer' ,  ['page_src' => 'Dashboard','sep' => '|'  ,'page_index' => 'Settings'])
+
+
 
     <!-- content -->
     <div class="row settings">
         <div class="col-12 col-md-3  col-xl-2    settings-row  settings-row__header">
             <div class="settings-row__list">
-                <div class="card ">
+                <div class="card shadow">
                     <div class="card-body">
                         <ul class="settings-row__list-items">
                             <li class="list-item  active-link" id="link-profile">
@@ -53,8 +55,22 @@
             </div>
         </div>
         <div class="col-12 col-md-9  col-xl-10  settings-row settings-row__content">
-            <div class="card">
-                <div class="settings-items">
+            <div class="card shadow">
+                @if($activeUser->user_compteEtat  === 'inactive')
+                    <div class="user-inactive-account">
+
+                        <div class="custom-badge custom-badge__dager d-flex justify-content-center align-items-center flex-column flex-sm-row" role="alert">
+                            <span class="material-icons">warning</span>
+                            <div>
+                                You can't change your data and see some settings until admin activate you account , you will
+                                get notification when your accout been activated
+                            </div>
+
+                        </div>
+                    </div>
+                @endif
+
+                <div class="settings-items {{$activeUser->user_compteEtat  === 'inactive' ? 'hide' : ''}}">
                     <div id="profile" class="settings-item settings-item__profile flex-xl-row flex-column">
                         <div class="settings-item__header  profile-header">
                             <div class="profile-header__title settings-header__title">Edit Profile</div>
@@ -67,30 +83,33 @@
                                 </div>
 
                                 <div class="profile-content__avatar settings-content__item d-flex flex-column justify-content-start align-items-center">
+
                                     <div class="custom-uploader">
                                         <img class="custom-uploader__img preload-img"
-                                             data-src="{{$activeUser->user_photo ?? '/img/unknown.png'}}"
+                                             data-src="{{$activeUser->user_photo !== "" && $activeUser->user_photo !== null ? $activeUser->user_photo : '/img/unknown.png'}}"
                                              alt="">
-                                        <div class="custom-uploader__file">
-                                            <div class="custom-file-uploader ">
-                                                <input
-                                                        type="file"
-                                                        class="custom-file-uploader-input"
-                                                        id="user-photo">
-                                                <label class="custom-file-uploader-label shadow " for="user-photo">
-                                                    <span class="material-icons">file_upload</span>
-                                                </label>
+                                        @if($activeUser->user_compteEtat  === 'active')
+                                            <div class="custom-uploader__file">
+                                                <div class="custom-file-uploader ">
+                                                    <input
+                                                            type="file"
+                                                            class="custom-file-uploader-input"
+                                                            id="user-photo">
+                                                    <label class="custom-file-uploader-label shadow " for="user-photo">
+                                                        <span class="material-icons">file_upload</span>
+                                                    </label>
+                                                </div>
                                             </div>
-                                        </div>
+                                        @endif
+
                                     </div>
                                     <button type="button" id="save-user-avatar"
                                             class="icon-button shadow d-flex justify-content-center">
                                         <span class="material-icons">done</span>
                                     </button>
-
                                 </div>
 
-                                <div class="row profile-content__infos settings-content__item">
+                                <div class="row profile-content__infos   settings-content__item">
                                     <div class="col-12 row profile-infos__item">
                                         <div class="col-12 col-sm-6 ">
                                             <label class="w-100">
@@ -128,7 +147,6 @@
                                         </div>
 
                                     </div>
-
                                     <div class="col-12 row profile-infos__item">
                                         <div class="col-12">
                                             <label class="w-100">
@@ -303,11 +321,12 @@
                                             </label>
                                         </div>
                                     </div>
-
-                                    <button type="button" id="save-user-infos"
-                                            class="icon-button shadow d-flex justify-content-center">
-                                        <span class="material-icons">done</span>
-                                    </button>
+                                    @if($activeUser->user_compteEtat  === 'active')
+                                        <button type="button" id="save-user-infos"
+                                                class="base-button icon-button shadow d-flex justify-content-center">
+                                            <span class="material-icons">done</span>
+                                        </button>
+                                    @endif
 
                                 </div>
 
@@ -339,24 +358,25 @@
                                         </label>
                                     </div>
                                 </div>
-                                <div class="col-12 ui-settings__item  ">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="field-title">Hide Notifications</span>
-                                        <label class="switch" id="get-notification">
-                                            <input
-                                                    class="myCheckbox"
-                                                    @if(isset($settings->hide_notification) && $settings->hide_notification === 1)
+                                @if($activeUser->user_compteEtat  === 'active')
+                                    <div class="col-12 ui-settings__item  ">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="field-title">Hide Notifications</span>
+                                            <label class="switch" id="get-notification">
+                                                <input
+                                                        class="myCheckbox"
+                                                        @if(isset($settings->hide_notification) && $settings->hide_notification === 1)
                                                         checked
-                                                    @endif
-                                                    type="checkbox"
-                                                    id="hide-notifications">
-                                            <span class="slider round"></span>
-                                        </label>
+                                                        @endif
+                                                        type="checkbox"
+                                                        id="hide-notifications">
+                                                <span class="slider round"></span>
+                                            </label>
+                                        </div>
                                     </div>
-                                </div>
+                                @endif
+
                             </div>
-
-
 
                         </div>
                     </div>
@@ -368,45 +388,56 @@
                         </div>
                         <div class="settings-item_content notifications-content ">
                             <div class="row notifications-content_item settings-content__item">
+
+                                @if($activeUser->user_compteEtat  === 'active')
+                                    <div class="col-12 notifications-settings__item ">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="field-title">when i send request</span>
+                                            <label class="switch" id="get-notification">
+                                                <input
+                                                        class="myCheckbox"
+                                                        @if(isset($settings->notifiy_when_user_send_request) and $settings->notifiy_when_user_send_request === 1)
+                                                        checked
+                                                        @endif
+                                                        type="checkbox"
+                                                        id="notify-self-send">
+                                                <span class="slider round"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 notifications-settings__item  ">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="field-title">when admin send feedback</span>
+                                            <label class="switch" id="get-notification">
+                                                <input
+                                                        class="myCheckbox"
+                                                        @if(isset($settings->notifiy_when_admin_send_feedback) and $settings->notifiy_when_admin_send_feedback === 1)
+                                                        checked
+                                                        @endif
+                                                        type="checkbox"
+                                                        id="notify-feedback"
+
+                                                >
+                                                <span class="slider round"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                @endif
                                 <div class="col-12 notifications-settings__item ">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="field-title">when i send request</span>
-                                        <label class="switch" id="get-notification">
-                                            <input
-                                                    class="myCheckbox"
-
-                                                    @if(isset($settings->notifiy_when_user_send_request) and $settings->notifiy_when_user_send_request === 1)
-                                                    checked
-                                                    @endif
-                                                    type="checkbox"
-                                                    id="notify-self-send"
-
-                                            >
-                                            <span class="slider round"></span>
-                                        </label>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="field-title">when my account activated or disactivate</span>
+                                            <label class="switch" id="get-notification">
+                                                <input
+                                                        class="myCheckbox"
+                                                        @if(isset($settings->notify_when_account_change) && $settings->notify_when_account_change === 1)
+                                                        checked
+                                                        @endif
+                                                        type="checkbox"
+                                                        id="notify-account-change">
+                                                <span class="slider round"></span>
+                                            </label>
+                                        </div>
                                     </div>
-                                </div>
-
-
-
-                                <div class="col-12 notifications-settings__item  ">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="field-title">when admin send feedback</span>
-                                        <label class="switch" id="get-notification">
-                                            <input
-                                                    class="myCheckbox"
-                                                    @if(isset($settings->notifiy_when_admin_send_feedback) and $settings->notifiy_when_admin_send_feedback === 1)
-                                                    checked
-                                                    @endif
-                                                    type="checkbox"
-                                                    id="notify-feedback"
-
-                                            >
-                                            <span class="slider round"></span>
-                                        </label>
-                                    </div>
-                                </div>
-
                                 <div class="col-12 notifications-settings__item ">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span class="field-title">when my security infos changing</span>
@@ -424,6 +455,7 @@
                                         </label>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
                     </div>
@@ -522,11 +554,13 @@
                                         </div>
                                     </div>
 
-                                    <button type="button" id="save-user-security-data"
-                                            class="icon-button shadow d-flex justify-content-center">
-                                        <span class="material-icons">done</span>
-                                    </button>
+                                    @if($activeUser->user_compteEtat  === 'active')
+                                        <button type="button" id="save-user-security-data"
+                                                class="icon-button base-button shadow d-flex justify-content-center">
+                                            <span class="material-icons">done</span>
+                                        </button>
 
+                                    @endif
 
                                 </form>
 
@@ -534,9 +568,6 @@
 
                         </div>
                     </div>
-
-
-
 
                 </div>
             </div>

@@ -3,7 +3,7 @@
         <li class="nav-item">
             <a class="nav-link" href="/admin/dashboard">
                 <span class="material-icons ico-home">home</span>
-                <span class="menu-title">Dashboard</span>
+                <span class="menu-title">Home</span>
             </a>
         </li>
 
@@ -20,7 +20,7 @@
             </a>
         </li>
 
-        <li class="nav-item @yield('side-bar-settings')">
+        <li class="nav-item @yield('side-bar-setting')">
             <a class="nav-link" href="/admin/dashboard/setting">
                 <span class="material-icons">settings</span>
                 <span class="menu-title">Settings</span>

@@ -59,13 +59,7 @@ body[page-id="user-signup-email"] {
       }
 
       .form-item__submit{
-        @include custom-btn;
-        background-color: $white;
-        border-color:$text-muted;
-        &:hover{
-          border-color:$first-color;
-          @include transition(.4s);
-        }
+       height: 2rem;
       }
 
       .form-item__btn-facebook{

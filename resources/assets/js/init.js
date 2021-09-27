@@ -12,20 +12,20 @@
                 window.app.admin.all();
                 break;
             case 'admin-dashboard-requests':
-                window.app.admin.requests.charts();
-                window.app.admin.requests.parsleyJS();
-                window.app.admin.requests.datatable();
-                window.app.admin.requests.page();
-                window.app.admin.requests.ajaxRequest();
                 window.app.admin.all();
+                window.app.admin.requests.datatable();
+                window.app.admin.requests.parsleyJS();
+                window.app.admin.requests.ajaxRequest();
+                window.app.admin.requests.page();
+                window.app.admin.requests.charts();
 
                 break;
             case 'admin-dashboard-users':
+                window.app.admin.all();
                 window.app.admin.users.dataTable();
-                window.app.admin.users.page();
                 window.app.admin.users.charts();
                 window.app.admin.users.ajaxRequest();
-                window.app.admin.all();
+                window.app.admin.users.page();
                 break;
             case 'admin-dashboard-settings' :
                 window.app.admin.dashboard.settings.plugins();

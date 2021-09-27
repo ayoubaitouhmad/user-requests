@@ -23,7 +23,7 @@
 }
 
 
-@mixin custom-btn{
+@mixin custom-btn {
   outline: none;
   border-radius: 1px;
   border: 1px solid black;
@@ -33,25 +33,31 @@
 }
 
 
-
-.base-button{
+.base-button {
   background-color: $second-color;
   color: $white;
   width: 5rem;
   font-size: 0.9rem !important;
-  outline: none;
+  outline: none !important;
   border: 0;
-  &:hover{
+
+
+  &:hover {
     background-color: #6659cb;
     color: white;
   }
-  &:active{
+
+  &:active {
     background-color: #786ce8;
+  }
+
+  &:disabled {
+    background-color: #3e348c7d !important;
   }
 }
 
 
-.icon-button{
+.icon-button {
   display: inline-block;
   font-weight: 400;
   text-align: center;
@@ -63,32 +69,64 @@
   background-color: $second-color;
   color: $white;
   outline: none;
-  &:hover{
+
+  &:hover {
     background-color: #6659cb;
     color: white;
   }
-  &:active{
+
+  &:active {
     background-color: #786ce8;
   }
 }
 
-.delete-button{
+.delete-button {
   background-color: red;
   color: $white;
   width: 5rem;
   font-size: 0.9rem !important;
   outline: none;
   box-shadow: none;
-  &:hover{
+
+  &:hover {
     background-color: #ff4b4b;
     color: white;
   }
-  &:active{
+
+  &:active {
     background-color: #a00000;
 
   }
-  &:focus{
+
+  &:focus {
     box-shadow: none;
   }
 
 }
+
+
+button,
+input[type="button"],
+input[type="submit"]{
+  outline: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+
+
+  &:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  &::-ms-reveal,
+  &::-ms-clear {
+    display: none;
+  }
+
+  &:disabled,
+  &[type="button"]:disabled {
+    cursor: wait !important;
+  }
+
+}
+

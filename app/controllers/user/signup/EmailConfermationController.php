@@ -112,4 +112,8 @@
 		
 			
 		}
+		
+		public function test(){
+			echo 'here';
+		}
 	}

@@ -115,7 +115,7 @@
 						if ($this->model->isDuplicatedField('user_email', $post->email) === 1) {
 							$user = $this->model->getByEmail($post->email);
 							$code = $this->tokenManager->getValidationCode();
-							Mailer::init($post->email, 'confirmation code', $code);
+							Mailer::resetPassword($post->email ,$user->user_fullname , $code );
 							$user->code = $code;
 							Session::add('user-to-reset', $user);
 							

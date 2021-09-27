@@ -14,7 +14,7 @@
 <div class="container-fluid d-flex flex-column justify-content-center align-items-center h-100">
     <div class="card shadow">
         <div  class="logo d-flex  justify-content-center align-items-center ">
-            <img style="height: 5rem " class="img-fluid preload-img" data-src="/img/logo2.png" alt="">
+            <img style="height: 5rem " class="img-fluid preload-img" data-src="/img/logo.svg" alt="">
         </div>
         <div class="card-body">
             <div class="container">

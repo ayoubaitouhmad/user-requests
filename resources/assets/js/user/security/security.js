@@ -13,7 +13,8 @@
         form.on('submit' , function (e) {
             e.preventDefault();
             console.log('dsdfsfds');
-            nextBtnEl.prop('disabled' , true).addClass('btn-secondary');
+            nextBtnEl.prop('disabled' , true).
+            addClass('btn-secondary');
             email = $('.form-item__data-email');
             action = nextBtnEl.attr('input-action');
             switch (action){
@@ -35,8 +36,8 @@
                        }
                    })
                        .then(response=> {
-                           console.log(response.data);
-                           checkEmail(response.data)
+                           setTimeout(()=>  checkEmail(response.data) ,2000)
+
                        })
                        .catch(error => console.log(error));
                     break;
@@ -58,8 +59,8 @@
                         }
                     })
                         .then(response=> {
+                            setTimeout(()=>   confermEmail(response.data) ,2000)
 
-                            confermEmail(response.data)
                         })
                         .catch(error => console.log(error));
                     break;
@@ -80,7 +81,8 @@
                         }
                     })
                         .then(response=> {
-                            changePassword(response.data);
+                            setTimeout(()=>  changePassword(response.data) ,2000)
+
                         })
                         .catch(error => console.log(error));
                     break;
@@ -101,7 +103,8 @@
                         }
                     })
                         .then(response=> {
-                            checkQuestion(response.data);
+                            setTimeout(()=>   checkQuestion(response.data),2000)
+
                         })
                         .catch(error => console.log(error));
                     break;
@@ -137,8 +140,6 @@
 
                     $('.form-item__footer').removeClass('d-none');
                     break;
-
-
                 case 'not found' :
                     errorMessagesEl.removeClass('d-none');
                     func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');

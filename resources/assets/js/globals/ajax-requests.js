@@ -19,22 +19,6 @@
 
 
     });
-    $('.close-user-session').on('click' , function (){
-        let token = $('body').attr('page-token');
-        axios({
-            method: 'post',
-            url: '/user/logout',
-            data:{
-                'token' : token
-            }
-        })
-            .then(res => {
-                    func.refreshPage();
-                    setTimeout(() => location.assign("/user/login"), 3000);
-            })
-            .catch(error => console.log(error));
 
-
-    });
 
 })();

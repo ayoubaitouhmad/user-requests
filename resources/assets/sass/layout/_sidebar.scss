@@ -8,10 +8,10 @@
   padding: 0;
   width: 257px;
   z-index: 11;
-  transition: width 0.25s ease, background 0.25s ease;
+  transition: width .8s cubic-bezier(0.68,-0.55,0.27,1.55) !important;
   box-shadow: none;
   border-right: 1px solid #e3e3e3;
-  margin-left: -3px;
+
 
   .nav {
     overflow: hidden;
@@ -22,6 +22,26 @@
     .nav-item {
       transition-duration: 0.25s;
       transition-property: background;
+      &.disabled{
+        pointer-events: none;
+       &.hover-open{
+         .menu-title{
+           display: none !important;
+         }
+       }
+        &,
+        .material-icons{
+          background-color: #f0f0f0 !important;
+          opacity: .5 !important;
+          user-select: none !important;
+          cursor: not-allowed !important;
+        }
+
+
+        &:hover{
+          content: none !important;
+        }
+      }
 
       .collapse {
         z-index: 999;
@@ -167,6 +187,9 @@
 
 
 .sidebar-icon-only {
+  .navbar-menu-wrapper{
+
+  }
   .sidebar {
     //margin-left: -.9rem;
     .nav {
@@ -276,7 +299,7 @@
     top: 60px;
     bottom: 0;
     overflow: auto;
-    right: -257px;
+    right: -254px;
   }
   .sidebar-offcanvas.active {
     right: 0;
@@ -289,7 +312,7 @@
     .navbar {
       .navbar-brand-wrapper {
         width: 70px;
-
+        transition: width .8s cubic-bezier(0.68,-0.55,0.27,1.55) !important;
         .navbar-brand-inner-wrapper {
           margin-right: auto;
 
@@ -309,12 +332,14 @@
 
       .navbar-menu-wrapper {
         width: calc(100% - 70px);
+
+
       }
     }
 
     .sidebar {
-      width: 73px;
-
+      width: 70px;
+      transition: width .8s cubic-bezier(0.68,-0.55,0.27,1.55) !important;
       .nav {
         overflow: visible;
 
@@ -491,5 +516,16 @@
 @media (max-width: 400px) {
   .sidebar-offcanvas.active {
     width: 60px;
+  }
+}
+
+
+@keyframes fdsffdsf {
+  from {
+    width: 4px !important;
+
+  }
+  to {
+    width: auto;
   }
 }

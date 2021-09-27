@@ -1,4 +1,4 @@
-        require('datatables.net/js/jquery.dataTables');
+
 (function (){
     "use strict";
     window.app.user.dashboard.requests.plugins = () => {
@@ -7,5 +7,6 @@
             // "ordering": false,
             // "info":     false
         });
+        $('#new-request__form').parsley();
     }
 })();

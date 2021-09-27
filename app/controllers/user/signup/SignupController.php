@@ -105,10 +105,7 @@
 						if ($this->model->isDuplicatedData($email , $phone) === 0) {
 							// send conformation code to email
 							$code = $this->tokenManager->getValidationCode();
-							$body = 'hi ' . $name . '<br>';
-							$body .= 'your code is ' . $code;
-							
-							Mailer::init($email, 'confirmation code', $body);
+							Mailer::registrationMail($email ,$name , $code );
 							// send the current signup to session
 							$data = [
 								'email' => $email,

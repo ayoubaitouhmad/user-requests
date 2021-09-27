@@ -1,6 +1,17 @@
 /******/ (function() { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./node_modules/@babel/runtime/regenerator/index.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/@babel/runtime/regenerator/index.js ***!
+  \**********************************************************/
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+module.exports = __webpack_require__(/*! regenerator-runtime */ "./node_modules/regenerator-runtime/runtime.js");
+
+
+/***/ }),
+
 /***/ "./node_modules/axios/index.js":
 /*!*************************************!*\
   !*** ./node_modules/axios/index.js ***!
@@ -1846,35 +1857,38 @@ module.exports = {
   "use strict";
 
   window.app.admin.all = function () {
-    var pusher = new Pusher('7dbc219cc0dd3d0e07b0', {
-      cluster: 'eu'
-    });
-    var newUser = $('#new-registre');
-    var newRequest = $('#new-request'); // push notification when new  user registered
-
-    if (newUser.prop('checked')) {
-      Pusher.logToConsole = false;
-      var channel = pusher.subscribe('add-user');
-      channel.bind('my-event', function (data) {
-        $('body').load(window.location.pathname);
+    //  TODO : check if thers is internet connection
+    if (window.navigator.onLine) {
+      var pusher = new Pusher('7dbc219cc0dd3d0e07b0', {
+        cluster: 'eu'
       });
-    } // end receive notification when new sign up
+      var newUser = $('#new-registre');
+      var newRequest = $('#new-request'); // push notification when new  user registered
+
+      if (newUser.prop('checked')) {
+        Pusher.logToConsole = false;
+        var channel = pusher.subscribe('add-user');
+        channel.bind('my-event', function (data) {
+          $('body').load(window.location.pathname);
+        });
+      } // end receive notification when new sign up
 
 
-    if (newRequest.prop('checked')) {
-      // push notification when new  user registered
-      var newRequestChannel = pusher.subscribe('NEW_REQUEST');
-      newRequestChannel.bind('my-event', function (data) {
+      if (newRequest.prop('checked')) {
+        // push notification when new  user registered
+        var newRequestChannel = pusher.subscribe('NEW_REQUEST');
+        newRequestChannel.bind('my-event', function (data) {
+          location.reload();
+        }); // end receive notification when new sign up
+      } // push notification when user chnage password
+
+
+      var securityNotificationChannel = pusher.subscribe('Security_Notification');
+      securityNotificationChannel.bind('my-event', function (data) {
         location.reload();
       }); // end receive notification when new sign up
-    } // push notification when user chnage password
+    } // set notification status to see it before
 
-
-    var securityNotificationChannel = pusher.subscribe('Security_Notification');
-    securityNotificationChannel.bind('my-event', function (data) {
-      location.reload();
-    }); // end receive notification when new sign up
-    // set notification status to deja vue
 
     $('.admin-notifications__count , .admin-count').on('click', function () {
       var countContainer = $('.admin-count');
@@ -1891,6 +1905,506 @@ module.exports = {
         return console.log(error);
       });
     });
+  };
+})();
+
+/***/ }),
+
+/***/ "./resources/assets/js/admin/dashboard/requests/ajax-requests.js":
+/*!***********************************************************************!*\
+  !*** ./resources/assets/js/admin/dashboard/requests/ajax-requests.js ***!
+  \***********************************************************************/
+/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+/* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+/* provided dependency */ var axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+(function () {
+  "use strict";
+
+  window.app.admin.requests.ajaxRequest = function () {
+    // update request / answer request
+    var form = $('#handle-user-request');
+    var modalBtnSave = $('#modal-btn__save');
+    form.on('submit', function (e) {
+      e.preventDefault();
+      modalBtnSave.prop('disabled', false);
+      var requestId = $('#encContainer').val();
+      var token = $('body').attr('page-token');
+      var requestStatusEl = form.find('select');
+      var requestResponseEl = form.find('textarea');
+
+      if (form.parsley().isValid()) {
+        modalBtnSave.prop('disabled', true);
+        axios({
+          method: 'post',
+          url: '/admin/dashboard/requests/edit',
+          data: {
+            'action': 'post',
+            'data': {
+              'req_id': requestId,
+              'status': requestStatusEl.val(),
+              'response': requestResponseEl.val()
+            }
+          },
+          headers: {
+            'Authorization': token,
+            'Accept': 'application/json'
+          }
+        }).then(function (res) {
+          handleReturnData(res.data);
+        })["catch"](function (error) {
+          modalBtnSave.prop('disabled', false);
+        });
+      }
+    });
+
+    function handleReturnData(_ref) {
+      var header = _ref.header,
+          body = _ref.body;
+      modalBtnSave.prop('disabled', false);
+      var parentEl = form.closest('.modal');
+      modalBtnSave.prop('disabled', false);
+      var errorMessagesEl = parentEl.find('.user-form-messages');
+      var messageTitleEl = errorMessagesEl.children('.modal-error-title');
+      var messageBodyEl = errorMessagesEl.children('.modal-error-body');
+
+      switch (header) {
+        case 'done':
+          $('.modal').modal('hide');
+          func.resetScrolling();
+          func.refreshPage();
+          func.reloadPageContent('/admin/dashboard/requests');
+          break;
+
+        case 'validation':
+          errorMessagesEl.removeClass('d-none');
+          func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
+
+          if (body === "") {
+            errorMessagesEl.addClass('d-none');
+          } else {
+            var arrays = Object.values(body);
+
+            if (arrays.find(function (x) {
+              return x !== undefined;
+            }) !== undefined) {
+              var firstArray = arrays.find(function (x) {
+                return x !== undefined;
+              });
+
+              if (arrays.find(function (x) {
+                return x !== undefined;
+              }) !== undefined) {
+                if (firstArray.find(function (x) {
+                  return x !== undefined;
+                }) !== undefined) {
+                  messageBodyEl.text(firstArray.find(function (x) {
+                    return x !== undefined;
+                  }));
+                }
+              }
+            }
+
+            parentEl.find('.modal-body').scroll(0, 0); // scroll into error
+          }
+
+          break;
+
+        case 'cancel':
+          errorMessagesEl.removeClass('d-none');
+          func.setClass(errorMessagesEl, 'alert-warning', 'alert-danger');
+          messageTitleEl.html(body.substring(0, body.indexOf(',')) + ',');
+          messageBodyEl.html(body.substring(body.indexOf(',') + 1, body.length));
+          parentEl.find('.modal-body').scroll(0, 0); // scroll into error
+
+          break;
+
+        case 'error':
+          errorMessagesEl.removeClass('d-none');
+          func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
+          $('.modal-error-title').html(body.substring(0, body.indexOf(',')) + ',');
+          $('.modal-error-body').html(body.substring(body.indexOf(',') + 1, body.length));
+          parentEl.find('.modal-body').scroll(0, 0); // scroll into error
+
+          break;
+      }
+    } // end  update request / answer request
+
+  };
+})();
+
+/***/ }),
+
+/***/ "./resources/assets/js/admin/dashboard/requests/chart.js":
+/*!***************************************************************!*\
+  !*** ./resources/assets/js/admin/dashboard/requests/chart.js ***!
+  \***************************************************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/regenerator */ "./node_modules/@babel/runtime/regenerator/index.js");
+/* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__);
+/* provided dependency */ var axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+/* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+
+
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+(function () {
+  "use strict";
+
+  window.app.admin.requests.charts = function () {
+    // get charts data from server
+    _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee() {
+      var response;
+      return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              _context.prev = 0;
+              _context.next = 3;
+              return axios.get('/admin/dashboard/requests/chart/data');
+
+            case 3:
+              response = _context.sent;
+              getData(response.data);
+              _context.next = 10;
+              break;
+
+            case 7:
+              _context.prev = 7;
+              _context.t0 = _context["catch"](0);
+              console.error(_context.t0);
+
+            case 10:
+            case "end":
+              return _context.stop();
+          }
+        }
+      }, _callee, null, [[0, 7]]);
+    }))(); // window.axios.get('/admin/dashboard/requests/chart/data')
+    //     .then(response => {
+    //         getData(response.data);
+    //     })
+    //     .catch(error => console.log(error));
+    //handle data
+
+
+    function getData(data) {
+      var women = data.body.womenRequestsPerMonth;
+      var men = data.body.menRequestsPerMonth;
+      makeAreaCharts(men, women);
+      var userCountByMonthCurYear = data.body.requestByMonthCurrentYear;
+      var userCountByMonthLastYear = data.body.requestByMonthLastYear;
+      createBarChart(userCountByMonthCurYear, userCountByMonthLastYear);
+    } // create area chart
+
+
+    function makeAreaCharts(menCharts, womenCharts) {
+      var menData = [];
+      var womenData = [];
+      var labels = [];
+      menCharts.forEach(function (obg) {
+        menData.push(obg.count);
+        labels.push(obg.month);
+      });
+      womenCharts.forEach(function (obg) {
+        womenData.push(obg.count);
+      });
+      var areaChartData = {
+        labels: labels,
+        datasets: [{
+          label: 'men',
+          data: menData,
+          borderColor: '#3E348C',
+          backgroundColor: 'rgba(202,197,255,0.51)',
+          fill: true
+        }, {
+          label: 'women',
+          data: womenData,
+          backgroundColor: '#FFFCF1',
+          borderColor: '#E9C121',
+          fill: true
+        }]
+      };
+      var areaChartConfig = {
+        type: 'line',
+        data: areaChartData,
+        options: {
+          animations: {
+            radius: {
+              duration: 400,
+              easing: 'linear',
+              loop: function loop(context) {
+                return context.active;
+              }
+            }
+          },
+          hoverRadius: 7,
+          hoverBackgroundColor: 'black',
+          lineTension: 0.45,
+          plugins: {
+            legend: {
+              position: "top"
+            },
+            filler: {
+              propagate: false
+            },
+            title: {
+              display: true,
+              text: 'numbers of requests by gender in ' + new Date().getFullYear(),
+              position: "top",
+              align: "center",
+              fontSize: 16
+            }
+          },
+          radius: 4,
+          interaction: {
+            intersect: false
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Months',
+                align: 'center'
+              },
+              grid: {
+                display: false
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'number of requests',
+                align: 'center'
+              },
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      };
+
+      if ($('#area-chart').length) {
+        var thisChart = $('#area-chart').get(0).getContext('2d');
+        new Chart(thisChart, areaChartConfig);
+      }
+    } // create bar chart
+
+
+    function createBarChart(requestsCurrYear, requestsLastYear) {
+      var currYearData = [];
+      var lastYearData = [];
+      var labels = [];
+      requestsCurrYear.forEach(function (obg) {
+        currYearData.push(obg.count);
+        labels.push(obg.month);
+      });
+      requestsLastYear.forEach(function (obg) {
+        lastYearData.push(obg.count);
+      });
+      var barChartData = {
+        labels: labels,
+        datasets: [{
+          label: 'last year ' + (new Date().getFullYear() - 1),
+          data: lastYearData,
+          backgroundColor: 'rgba(233,193,33,0.7)',
+          borderColor: '#E9C121',
+          fill: true
+        }, {
+          label: 'current year ' + new Date().getFullYear(),
+          data: currYearData,
+          borderColor: '#5f50d7',
+          backgroundColor: 'rgba(95,80,215,0.7)',
+          fill: true
+        }]
+      };
+      var barChartConfig = {
+        type: 'bar',
+        data: barChartData,
+        options: {
+          elements: {
+            bar: {
+              borderWidth: 2
+            }
+          },
+          plugins: {
+            filler: {
+              propagate: false
+            },
+            title: {
+              display: true,
+              text: 'numbers of requests per month  in ' + new Date().getFullYear() + '/' + (new Date().getFullYear() - 1)
+            }
+          },
+          pointBackgroundColor: '#fff',
+          radius: 10,
+          interaction: {
+            intersect: false
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Months',
+                align: 'center'
+              },
+              grid: {
+                display: false
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'number of requests',
+                align: 'requests'
+              },
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      };
+
+      if ($('#bar-chart').length) {
+        new Chart($('#bar-chart').get(0).getContext('2d'), barChartConfig);
+      }
+    }
+  };
+})();
+
+/***/ }),
+
+/***/ "./resources/assets/js/admin/dashboard/requests/datatable.js":
+/*!*******************************************************************!*\
+  !*** ./resources/assets/js/admin/dashboard/requests/datatable.js ***!
+  \*******************************************************************/
+/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+/* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+(function () {
+  "use strict";
+
+  window.app.admin.requests.datatable = function () {
+    var dt = $('#requests-list').DataTable({
+      // "paging":   false,
+      // "ordering": false,
+      "info": true,
+      "pageLength": 8,
+      'scrollY': 564,
+      'scrollX': 564,
+      'select': true,
+      'scrollCollapse': true
+    });
+  };
+})();
+
+/***/ }),
+
+/***/ "./resources/assets/js/admin/dashboard/requests/page.js":
+/*!**************************************************************!*\
+  !*** ./resources/assets/js/admin/dashboard/requests/page.js ***!
+  \**************************************************************/
+/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+/* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+(function () {
+  "use strict";
+
+  window.app.admin.requests.page = function () {
+    // variable global
+    var modals = $('.modal');
+    var form = $('#handle-user-request');
+    $(document).click(function () {
+      $('.cell-menu__submenu').addClass('d-none');
+    }); // modals.modal('show');
+
+    $(".cell-menu__ico").on('click', function () {
+      $('.cell-menu__submenu').addClass('d-none');
+      var $this = $(this);
+      var cellMenuSubmenuEl = $this.siblings('.cell-menu__submenu');
+      cellMenuSubmenuEl.removeClass('d-none').addClass('active');
+    }); // open modal to read full requests message
+
+    $('.read-more').on('click', function () {
+      var modalEl = $('.modal-request__message');
+      var $this = $(this);
+      var requestMessageContainerEl = $this.siblings('input[type="hidden"]');
+      var modalTextAreEl = modalEl.find('textarea');
+      modalEl.modal('show');
+      modalTextAreEl.val(requestMessageContainerEl.val());
+    }); // prevent scroll when modal is open
+
+    modals.on('show.bs.modal', function () {
+      func.preventScrolling();
+    }); // password onscroll to default
+
+    modals.on('hide.bs.modal', function () {
+      func.resetScrolling();
+      $('select').get(0).selectedIndex = 1;
+      $('textarea').val('');
+    }); // get request all data
+
+    $(document.body).on('click', '.dropdown-menu__check-request', function (e) {
+      var $this = $(this);
+      var thisParent = $this.closest('tr');
+      var modalEl = $('.modal-requests__full-data');
+      modalEl.modal('show');
+      $("#encContainer").val(thisParent.attr('row-id'));
+      console.log($("#encContainer").val()); // get the data stored in hidden input in current line
+
+      var fullNameContainerEl = thisParent.find('.requests-list__user-name__hide');
+      var dateContainerEl = thisParent.find('.requests-list__date__hide');
+      var typeContainerEl = thisParent.find('.requests-list__type__hide');
+      var reasonContainerEl = thisParent.find('.requests-list__reason__hide');
+      var statusContainerEl = thisParent.find('.requests-list__status__hide');
+      var responseContainerEl = thisParent.find('input.requests-list__response__hide'); // get the fields inside the modal
+      // using find to tell jq to search inside modal not all the dom
+
+      var fullNameDestinationEl = modalEl.find('.data-body__user-name');
+      var dateDestinationEl = modalEl.find('.data-body__request-date');
+      var typeDestinationEl = modalEl.find('.data-body__request-type');
+      var reasonDestinationEl = modalEl.find('.data-body__request-reason');
+      var statusDestinationEl = modalEl.find('.data-body__request-status');
+      var responseDestinationEl = modalEl.find('.data-body__request-response'); // fill the fields
+
+      fullNameDestinationEl.text(fullNameContainerEl.val());
+      dateDestinationEl.text(dateContainerEl.val());
+      reasonDestinationEl.text(reasonContainerEl.val());
+      typeDestinationEl.text(typeContainerEl.val());
+      responseDestinationEl.val(responseContainerEl.val());
+      statusDestinationEl.val(statusContainerEl.val());
+    }); // delete request
+
+    $('.dropdown-menu__delete-request').on('click', function () {}); // submit button exist out side form , so when btn clicked this func call submit event and handle it in ajax requests file
+
+    $('#modal-btn__save').on('click', function (e) {
+      form.submit();
+    });
+  };
+})();
+
+/***/ }),
+
+/***/ "./resources/assets/js/admin/dashboard/requests/parsley.js":
+/*!*****************************************************************!*\
+  !*** ./resources/assets/js/admin/dashboard/requests/parsley.js ***!
+  \*****************************************************************/
+/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+/* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+(function () {
+  "use strict";
+
+  window.app.admin.requests.parsleyJS = function () {
+    var form = $('#handle-user-request');
+    form.parsley();
   };
 })();
 
@@ -1982,7 +2496,7 @@ module.exports = {
 
         case 'validation':
           errorMessagesEl.removeClass('d-none');
-          func.setClassAdvanced(errorMessagesEl, 'alert-dark');
+          func.setClassAdvanced(errorMessagesEl, 'alert-info');
           var arrays = Object.values(body);
 
           if (arrays.find(function (x) {
@@ -2362,17 +2876,6 @@ module.exports = {
 
     saveUserSecurityData.on('click', function () {
       securityDataFormEl.submit();
-    }); // show button (save new avatar)
-
-    $('.custom-file-uploader-input').on('change', function () {
-      var $this = $(this);
-      $this.closest('.profile-content__avatar').find('#save-user-avatar').addClass('active-btn');
-      var imgShower = $this.closest('.custom-uploader').find('.custom-uploader__img');
-
-      if (func.isValidImageExt(func.getFileExt($this))) {
-        imgShower.attr('data-src', URL.createObjectURL($this.get(0).files[0]));
-        func.lazy();
-      }
     }); // show button (save new profile infos)
 
     $('#profile-data-form .custom-form__control').on('keyup change', function () {
@@ -2427,570 +2930,13 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./resources/assets/js/admin/login/ajax-requests.js":
-/*!**********************************************************!*\
-  !*** ./resources/assets/js/admin/login/ajax-requests.js ***!
-  \**********************************************************/
+/***/ "./resources/assets/js/admin/dashboard/users/ajax-requests.js":
+/*!********************************************************************!*\
+  !*** ./resources/assets/js/admin/dashboard/users/ajax-requests.js ***!
+  \********************************************************************/
 /***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
 
 /* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
-/* provided dependency */ var axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
-(function () {
-  window.app.admin.login.ajaxRequest = function () {
-    var loginFormEl = $('#login-form');
-    loginFormEl.on('submit', function (e) {
-      console.log('clicked');
-      e.preventDefault();
-      var emailEl = loginFormEl.find('.form-item__data-email');
-      var passwordEl = loginFormEl.find('.form-item__data-password');
-      var token = $('body').attr('page-token');
-      axios({
-        method: 'post',
-        url: '/admin/login/authorization',
-        data: {
-          'action': 'post',
-          'data': {
-            'username': emailEl.val(),
-            'password': passwordEl.val()
-          }
-        },
-        headers: {
-          'Authorization': token
-        }
-      }).then(function (res) {
-        handleSubmitFormReturnedData(res.data);
-      })["catch"](function (error) {
-        return console.log(error);
-      });
-    });
-
-    function handleSubmitFormReturnedData(_ref) {
-      var header = _ref.header,
-          body = _ref.body;
-      var errorMessagesEl = loginFormEl.closest('.login-container').find('.errors-messages');
-      var messageTitleEl = errorMessagesEl.children('.modal-error-title');
-      var messageBodyEl = errorMessagesEl.children('.modal-error-body');
-
-      switch (header) {
-        case 'valid login':
-          func.refreshPage();
-          setTimeout(function () {
-            return location.assign("/admin/dashboard");
-          }, 3000);
-          break;
-
-        case 'validation':
-          errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
-
-          if (body === "") {
-            errorMessagesEl.addClass('d-none');
-          } else {
-            var arrays = Object.values(body);
-
-            if (arrays.find(function (x) {
-              return x !== undefined;
-            }) !== undefined) {
-              var firstArray = arrays.find(function (x) {
-                return x !== undefined;
-              });
-
-              if (arrays.find(function (x) {
-                return x !== undefined;
-              }) !== undefined) {
-                if (firstArray.find(function (x) {
-                  return x !== undefined;
-                }) !== undefined) {
-                  messageBodyEl.text(firstArray.find(function (x) {
-                    return x !== undefined;
-                  }));
-                }
-              }
-            }
-          }
-
-          break;
-
-        case 'invalid login':
-          errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-warning', 'alert-danger');
-          messageTitleEl.html(body.substring(0, body.indexOf(',')) + ',');
-          messageBodyEl.html(body.substring(body.indexOf(',') + 1, body.length));
-          break;
-
-        case 'error':
-          errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
-          $('.modal-error-title').html(body.substring(0, body.indexOf(',')) + ',');
-          $('.modal-error-body').html(body.substring(body.indexOf(',') + 1, body.length));
-          break;
-      }
-    }
-  };
-})();
-
-/***/ }),
-
-/***/ "./resources/assets/js/admin/requests/ajax-requests.js":
-/*!*************************************************************!*\
-  !*** ./resources/assets/js/admin/requests/ajax-requests.js ***!
-  \*************************************************************/
-/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
-
-/* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
-/* provided dependency */ var axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
-(function () {
-  "use strict";
-
-  window.app.admin.requests.ajaxRequest = function () {
-    // update request / answer request
-    var form = $('#handle-user-request');
-    form.on('submit', function (e) {
-      e.preventDefault();
-      var requestId = $('#encContainer').val();
-      var token = $('body').attr('page-token');
-      var requestStatusEl = form.find('select');
-      var requestResponseEl = form.find('textarea');
-
-      if (form.parsley().isValid()) {
-        axios({
-          method: 'post',
-          url: '/admin/dashboard/requests/edit',
-          data: {
-            'action': 'post',
-            'data': {
-              'req_id': requestId,
-              'status': requestStatusEl.val(),
-              'response': requestResponseEl.val()
-            }
-          },
-          headers: {
-            'Authorization': token,
-            'Accept': 'application/json'
-          }
-        }).then(function (res) {
-          handleReturnData(res.data);
-          console.log(res.data);
-        })["catch"](function (error) {
-          return console.log(error.message);
-        });
-      }
-    });
-
-    function handleReturnData(_ref) {
-      var header = _ref.header,
-          body = _ref.body;
-      var parentEl = form.closest('.modal');
-      var errorMessagesEl = parentEl.find('.user-form-messages');
-      var messageTitleEl = errorMessagesEl.children('.modal-error-title');
-      var messageBodyEl = errorMessagesEl.children('.modal-error-body');
-
-      switch (header) {
-        case 'done':
-          $('.modal').modal('hide');
-          func.resetScrolling();
-          func.refreshPage();
-          func.reloadPageContent('/admin/dashboard/requests');
-          break;
-
-        case 'validation':
-          errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
-
-          if (body === "") {
-            errorMessagesEl.addClass('d-none');
-          } else {
-            var arrays = Object.values(body);
-
-            if (arrays.find(function (x) {
-              return x !== undefined;
-            }) !== undefined) {
-              var firstArray = arrays.find(function (x) {
-                return x !== undefined;
-              });
-
-              if (arrays.find(function (x) {
-                return x !== undefined;
-              }) !== undefined) {
-                if (firstArray.find(function (x) {
-                  return x !== undefined;
-                }) !== undefined) {
-                  messageBodyEl.text(firstArray.find(function (x) {
-                    return x !== undefined;
-                  }));
-                }
-              }
-            }
-
-            parentEl.find('.modal-body').scroll(0, 0); // scroll into error
-          }
-
-          break;
-
-        case 'cancel':
-          errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-warning', 'alert-danger');
-          messageTitleEl.html(body.substring(0, body.indexOf(',')) + ',');
-          messageBodyEl.html(body.substring(body.indexOf(',') + 1, body.length));
-          parentEl.find('.modal-body').scroll(0, 0); // scroll into error
-
-          break;
-
-        case 'error':
-          errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
-          $('.modal-error-title').html(body.substring(0, body.indexOf(',')) + ',');
-          $('.modal-error-body').html(body.substring(body.indexOf(',') + 1, body.length));
-          parentEl.find('.modal-body').scroll(0, 0); // scroll into error
-
-          break;
-      }
-    } // end  update request / answer request
-
-  };
-})();
-
-/***/ }),
-
-/***/ "./resources/assets/js/admin/requests/chart.js":
-/*!*****************************************************!*\
-  !*** ./resources/assets/js/admin/requests/chart.js ***!
-  \*****************************************************/
-/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
-
-/* provided dependency */ var __webpack_provided_window_dot_axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
-/* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
-(function () {
-  "use strict";
-
-  window.app.admin.requests.charts = function () {
-    // get charts data from server
-    __webpack_provided_window_dot_axios.get('/admin/dashboard/requests/chart/data').then(function (response) {
-      getData(response.data);
-    })["catch"](function (error) {
-      return console.log(error);
-    }); //handle data
-
-    function getData(data) {
-      var women = data.body.womenRequestsPerMonth;
-      var men = data.body.menRequestsPerMonth;
-      makeAreaCharts(men, women);
-      var userCountByMonthCurYear = data.body.requestByMonthCurrentYear;
-      var userCountByMonthLastYear = data.body.requestByMonthLastYear;
-      createBarChart(userCountByMonthCurYear, userCountByMonthLastYear);
-    } // create area chart
-
-
-    function makeAreaCharts(menCharts, womenCharts) {
-      var menData = [];
-      var womenData = [];
-      var labels = [];
-      menCharts.forEach(function (obg) {
-        menData.push(obg.count);
-        labels.push(obg.month);
-      });
-      womenCharts.forEach(function (obg) {
-        womenData.push(obg.count);
-      });
-      var areaChartData = {
-        labels: labels,
-        datasets: [{
-          label: 'men',
-          data: menData,
-          borderColor: '#3E348C',
-          backgroundColor: 'rgba(202,197,255,0.51)',
-          fill: true
-        }, {
-          label: 'women',
-          data: womenData,
-          backgroundColor: '#FFFCF1',
-          borderColor: '#E9C121',
-          fill: true
-        }]
-      };
-      var areaChartConfig = {
-        type: 'line',
-        data: areaChartData,
-        options: {
-          animations: {
-            radius: {
-              duration: 400,
-              easing: 'linear',
-              loop: function loop(context) {
-                return context.active;
-              }
-            }
-          },
-          hoverRadius: 7,
-          hoverBackgroundColor: 'black',
-          lineTension: 0.45,
-          plugins: {
-            legend: {
-              position: "top"
-            },
-            filler: {
-              propagate: false
-            },
-            title: {
-              display: true,
-              text: 'numbers of requests by gender in ' + new Date().getFullYear(),
-              position: "top",
-              align: "center",
-              fontSize: 16
-            }
-          },
-          radius: 4,
-          interaction: {
-            intersect: false
-          },
-          scales: {
-            x: {
-              title: {
-                display: true,
-                text: 'Months',
-                align: 'center'
-              },
-              grid: {
-                display: false
-              }
-            },
-            y: {
-              title: {
-                display: true,
-                text: 'number of requests',
-                align: 'center'
-              },
-              grid: {
-                display: false
-              }
-            }
-          }
-        }
-      };
-
-      if ($('#area-chart').length) {
-        var thisChart = $('#area-chart').get(0).getContext('2d');
-        new Chart(thisChart, areaChartConfig);
-      }
-    } // create bar chart
-
-
-    function createBarChart(requestsCurrYear, requestsLastYear) {
-      var currYearData = [];
-      var lastYearData = [];
-      var labels = [];
-      requestsCurrYear.forEach(function (obg) {
-        currYearData.push(obg.count);
-        labels.push(obg.month);
-      });
-      requestsLastYear.forEach(function (obg) {
-        lastYearData.push(obg.count);
-      });
-      var barChartData = {
-        labels: labels,
-        datasets: [{
-          label: 'last year ' + (new Date().getFullYear() - 1),
-          data: lastYearData,
-          backgroundColor: 'rgba(233,193,33,0.7)',
-          borderColor: '#E9C121',
-          fill: true
-        }, {
-          label: 'current year ' + new Date().getFullYear(),
-          data: currYearData,
-          borderColor: '#5f50d7',
-          backgroundColor: 'rgba(95,80,215,0.7)',
-          fill: true
-        }]
-      };
-      var barChartConfig = {
-        type: 'bar',
-        data: barChartData,
-        options: {
-          elements: {
-            bar: {
-              borderWidth: 2
-            }
-          },
-          plugins: {
-            filler: {
-              propagate: false
-            },
-            title: {
-              display: true,
-              text: 'numbers of requests per month  in ' + new Date().getFullYear() + '/' + (new Date().getFullYear() - 1)
-            }
-          },
-          pointBackgroundColor: '#fff',
-          radius: 10,
-          interaction: {
-            intersect: false
-          },
-          scales: {
-            x: {
-              title: {
-                display: true,
-                text: 'Months',
-                align: 'center'
-              },
-              grid: {
-                display: false
-              }
-            },
-            y: {
-              title: {
-                display: true,
-                text: 'number of requests',
-                align: 'requests'
-              },
-              grid: {
-                display: false
-              }
-            }
-          }
-        }
-      };
-
-      if ($('#bar-chart').length) {
-        new Chart($('#bar-chart').get(0).getContext('2d'), barChartConfig);
-      }
-    }
-  };
-})();
-
-/***/ }),
-
-/***/ "./resources/assets/js/admin/requests/datatable.js":
-/*!*********************************************************!*\
-  !*** ./resources/assets/js/admin/requests/datatable.js ***!
-  \*********************************************************/
-/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
-
-/* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
-(function () {
-  "use strict";
-
-  window.app.admin.requests.datatable = function () {
-    $('#requests-list').DataTable({
-      // "paging":   false,
-      // "ordering": false,
-      "info": false
-    });
-  };
-})();
-
-/***/ }),
-
-/***/ "./resources/assets/js/admin/requests/page.js":
-/*!****************************************************!*\
-  !*** ./resources/assets/js/admin/requests/page.js ***!
-  \****************************************************/
-/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
-
-/* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
-(function () {
-  "use strict";
-
-  window.app.admin.requests.page = function () {
-    // variable global
-    var modals = $('.modal');
-    var form = $('#handle-user-request');
-    $(document).click(function () {
-      $('.cell-menu__submenu').addClass('d-none');
-    }); // modals.modal('show');
-
-    $(".cell-menu__ico").on('click', function () {
-      $('.cell-menu__submenu').addClass('d-none');
-      var $this = $(this);
-      var cellMenuSubmenuEl = $this.siblings('.cell-menu__submenu');
-      cellMenuSubmenuEl.removeClass('d-none').addClass('active');
-    }); // open modal to read full requests message
-
-    $('.requests-list__read-request_btn').on('click', function () {
-      var modalEl = $('.modal-request__message');
-      var $this = $(this);
-      var requestMessageContainerEl = $this.siblings('input[type="hidden"]');
-      var modalTextAreEl = modalEl.find('textarea');
-      modalEl.modal('show');
-      modalTextAreEl.val(requestMessageContainerEl.val());
-    }); // prevent scroll when modal is open
-
-    modals.on('show.bs.modal', function () {
-      func.preventScrolling();
-    }); // password onscroll to default
-
-    modals.on('hide.bs.modal', function () {
-      func.resetScrolling();
-      $('select').get(0).selectedIndex = 1;
-      $('textarea').val('');
-    }); // get request all data
-
-    $('.dropdown-menu__check-request').on('click', function () {
-      var $this = $(this);
-      var thisParent = $this.closest('tr');
-      var modalEl = $('.modal-requests__full-data');
-      modalEl.modal('show');
-      $("#encContainer").val(thisParent.attr('row-id'));
-      console.log($("#encContainer").val()); // get the data stored in hidden input in current line
-
-      var fullNameContainerEl = thisParent.find('.requests-list__user-name__hide');
-      var dateContainerEl = thisParent.find('.requests-list__date__hide');
-      var typeContainerEl = thisParent.find('.requests-list__type__hide');
-      var reasonContainerEl = thisParent.find('.requests-list__reason__hide');
-      var statusContainerEl = thisParent.find('.requests-list__status__hide');
-      var responseContainerEl = thisParent.find('input.requests-list__response__hide'); // get the fields inside the modal
-      // using find to tell jq to search inside modal not all the dom
-
-      var fullNameDestinationEl = modalEl.find('.data-body__user-name');
-      var dateDestinationEl = modalEl.find('.data-body__request-date');
-      var typeDestinationEl = modalEl.find('.data-body__request-type');
-      var reasonDestinationEl = modalEl.find('.data-body__request-reason');
-      var statusDestinationEl = modalEl.find('.data-body__request-status');
-      var responseDestinationEl = modalEl.find('.data-body__request-response'); // fill the fields
-
-      fullNameDestinationEl.text(fullNameContainerEl.val());
-      dateDestinationEl.text(dateContainerEl.val());
-      reasonDestinationEl.text(reasonContainerEl.val());
-      typeDestinationEl.text(typeContainerEl.val());
-      responseDestinationEl.val(responseContainerEl.val());
-      statusDestinationEl.val(statusContainerEl.val());
-    }); // delete request
-
-    $('.dropdown-menu__delete-request').on('click', function () {}); // submit button exist out side form , so when btn clicked this func call submit event and handle it in ajax requests file
-
-    $('#modal-btn__save').on('click', function (e) {
-      form.submit();
-    });
-  };
-})();
-
-/***/ }),
-
-/***/ "./resources/assets/js/admin/requests/parsley.js":
-/*!*******************************************************!*\
-  !*** ./resources/assets/js/admin/requests/parsley.js ***!
-  \*******************************************************/
-/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
-
-/* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
-(function () {
-  "use strict";
-
-  window.app.admin.requests.parsleyJS = function () {
-    var form = $('#handle-user-request');
-    form.parsley();
-  };
-})();
-
-/***/ }),
-
-/***/ "./resources/assets/js/admin/users/ajax-requests.js":
-/*!**********************************************************!*\
-  !*** ./resources/assets/js/admin/users/ajax-requests.js ***!
-  \**********************************************************/
-/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
-
-/* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
-/* provided dependency */ var axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* provided dependency */ var __webpack_provided_window_dot_axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 (function () {
   "use strict";
@@ -3015,26 +2961,26 @@ module.exports = {
     var updateFormPhotoContainer = $('.user-update-photo__container'); // end update form
     // add form
 
-    var saveFormEl = $('#user-save-form'); //delete modal
+    var saveFormEl = $('#user-save-form'); // delete modal submit button
 
-    var deleteFormEl = $('#delete-user'); // buttons
+    var deleteUserBtnEl = $('#delete-user'); // buttons
 
     var submitUpdateFormBtnEl = $('#submit-update-form');
-    var getUserDataBtnEl = $('.ico-edit');
-    var user_id; // http requests / Delete user
+    var submitUserSaveForm = $('#submit-user-save-form');
+    var getUserDataBtnEl = $('.ico-edit'); // page token
 
-    deleteFormEl.on('click', function (e) {
+    var token = $('body').attr('page-token'); // http requests / Delete user
+
+    deleteUserBtnEl.on('click', function (e) {
       var $this = $(this);
       var id = $this.closest('.modal').find('input[type="hidden"]').val();
-      var token = saveFormEl.find('input[type="hidden"]').val();
-      axios({
+      __webpack_provided_window_dot_axios({
         method: 'post',
         url: '/admin/dashboard/users/delete',
         data: {
-          'type': 'post',
-          'crud': 'delete',
+          'action': 'delete',
           'data': {
-            id_enc: id
+            'id_enc': id
           }
         },
         headers: {
@@ -3043,36 +2989,36 @@ module.exports = {
       }).then(function (res) {
         return HandleDeleteHttpRequestReturnedData(res.data);
       })["catch"](function (error) {
-        return console.log(error);
+        alert('error');
       });
     });
 
     function HandleDeleteHttpRequestReturnedData(_ref) {
       var header = _ref.header,
           body = _ref.body;
-      var parentEl = deleteFormEl.closest('.modal');
+      var parentEl = deleteUserBtnEl.closest('.modal');
       var errorMessagesEl = parentEl.find('.user-form-messages');
       var messageTitleEl = errorMessagesEl.children('.modal-error-title');
       var messageBodyEl = errorMessagesEl.children('.modal-error-body');
 
       switch (header) {
         case 'done':
-          func.refreshPage();
-          func.reloadPageContent('/admin/dashboard/requests');
-          $('.modal').modal('hide');
+          $('body').removeClass('modal-open');
           func.resetScrolling();
+          func.refreshPage();
+          func.reloadPageContent('/admin/dashboard/users');
           break;
 
         case 'cancel':
           errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-warning', 'alert-danger');
+          func.setClassAdvanced(errorMessagesEl, 'alert-warning');
           messageTitleEl.html(body.substring(0, body.indexOf(',')) + ',');
           messageBodyEl.html(body.substring(body.indexOf(',') + 1, body.length));
           break;
 
         case 'error':
           errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
+          func.setClassAdvanced(errorMessagesEl, 'alert-danger');
           $('.modal-error-title').html(body.substring(0, body.indexOf(',')) + ',');
           $('.modal-error-body').html(body.substring(body.indexOf(',') + 1, body.length));
           break;
@@ -3081,7 +3027,9 @@ module.exports = {
     // http requests / get user data user
 
 
-    getUserDataBtnEl.on('click', function () {
+    $(document.body).on('click', '.ico-edit', function (e) {
+      console.log('document');
+      console.log('getUserDataBtnEl');
       $('#update-user').modal('show'); // show user infos inside form
 
       /*
@@ -3089,9 +3037,9 @@ module.exports = {
           * get the hashed from the current field (this)
       */
 
-      var id = getUserDataBtnEl.closest('tr').attr('row-id');
-      var token = $('body').attr('page-token');
-      user_id = id;
+      var id = $(this).closest('tr').attr('row-id');
+      token = $('body').attr('page-token');
+      $('#user-to-update').text(id);
       __webpack_provided_window_dot_axios({
         method: 'GET',
         url: '/admin/dashboard/users/get',
@@ -3113,47 +3061,51 @@ module.exports = {
       if (title === 'founded' && body !== false) {
         var userData = body; //here the user obj
 
-        updateFormName.val(userData.user_fullname).trigger('focus');
-        updateFormGender.val(userData.user_gender === 'm' ? 'male' : 'female').trigger('focus');
-        updateFormAddress.val(userData.user_address).trigger('focus');
-        updateFormRole.val(userData.user_role).trigger('focus');
-        updateFormSecretQuestion.val(userData.user_secretQuestion).trigger('focus');
-        updateFormDate.val(userData.user_dateOfBirth).trigger('focus');
-        updateFormCity.val(userData.user_ville).trigger('focus');
-        updateFormResponse.val(userData.user_Response).trigger('focus');
-        updateFormEmail.val(userData.user_email).trigger('focus');
-        updateFormPhoneNumber.val(userData.user_phoneNumber).trigger('focus');
-        updateFormAccount.val(userData.user_compteEtat).trigger('focus');
-        updateFormPhotoContainer.attr('src', userData.user_photo); //
-        // $('.custom-file-input')
-        //     .trigger('change')
-        //     .trigger('focus')
-        //     .trigger('focusout')
-        //     .trigger('keyup')
-        //     .trigger('copy')
-        //     .trigger('paste')
-        //     .trigger('cut');
+        updateFormName.val(userData.user_fullname);
+        updateFormGender.val(userData.user_gender === 'm' ? 'male' : 'female');
+        updateFormAddress.val(userData.user_address);
+        updateFormRole.val(userData.user_role);
+        updateFormSecretQuestion.val(userData.user_secretQuestion);
+        updateFormDate.val(userData.user_dateOfBirth);
+        updateFormCity.val(userData.user_ville);
+        updateFormResponse.val(userData.user_Response);
+        updateFormEmail.val(userData.user_email);
+        updateFormPhoneNumber.val(userData.user_phoneNumber);
+        updateFormAccount.val(userData.user_compteEtat);
+        $('#image-preview').attr('src', userData.user_photo !== '' ? userData.user_photo : '/img/unknown.png');
+        $("#user-update-city option").each(function () {
+          if (userData.user_ville === $(this).text()) {
+            updateFormCity.val($(this).val());
+            return false;
+          }
+        });
+        $('.custom-form__control').each(function (index, element) {
+          var $this = $(element);
+          $this.trigger('focus').trigger('change').trigger('focusout').trigger('keyup').trigger('copy').trigger('paste').trigger('cut');
+        });
       }
     } //end get user data
     // http requests / update user
 
 
     submitUpdateFormBtnEl.on('click', function () {
-      submitUpdateFormBtnEl.prop('disabled', true);
       updateFormEl.submit();
     });
     updateFormEl.on('submit', function (e) {
+      var _$$text;
+
       e.preventDefault();
+      submitUpdateFormBtnEl.prop('disabled', true);
       var formData = new FormData();
-      var token = $('body').attr('page-token');
-      formData.append('id', user_id);
+      token = $('body').attr('page-token');
+      formData.append('id', (_$$text = $('#user-to-update').text()) !== null && _$$text !== void 0 ? _$$text : user_id);
       formData.append('name', updateFormName.val());
       formData.append('gender', updateFormGender.val());
       formData.append('address', updateFormAddress.val());
       formData.append('role', updateFormRole.val());
       formData.append('question', updateFormSecretQuestion.val());
       formData.append('date', updateFormDate.val());
-      formData.append('city', updateFormCity.val());
+      formData.append('city', updateFormCity.find(":selected").text());
       formData.append('response', updateFormResponse.val());
       formData.append('email', updateFormEmail.val());
       formData.append('phone', updateFormPhoneNumber.val());
@@ -3161,7 +3113,6 @@ module.exports = {
       if (func.isFile(updateFormPhoto)) formData.append('photo', updateFormPhoto.get(0).files[0]);
 
       if (updateFormEl.parsley().isValid()) {
-        submitUpdateFormBtnEl.prop('disabled', false);
         __webpack_provided_window_dot_axios({
           method: 'post',
           url: '/admin/dashboard/users/edit',
@@ -3171,7 +3122,7 @@ module.exports = {
             'Authorization': token
           }
         }).then(function (res) {
-          HandleUpdateHttpRequestReturnedData(res.data); // HandleUpdateHttpRequestReturnedData(res.data)
+          HandleUpdateHttpRequestReturnedData(res.data);
         })["catch"](function (error) {
           return console.log(error);
         });
@@ -3181,37 +3132,35 @@ module.exports = {
     function HandleUpdateHttpRequestReturnedData(_ref3) {
       var title = _ref3.title,
           body = _ref3.body;
-      var errorMessagesEl = updateFormEl.find('#user-update-form-messages');
+      submitUpdateFormBtnEl.prop('disabled', false);
+      var errorMessagesEl = updateFormEl.find('.modal-messages');
       var messageTitleEl = errorMessagesEl.children('.modal-error-title');
       var messageBodyEl = errorMessagesEl.children('.modal-error-body');
 
       switch (title) {
         case 'done':
-          $('#update-user').modal('hide'); // show user infos inside form
+          errorMessagesEl.addClass('d-none');
+          setTimeout(function () {
+            $('#update-user').modal('hide'); // show user infos inside form
 
-          $('body').removeClass('modal-open');
-          func.resetScrolling();
-          func.refreshPage();
-          func.reloadPageContent('/admin/dashboard/users');
+            $('body').removeClass('modal-open');
+            func.resetScrolling();
+            func.refreshPage();
+            func.reloadPageContent('/admin/dashboard/users');
+          }, 100);
           break;
 
         case 'used':
+        case 'cancel':
           errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-warning', 'alert-danger');
+          func.setClassAdvanced(errorMessagesEl, 'alert-warning');
           messageTitleEl.html(body.substring(0, body.indexOf(',')) + ',');
           messageBodyEl.html(body.substring(body.indexOf(',') + 1, body.length));
           break;
 
-        case 'sql':
+        case 'validation':
           errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-warning', 'alert-danger');
-          messageTitleEl.html(body.substring(0, body.indexOf(',')) + ',');
-          messageBodyEl.html(body.substring(body.indexOf(',') + 1, body.length));
-          break;
-
-        case 'validator':
-          errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
+          func.setClassAdvanced(errorMessagesEl, 'alert-info');
 
           if (body === "") {
             errorMessagesEl.addClass('d-none');
@@ -3243,10 +3192,9 @@ module.exports = {
 
         case 'error':
           errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
-          errorMessagesEl.removeClass('d-none');
-          $('.modal-error-title').html(body.substring(0, body.indexOf(',')) + ',');
-          $('.modal-error-body').html(body.substring(body.indexOf(',') + 1, body.length));
+          func.setClassAdvanced(errorMessagesEl, 'alert-danger');
+          messageTitleEl.html(body.substring(0, body.indexOf(',')) + ',');
+          messageBodyEl.html(body.substring(body.indexOf(',') + 1, body.length));
           break;
       }
     } //end update user
@@ -3255,63 +3203,66 @@ module.exports = {
 
     saveFormEl.submit(function (e) {
       e.preventDefault();
+      submitUserSaveForm.prop('disabled', true);
       var nameEl = saveFormEl.find('#user-save-name');
       var emailEl = saveFormEl.find('#user-save-email');
       var phone = saveFormEl.find('#user-save-phone');
       var passwordEl = saveFormEl.find('#user-save-password');
-      var token = $('body').attr('page-token');
-      __webpack_provided_window_dot_axios({
-        method: 'POST',
-        headers: {
-          'Authorization': token
-        },
-        data: {
-          'action': 'add',
-          'data': {
-            'name': nameEl.val(),
-            'email': emailEl.val(),
-            'password': passwordEl.val(),
-            'phone': phone.val()
-          }
-        },
-        url: '/admin/dashboard/users/add'
-      }).then(function (response) {
-        return handleSaveFormReturnData(response.data);
-      })["catch"](function (error) {
-        alert('please try again.');
-        location.reload();
-      });
+      token = $('body').attr('page-token');
+
+      if (saveFormEl.parsley().isValid()) {
+        __webpack_provided_window_dot_axios({
+          method: 'POST',
+          headers: {
+            'Authorization': token
+          },
+          data: {
+            'action': 'add',
+            'data': {
+              'name': nameEl.val(),
+              'email': emailEl.val(),
+              'password': passwordEl.val(),
+              'phone': phone.val()
+            }
+          },
+          url: '/admin/dashboard/users/add'
+        }).then(function (response) {
+          return handleSaveFormReturnData(response.data);
+        })["catch"](function (error) {
+          alert('please try again.');
+          location.reload();
+        });
+      }
     });
 
     function handleSaveFormReturnData(_ref4) {
       var header = _ref4.header,
           body = _ref4.body;
-      var errorMessagesEl = saveFormEl.find('#user-save-modal-messages');
+      submitUserSaveForm.prop('disabled', false);
+      var errorMessagesEl = saveFormEl.closest('.modal-body').find('#user-save-modal-messages');
       var messageTitleEl = errorMessagesEl.children('.modal-error-title');
       var messageBodyEl = errorMessagesEl.children('.modal-error-body');
 
       switch (header) {
         case 'done':
-          $('.modal').modal('hide');
+          $('#update-user').modal('hide'); // show user infos inside form
+
+          $('body').removeClass('modal-open');
           func.resetScrolling();
-          $('body').load('/page/refresh');
-          $('[data-toggle="minimize"]').click();
-          setTimeout(function () {
-            $('body').load('/admin/dashboard/users');
-            $('[data-toggle="minimize"]').click();
-          }, 3000);
+          func.refreshPage();
+          func.reloadPageContent('/admin/dashboard/users');
           break;
 
         case 'used':
           errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-warning', 'alert-danger');
+          func.setClass(errorMessagesEl, 'alert-warning');
           messageTitleEl.html(body.substring(0, body.indexOf(',')) + ',');
           messageBodyEl.html(body.substring(body.indexOf(',') + 1, body.length));
           break;
 
         case 'validator':
           errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
+          func.setClassAdvanced(errorMessagesEl, 'alert-info');
           var arrays = Object.values(body);
 
           if (arrays.find(function (x) {
@@ -3339,7 +3290,7 @@ module.exports = {
 
         case 'error':
           errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
+          func.setClassAdvanced(errorMessagesEl, 'alert-danger');
           errorMessagesEl.removeClass('d-none');
           $('.modal-error-title').html(body.substring(0, body.indexOf(',')) + ',');
           $('.modal-error-body').html(body.substring(body.indexOf(',') + 1, body.length));
@@ -3352,10 +3303,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./resources/assets/js/admin/users/charts.js":
-/*!***************************************************!*\
-  !*** ./resources/assets/js/admin/users/charts.js ***!
-  \***************************************************/
+/***/ "./resources/assets/js/admin/dashboard/users/charts.js":
+/*!*************************************************************!*\
+  !*** ./resources/assets/js/admin/dashboard/users/charts.js ***!
+  \*************************************************************/
 /***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
 
 /* provided dependency */ var __webpack_provided_window_dot_axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
@@ -3559,10 +3510,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./resources/assets/js/admin/users/datatable.js":
-/*!******************************************************!*\
-  !*** ./resources/assets/js/admin/users/datatable.js ***!
-  \******************************************************/
+/***/ "./resources/assets/js/admin/dashboard/users/datatable.js":
+/*!****************************************************************!*\
+  !*** ./resources/assets/js/admin/dashboard/users/datatable.js ***!
+  \****************************************************************/
 /***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
 
 /* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
@@ -3572,10 +3523,9 @@ module.exports = {
   window.app.admin.users.dataTable = function () {
     //generate data table from current html table
     $('#users-list').DataTable({
-      "info": false,
-      "fixedColumns": {
-        leftColumns: 1
-      }
+      "info": true,
+      "pageLength": 8,
+      'scrollY': 610
     }); // frontend validator lib
 
     $('#user_form').parsley(); //adding frm
@@ -3588,10 +3538,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./resources/assets/js/admin/users/page.js":
-/*!*************************************************!*\
-  !*** ./resources/assets/js/admin/users/page.js ***!
-  \*************************************************/
+/***/ "./resources/assets/js/admin/dashboard/users/page.js":
+/*!***********************************************************!*\
+  !*** ./resources/assets/js/admin/dashboard/users/page.js ***!
+  \***********************************************************/
 /***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
 
 /* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
@@ -3764,17 +3714,111 @@ module.exports = {
       id = $(this).closest('tr').attr('row-id');
       $('#confirm').find('input[type="hidden"]').val(id);
       $('#confirm').modal('show');
-    }); // fill select with moroccan cities
+    });
+  };
+})();
 
-    (function addCities() {
-      var cities = ['Sidi Ifni', 'Tafraout', 'Setti Fatma', 'Oulad Tayeb', 'Zagora', 'Kasba Tadla', 'Tahla', 'El Aïoun', 'Sefrou', 'Asilah', 'Oukaïmedene', 'Khemisset', 'Ouezzane', 'Ksar El Kebir', 'Casablanca', 'Skhirate', 'Bni Bouayach', 'Mahroun', 'Tiflet', 'Zawyat an Nwaçer', 'Mohammedia', 'Khouribga', 'Jerada', 'Fès al Bali', 'Sidi Smai’il', 'Sidi Qacem', 'Settat', 'Sale', 'Safi', 'Kenitra', 'Fès', 'Imzouren', 'Bouznika', 'Berkane', 'Mnoud', 'Tirhanimîne', 'Oujda-Angad', 'Al Fqih Ben Çalah', 'Temara', 'Kelaat Mgouna', 'Imlili', 'Tétouan', 'Sidi Bouiachi', 'Oulad Teïma', 'Oualidia', 'Marzouga', 'Larache', 'Ouled Khlifa', 'Rabat', 'Aïn Beni Mathar', 'Dakhla', 'Gueltat Zemmour', 'Zag', 'Tiznit', 'Youssoufia', 'Taza', 'Targuist', 'Taounate', 'Taroudant', 'Tan-Tan', 'Figuig (Centre)', 'Oulmes', 'Arfoud', 'Mechraa Bel Ksiri', 'Khenifra', 'Mhamid', 'Zaïo', 'Tarfaya', 'Ifrane', 'Martil', 'Marrakesh', 'Aïn Leuh', 'Tagzout', 'Saidia', 'Reçani', 'Ouarzazat', 'Meknès', 'El Hajeb', 'Ahfir', 'Errachidia', 'Akhfennir', 'Torord - طرورد', 'Sidi Bennour', 'Tmourghout', 'Sidi Yahia El Gharb', 'Midar', 'Fnidek', 'Nador', 'Chefchaouene', 'Boujniba', 'Guelmim', 'Cap Negro II', 'El Jadid', 'Bouarfa', 'Azemmour', 'Agadir', 'Taghazout', 'Gleibet El Foula', 'Tangier', 'Souq Larb’a al Gharb'];
-      var option = '<option selected value="">city</option>';
-      cities.forEach(function (city) {
-        city = city.toString().toLowerCase().trim();
-        option += "<option value=\"".concat(city, "\">").concat(city, "</option>");
+/***/ }),
+
+/***/ "./resources/assets/js/admin/login/ajax-requests.js":
+/*!**********************************************************!*\
+  !*** ./resources/assets/js/admin/login/ajax-requests.js ***!
+  \**********************************************************/
+/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+/* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+/* provided dependency */ var axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+(function () {
+  window.app.admin.login.ajaxRequest = function () {
+    var loginFormEl = $('#login-form');
+    loginFormEl.on('submit', function (e) {
+      console.log('clicked');
+      e.preventDefault();
+      var emailEl = loginFormEl.find('.form-item__data-email');
+      var passwordEl = loginFormEl.find('.form-item__data-password');
+      var token = $('body').attr('page-token');
+      axios({
+        method: 'post',
+        url: '/admin/login/authorization',
+        data: {
+          'action': 'post',
+          'data': {
+            'username': emailEl.val(),
+            'password': passwordEl.val()
+          }
+        },
+        headers: {
+          'Authorization': token
+        }
+      }).then(function (res) {
+        handleSubmitFormReturnedData(res.data);
+      })["catch"](function (error) {
+        return console.log(error);
       });
-      $('.mar-cities').append(option);
-    })();
+    });
+
+    function handleSubmitFormReturnedData(_ref) {
+      var header = _ref.header,
+          body = _ref.body;
+      var errorMessagesEl = loginFormEl.closest('.login-container').find('.errors-messages');
+      var messageTitleEl = errorMessagesEl.children('.modal-error-title');
+      var messageBodyEl = errorMessagesEl.children('.modal-error-body');
+
+      switch (header) {
+        case 'valid login':
+          func.refreshPage();
+          setTimeout(function () {
+            return location.assign("/admin/dashboard");
+          }, 3000);
+          break;
+
+        case 'validation':
+          errorMessagesEl.removeClass('d-none');
+          func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
+
+          if (body === "") {
+            errorMessagesEl.addClass('d-none');
+          } else {
+            var arrays = Object.values(body);
+
+            if (arrays.find(function (x) {
+              return x !== undefined;
+            }) !== undefined) {
+              var firstArray = arrays.find(function (x) {
+                return x !== undefined;
+              });
+
+              if (arrays.find(function (x) {
+                return x !== undefined;
+              }) !== undefined) {
+                if (firstArray.find(function (x) {
+                  return x !== undefined;
+                }) !== undefined) {
+                  messageBodyEl.text(firstArray.find(function (x) {
+                    return x !== undefined;
+                  }));
+                }
+              }
+            }
+          }
+
+          break;
+
+        case 'invalid login':
+          errorMessagesEl.removeClass('d-none');
+          func.setClass(errorMessagesEl, 'alert-warning', 'alert-danger');
+          messageTitleEl.html(body.substring(0, body.indexOf(',')) + ',');
+          messageBodyEl.html(body.substring(body.indexOf(',') + 1, body.length));
+          break;
+
+        case 'error':
+          errorMessagesEl.removeClass('d-none');
+          func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
+          $('.modal-error-title').html(body.substring(0, body.indexOf(',')) + ',');
+          $('.modal-error-body').html(body.substring(body.indexOf(',') + 1, body.length));
+          break;
+      }
+    }
   };
 })();
 
@@ -3789,7 +3833,9 @@ module.exports = {
 // dependency
 __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
 
-__webpack_require__(/*! bootstrap/dist/js/bootstrap */ "./node_modules/bootstrap/dist/js/bootstrap.js"); // js plugins plugins
+__webpack_require__(/*! bootstrap/dist/js/bootstrap */ "./node_modules/bootstrap/dist/js/bootstrap.js");
+
+__webpack_require__(/*! feather-icons/dist/feather */ "./node_modules/feather-icons/dist/feather.js"); // js plugins plugins
 
 
 __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
@@ -3799,7 +3845,7 @@ __webpack_require__(/*! pusher-js/dist/web/pusher.min */ "./node_modules/pusher-
 
 __webpack_require__(/*! parsleyjs/dist/parsley */ "./node_modules/parsleyjs/dist/parsley.js");
 
-__webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/datatables.net/js/jquery.dataTables.js");
+__webpack_require__(/*! datatables.net/js/jquery.dataTables.min */ "./node_modules/datatables.net/js/jquery.dataTables.min.js");
 
 __webpack_require__(/*! chart.js/dist/chart */ "./node_modules/chart.js/dist/chart.js"); // main content
 
@@ -3839,24 +3885,24 @@ __webpack_require__(/*! ./admin/dashboard/settings/page */ "./resources/assets/j
 __webpack_require__(/*! ./admin/dashboard/settings/ajax */ "./resources/assets/js/admin/dashboard/settings/ajax.js"); // users
 
 
-__webpack_require__(/*! ./admin/users/datatable */ "./resources/assets/js/admin/users/datatable.js");
+__webpack_require__(/*! ./admin/dashboard/users/datatable */ "./resources/assets/js/admin/dashboard/users/datatable.js");
 
-__webpack_require__(/*! ./admin/users/page */ "./resources/assets/js/admin/users/page.js");
+__webpack_require__(/*! ./admin/dashboard/users/page */ "./resources/assets/js/admin/dashboard/users/page.js");
 
-__webpack_require__(/*! ./admin/users/ajax-requests */ "./resources/assets/js/admin/users/ajax-requests.js");
+__webpack_require__(/*! ./admin/dashboard/users/ajax-requests */ "./resources/assets/js/admin/dashboard/users/ajax-requests.js");
 
-__webpack_require__(/*! ./admin/users/charts */ "./resources/assets/js/admin/users/charts.js"); // requests
+__webpack_require__(/*! ./admin/dashboard/users/charts */ "./resources/assets/js/admin/dashboard/users/charts.js"); // requests
 
 
-__webpack_require__(/*! ./admin/requests/chart */ "./resources/assets/js/admin/requests/chart.js");
+__webpack_require__(/*! ./admin/dashboard/requests/chart */ "./resources/assets/js/admin/dashboard/requests/chart.js");
 
-__webpack_require__(/*! ./admin/requests/datatable */ "./resources/assets/js/admin/requests/datatable.js");
+__webpack_require__(/*! ./admin/dashboard/requests/datatable */ "./resources/assets/js/admin/dashboard/requests/datatable.js");
 
-__webpack_require__(/*! ./admin/requests/parsley */ "./resources/assets/js/admin/requests/parsley.js");
+__webpack_require__(/*! ./admin/dashboard/requests/parsley */ "./resources/assets/js/admin/dashboard/requests/parsley.js");
 
-__webpack_require__(/*! ./admin/requests/page */ "./resources/assets/js/admin/requests/page.js");
+__webpack_require__(/*! ./admin/dashboard/requests/page */ "./resources/assets/js/admin/dashboard/requests/page.js");
 
-__webpack_require__(/*! ./admin/requests/ajax-requests */ "./resources/assets/js/admin/requests/ajax-requests.js"); // login
+__webpack_require__(/*! ./admin/dashboard/requests/ajax-requests */ "./resources/assets/js/admin/dashboard/requests/ajax-requests.js"); // login
 
 
 __webpack_require__(/*! ./admin/login/ajax-requests */ "./resources/assets/js/admin/login/ajax-requests.js");
@@ -4108,23 +4154,6 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
       return console.log(error);
     });
   });
-  $('.close-user-session').on('click', function () {
-    var token = $('body').attr('page-token');
-    axios({
-      method: 'post',
-      url: '/user/logout',
-      data: {
-        'token': token
-      }
-    }).then(function (res) {
-      func.refreshPage();
-      setTimeout(function () {
-        return location.assign("/user/login");
-      }, 3000);
-    })["catch"](function (error) {
-      return console.log(error);
-    });
-  });
 })();
 
 /***/ }),
@@ -4229,7 +4258,11 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
   }); // change sidebar : show only icons
 
   $('[data-toggle="minimize"]').on("click", function () {
+    $('.navbar-menu-wrapper').addClass('hide-for-animition');
     $('body').toggleClass('sidebar-icon-only');
+    setTimeout(function () {
+      $('.navbar-menu-wrapper').removeClass('hide-for-animition');
+    }, 1000);
   }); // show side bar in mobile phone
 
   $('[data-toggle="offcanvas"]').on("click", function () {
@@ -4240,6 +4273,7 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
     var $this = $(this);
     console.log('fdfd');
     $this.hasClass('toggle') ? $this.removeClass('toggle') : $this.addClass('toggle');
+    console.log($('.navbar-menu-wrapper'));
   });
   $(document).on('mouseenter mouseleave', '.sidebar .nav-item', function (ev) {
     var body = $('body');
@@ -4267,16 +4301,23 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
 
   $('.custom-file-input').on('change', function (e) {
     var $this = $(this);
-    var shower = $this.closest('.card').find('#card-image');
-    shower.attr('src', URL.createObjectURL(e.target.files[0]));
-    var labelEl = $this.siblings('.custom-file-label');
-    var fileName = func.getFileName($this);
+    var shower = $this.closest('.image-shower').find('#image-preview');
+    var labelEl = $this.closest('.image-shower').find('.custom-file-label');
 
-    if (fileName.toString().length > 10) {
-      fileName = fileName.toString().substring(0, 10);
+    if (func.isValidImageExt(func.getFileExt($this))) {
+      shower.attr('src', URL.createObjectURL(e.target.files[0]));
+      var fileName = func.getFileName($this);
+
+      if (fileName.toString().length > 10) {
+        fileName = fileName.toString().substring(0, 10);
+      }
+
+      labelEl.text(fileName);
+    } else {
+      shower.attr('src', '/img/unknown.png');
+      labelEl.text('');
+      $this.val('');
     }
-
-    labelEl.text(fileName);
   });
   $('.modal').on('hide.bs.modal', function (e) {
     var $this = $(e.target);
@@ -4297,6 +4338,37 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
     } else {
       inputEl.prop("type", "text");
       $this.text('visibility');
+    }
+  }); // time show
+
+  setInterval(function () {
+    var date = new Date();
+    var time = date.toLocaleString('en-us', {
+      weekday: 'long'
+    }) + ' ';
+    time += date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
+    $('.current-datetime').html(time);
+  }, 1000);
+
+  if ($('window').width() < 1000) {
+    $('body').removeClass('sidebar-icon-only');
+    $('.sidebar').removeClass('active');
+  } // show button (save new avatar)
+
+
+  $('.custom-file-uploader-input').on('change', function () {
+    var $this = $(this);
+    $this.closest('.profile-content__avatar').find('#save-user-avatar').addClass('active-btn');
+    var imgShower = $this.closest('.custom-uploader').find('.custom-uploader__img');
+
+    if (func.isValidImageExt(func.getFileExt($this))) {
+      imgShower.attr('data-src', URL.createObjectURL($this.get(0).files[0]));
+      func.lazy();
+    } else {
+      imgShower.attr('data-src', '/img/unknown.png');
+      func.lazy();
+      $this.val('');
+      console.log($this);
     }
   });
 })();
@@ -4326,20 +4398,20 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
         break;
 
       case 'admin-dashboard-requests':
-        window.app.admin.requests.charts();
-        window.app.admin.requests.parsleyJS();
-        window.app.admin.requests.datatable();
-        window.app.admin.requests.page();
-        window.app.admin.requests.ajaxRequest();
         window.app.admin.all();
+        window.app.admin.requests.datatable();
+        window.app.admin.requests.parsleyJS();
+        window.app.admin.requests.ajaxRequest();
+        window.app.admin.requests.page();
+        window.app.admin.requests.charts();
         break;
 
       case 'admin-dashboard-users':
+        window.app.admin.all();
         window.app.admin.users.dataTable();
-        window.app.admin.users.page();
         window.app.admin.users.charts();
         window.app.admin.users.ajaxRequest();
-        window.app.admin.all();
+        window.app.admin.users.page();
         break;
 
       case 'admin-dashboard-settings':
@@ -4447,47 +4519,63 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
 /* provided dependency */ var axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 (function () {
   window.app.user.all = function () {
-    var pusherReq = new Pusher('7dbc219cc0dd3d0e07b0', {
-      cluster: 'eu'
-    });
-    var notifyUserFeedbackCheckboxEl = $('#notify-feedback');
-    var notifySelfSendCheckboxEl = $('#notify-self-send');
-    var notifyPasswordChangeCheckboxEl = $('#notify-password-change'); // check if user want requests notification  or not
+    //  TODO : check if user connected to internet
+    if (window.navigator.onLine) {
+      var pusherReq = new Pusher('7dbc219cc0dd3d0e07b0', {
+        cluster: 'eu'
+      });
+      var notifyUserFeedbackCheckboxEl = $('#notify-feedback');
+      var notifySelfSendCheckboxEl = $('#notify-self-send');
+      var notifyPasswordChangeCheckboxEl = $('#notify-password-change');
+      var notifyAccountChange = $('#notify-account-change'); // check if user want requests notification  or not
 
-    if (notifyUserFeedbackCheckboxEl.prop('checked')) {
-      var email = $('.navbar__user-email').html();
+      if (notifyUserFeedbackCheckboxEl.prop('checked')) {
+        var email = $('.navbar__user-email').html();
 
-      if (email !== undefined) {
-        var channelReq = pusherReq.subscribe(email);
-        channelReq.bind('my-event', function (data) {
-          window.location.reload();
-        });
+        if (email !== undefined) {
+          var channelReq = pusherReq.subscribe(email);
+          channelReq.bind('my-event', function (data) {
+            window.location.reload();
+          });
+        }
       }
-    }
 
-    if (notifySelfSendCheckboxEl.prop('checked')) {
-      var _email = $('.navbar__user-email').html();
+      if (notifySelfSendCheckboxEl.prop('checked')) {
+        var _email = $('.navbar__user-email').html();
 
-      if (_email !== undefined) {
-        var _channelReq = pusherReq.subscribe(_email + '_new_request');
+        if (_email !== undefined) {
+          var _channelReq = pusherReq.subscribe(_email + '_new_request');
 
-        _channelReq.bind('my-event', function (data) {
-          window.location.reload();
-        });
+          _channelReq.bind('my-event', function (data) {
+            window.location.reload();
+          });
+        }
       }
-    }
 
-    if (notifyPasswordChangeCheckboxEl.prop('checked')) {
-      var _email2 = $('.navbar__user-email').html();
+      if (notifyPasswordChangeCheckboxEl.prop('checked')) {
+        var _email2 = $('.navbar__user-email').html();
 
-      if (_email2 !== undefined) {
-        var _channelReq2 = pusherReq.subscribe(_email2 + '_change_email');
+        if (_email2 !== undefined) {
+          var _channelReq2 = pusherReq.subscribe(_email2 + '_change_email');
 
-        _channelReq2.bind('my-event', function (data) {
-          window.location.reload();
-        });
+          _channelReq2.bind('my-event', function (data) {
+            window.location.reload();
+          });
+        }
       }
-    } // make notification satatus read
+
+      if (notifyAccountChange.prop('checked')) {
+        var _email3 = $('.navbar__user-email').html();
+
+        if (_email3 !== undefined) {
+          var _channelReq3 = pusherReq.subscribe(_email3 + '_account_status_changed');
+
+          _channelReq3.bind('my-event', function (data) {
+            window.location.reload();
+          });
+        }
+      }
+    } //  TODO : make notification satatus read
 
 
     $('.user-notifications__count , .user-count').on('click', function () {
@@ -4504,12 +4592,26 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
       })["catch"](function (error) {
         return console.log(error);
       });
-    });
+    }); //  TODO :  close user session
 
-    if ($(window).width() < 1000) {
-      $('body').removeClass('sidebar-icon-only');
-      $('.sidebar').removeClass('active');
-    }
+    $('.close-user-session').on('click', function () {
+      var token = $('body').attr('page-token');
+      axios({
+        method: 'post',
+        url: '/user/logout',
+        data: {
+          'token': token
+        }
+      }).then(function (res) {
+        func.refreshPage();
+        setTimeout(function () {
+          return location.assign("/");
+        }, 3000);
+      })["catch"](function (error) {
+        return console.log(error);
+      });
+    });
+    $('[data-toggle="tooltip"]').tooltip();
   };
 })();
 
@@ -4531,7 +4633,6 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
 
     $('#new-request__save').on('click', function () {
       newRequestFormEl.submit();
-      $(this).prop('disabled', true);
     }); // submit form event
 
     newRequestFormEl.on('submit', function (e) {
@@ -4539,8 +4640,7 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
       var token = $('body').attr('page-token');
       var requestType = $('#data-body__request-type');
       var requestPretext = $('#data-body__request-pretext');
-      console.log(requestPretext.val());
-      console.log(requestType.val());
+      $('#new-request__save').prop('disabled', true);
       __webpack_provided_window_dot_axios({
         method: 'POST',
         url: '/user/dashboard/requests/add',
@@ -4558,15 +4658,13 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
         console.log(res.data);
         handleNewRequestFormReturnData(res.data);
       })["catch"](function (error) {
-        return console.log(error);
+        $('#new-request__save').prop('disabled', false);
       });
     });
 
     function handleNewRequestFormReturnData(_ref) {
       var header = _ref.header,
           body = _ref.body;
-      console.log(header);
-      console.log(body);
       var parentEl = newRequestFormEl.closest('.modal-body');
       var errorMessagesEl = parentEl.find('.user-form-messages');
       var messageTitleEl = errorMessagesEl.children('.modal-error-title');
@@ -4867,8 +4965,6 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
 /***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
 
 /* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
-__webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/datatables.net/js/jquery.dataTables.js");
-
 (function () {
   "use strict";
 
@@ -4877,6 +4973,7 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
       // "ordering": false,
       // "info":     false
     });
+    $('#new-request__form').parsley();
   };
 })();
 
@@ -4895,14 +4992,19 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
 
   window.app.user.dashboard.settings.ajaxRequest = function () {
     /*vars*/
+    // forms
     var profileDataFormEl = $('#profile-data-form');
-    var securityDataFormEl = $('#security-data-form');
+    var securityDataFormEl = $('#security-data-form'); // btn
+
     var saveUserSecurityData = $('#save-user-security-data');
+    var saveUserInfos = $('#save-user-infos'); // radios
+
     var notifyUserFeedbackCheckboxEl = $('#notify-feedback');
     var toggleSidebarCheckboxEl = $('#toggle-sidebar');
     var hideNotificationsCheckboxEl = $('#hide-notifications');
     var notifySelfSendCheckboxEl = $('#notify-self-send');
     var notifyPasswordChangeCheckboxEl = $('#notify-password-change');
+    var notifyAccountChange = $('#notify-account-change');
     var saveAvatarEl = $('#save-user-avatar');
     var token = $('body').attr('page-token');
     /*Methods*/
@@ -4910,6 +5012,7 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
 
     profileDataFormEl.on('submit', function (e) {
       e.preventDefault();
+      saveUserInfos.prop('disabled', true);
 
       if (profileDataFormEl.parsley().isValid()) {
         var formData = new FormData();
@@ -4929,7 +5032,6 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
             'Authorization': token
           }
         }).then(function (response) {
-          console.log(response.data);
           handleProfileDataFormEl(response.data);
         })["catch"](function (error) {
           return console.log(error);
@@ -4940,8 +5042,7 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
     function handleProfileDataFormEl(_ref) {
       var title = _ref.title,
           body = _ref.body;
-      console.log(title);
-      console.log(body);
+      saveUserInfos.prop('disabled', false);
       var errorMessagesEl = profileDataFormEl.find('.errors-messages');
       var messageTitleEl = errorMessagesEl.children('.modal-error-title');
       var messageBodyEl = errorMessagesEl.children('.modal-error-body');
@@ -4964,7 +5065,7 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
 
         case 'validation':
           errorMessagesEl.removeClass('d-none');
-          func.setClassAdvanced(errorMessagesEl, 'alert-dark');
+          func.setClassAdvanced(errorMessagesEl, 'alert-info');
           var arrays = Object.values(body);
 
           if (arrays.find(function (x) {
@@ -5119,7 +5220,7 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
             }
           }
         }).then(function (res) {
-          return HandleAjaxSecurityReturnData(res.data);
+          HandleAjaxSecurityReturnData(res.data);
         })["catch"](function (error) {
           return console.log(error);
         });
@@ -5257,6 +5358,29 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
       })["catch"](function (error) {
         return console.log(error);
       });
+    });
+    notifyAccountChange.on('change', function (e) {
+      e.preventDefault();
+      console.log('fdf');
+      __webpack_provided_window_dot_axios({
+        method: 'POST',
+        url: '/user/dashboard/settings/edit/notifications',
+        headers: {
+          'Accept': 'Application/Json',
+          'Authorization': token
+        },
+        data: {
+          'action': 'edit',
+          'data': {
+            'prefrences_data': notifyAccountChange.get(0).checked,
+            'prefrences_name': 'notify_when_account_change'
+          }
+        }
+      }).then(function (res) {
+        window.location.reload();
+      })["catch"](function (error) {
+        return console.log(error);
+      });
     }); // change notification settings ui
 
     toggleSidebarCheckboxEl.on('change', function (e) {
@@ -5276,7 +5400,7 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
           }
         }
       }).then(function (res) {
-        return window.location.reload();
+        window.location.reload();
       })["catch"](function (error) {
         return console.log(error);
       });
@@ -5370,17 +5494,6 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
 
     saveUserSecurityData.on('click', function () {
       securityDataFormEl.submit();
-    }); // show button (save new avatar)
-
-    $('.custom-file-uploader-input').on('change', function () {
-      var $this = $(this);
-      $this.closest('.profile-content__avatar').find('#save-user-avatar').addClass('active-btn');
-      var imgShower = $this.closest('.custom-uploader').find('.custom-uploader__img');
-
-      if (func.isValidImageExt(func.getFileExt($this))) {
-        imgShower.attr('data-src', URL.createObjectURL($this.get(0).files[0]));
-        func.lazy();
-      }
     }); // show button (save new profile infos)
 
     $('#profile-data-form .custom-form__control').on('keyup change', function () {
@@ -5418,9 +5531,12 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
       var city = $("#user-first-city").attr('data-src');
 
       if (city === $(this).text()) {
-        console.log(city);
         $("#user-first-city").val($(this).val());
       }
+    }); //  TODO : prevant user from write inside inputs when user account is inactive
+
+    $('.settings-items.hide input, .settings-items.hide select').on('focus', function (event) {
+      $(this).prop('disabled', true);
     });
   };
 })();
@@ -5496,8 +5612,9 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
               }
             }
           }).then(function (response) {
-            console.log(response.data);
-            checkEmail(response.data);
+            setTimeout(function () {
+              return checkEmail(response.data);
+            }, 2000);
           })["catch"](function (error) {
             return console.log(error);
           });
@@ -5519,7 +5636,9 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
               }
             }
           }).then(function (response) {
-            confermEmail(response.data);
+            setTimeout(function () {
+              return confermEmail(response.data);
+            }, 2000);
           })["catch"](function (error) {
             return console.log(error);
           });
@@ -5540,7 +5659,9 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
               }
             }
           }).then(function (response) {
-            changePassword(response.data);
+            setTimeout(function () {
+              return changePassword(response.data);
+            }, 2000);
           })["catch"](function (error) {
             return console.log(error);
           });
@@ -5561,7 +5682,9 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
               }
             }
           }).then(function (response) {
-            checkQuestion(response.data);
+            setTimeout(function () {
+              return checkQuestion(response.data);
+            }, 2000);
           })["catch"](function (error) {
             return console.log(error);
           });
@@ -5995,6 +6118,7 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
   "use strict";
 
   window.app.user.signup.email = function () {
+    console.log('hi im in email ');
     var signFormConfirmEl = $('#signup-form-complete'); // conform email
 
     signFormConfirmEl.on('submit', function (e) {
@@ -6101,6 +6225,7 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
   "use strict";
 
   window.app.user.signup.plugins = function () {
+    console.log('hi im in plugins ');
     var profileFormEl = $('#profile-form');
     var signupFormEl = $('#signup-form');
     var signupFormComplete = $('#signup-form-complete');
@@ -6137,11 +6262,12 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
 /***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
 
 /* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
-/* provided dependency */ var axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+/* provided dependency */ var __webpack_provided_window_dot_axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 (function () {
   "use strict";
 
   window.app.user.signup.profile = function () {
+    console.log('hi im in profile ');
     var inputs = $('.custom-form__control');
     var profileFormEl = $('#profile-form');
     profileFormEl[0].reset();
@@ -6177,9 +6303,9 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
       $this.trigger('change').trigger('focusout').trigger('keyup').trigger('copy').trigger('paste').trigger('cut');
     }); // Submit from
 
+    var btnSubmitEl = profileFormEl.find('#submit-form');
     profileFormEl.on('submit', function (e) {
       e.preventDefault();
-      profileFormEl.find('input[type="submit"]').attr('disabled', true);
       var token = $('body').attr('page-token');
       var data = new FormData();
       data.append('gender', $('#user-signup-gender').val());
@@ -6193,10 +6319,10 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
 
       var _isFile = func.isFile(fileEl);
 
-      _isFile ? data.append('photo', fileEl[0].files[0]) : data.append('photo', ' ');
+      if (_isFile) data.append('photo', fileEl[0].files[0]);
 
       if (profileFormEl.parsley().isValid()) {
-        axios({
+        __webpack_provided_window_dot_axios({
           url: '/user/signup/profile/save',
           method: 'post',
           data: data,
@@ -6206,7 +6332,6 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
             'Authorization': token
           }
         }).then(function (response) {
-          console.log(response.data);
           HandleProfileFormElReturnData(response.data);
         })["catch"](function (error) {
           return console.log(error);
@@ -6217,7 +6342,6 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
     function HandleProfileFormElReturnData(_ref) {
       var header = _ref.header,
           body = _ref.body;
-      profileFormEl.find('input[type="submit"]').attr('disabled', true);
       var errorMessagesEl = profileFormEl.find('.errors-messages');
       var messageTitleEl = errorMessagesEl.children('.modal-error-title');
       var messageBodyEl = errorMessagesEl.children('.modal-error-body');
@@ -6232,7 +6356,7 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
 
         case 'validation':
           errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-warning', 'alert-danger');
+          func.setClassAdvanced(errorMessagesEl, 'alert-info');
 
           if (body === "") {
             errorMessagesEl.addClass('d-none');
@@ -6264,14 +6388,14 @@ __webpack_require__(/*! datatables.net/js/jquery.dataTables */ "./node_modules/d
 
         case 'used':
           errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
+          func.setClassAdvanced(errorMessagesEl, 'alert-warning');
           messageTitleEl.html(body.substring(0, body.indexOf(',')) + ',');
           messageBodyEl.html(body.substring(body.indexOf(',') + 1, body.length));
           break;
 
         case 'error':
           errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-warning', 'alert-danger');
+          func.setClassAdvanced(errorMessagesEl, 'alert-danger');
           $('.modal-error-title').html(body.substring(0, body.indexOf(',')) + ',');
           $('.modal-error-body').html(body.substring(body.indexOf(',') + 1, body.length));
           break;
@@ -23534,15374 +23658,2618 @@ return Chart;
 
 /***/ }),
 
-/***/ "./node_modules/datatables.net/js/jquery.dataTables.js":
-/*!*************************************************************!*\
-  !*** ./node_modules/datatables.net/js/jquery.dataTables.js ***!
-  \*************************************************************/
+/***/ "./node_modules/datatables.net/js/jquery.dataTables.min.js":
+/*!*****************************************************************!*\
+  !*** ./node_modules/datatables.net/js/jquery.dataTables.min.js ***!
+  \*****************************************************************/
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*! DataTables 1.10.25
- * ©2008-2021 SpryMedia Ltd - datatables.net/license
- */
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
+   Copyright 2008-2021 SpryMedia Ltd.
+
+ This source file is free software, available under the following license:
+   MIT license - http://datatables.net/license
+
+ This source file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ or FITNESS FOR A PARTICULAR PURPOSE. See the license files for details.
+
+ For details please refer to: http://www.datatables.net
+ DataTables 1.11.3
+ ©2008-2021 SpryMedia Ltd - datatables.net/license
+*/
+var $jscomp=$jscomp||{};$jscomp.scope={};$jscomp.findInternal=function(l,z,A){l instanceof String&&(l=String(l));for(var q=l.length,E=0;E<q;E++){var P=l[E];if(z.call(A,P,E,l))return{i:E,v:P}}return{i:-1,v:void 0}};$jscomp.ASSUME_ES5=!1;$jscomp.ASSUME_NO_NATIVE_MAP=!1;$jscomp.ASSUME_NO_NATIVE_SET=!1;$jscomp.SIMPLE_FROUND_POLYFILL=!1;$jscomp.ISOLATE_POLYFILLS=!1;
+$jscomp.defineProperty=$jscomp.ASSUME_ES5||"function"==typeof Object.defineProperties?Object.defineProperty:function(l,z,A){if(l==Array.prototype||l==Object.prototype)return l;l[z]=A.value;return l};$jscomp.getGlobal=function(l){l=["object"==typeof globalThis&&globalThis,l,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof __webpack_require__.g&&__webpack_require__.g];for(var z=0;z<l.length;++z){var A=l[z];if(A&&A.Math==Math)return A}throw Error("Cannot find global object");};$jscomp.global=$jscomp.getGlobal(this);
+$jscomp.IS_SYMBOL_NATIVE="function"===typeof Symbol&&"symbol"===typeof Symbol("x");$jscomp.TRUST_ES6_POLYFILLS=!$jscomp.ISOLATE_POLYFILLS||$jscomp.IS_SYMBOL_NATIVE;$jscomp.polyfills={};$jscomp.propertyToPolyfillSymbol={};$jscomp.POLYFILL_PREFIX="$jscp$";var $jscomp$lookupPolyfilledValue=function(l,z){var A=$jscomp.propertyToPolyfillSymbol[z];if(null==A)return l[z];A=l[A];return void 0!==A?A:l[z]};
+$jscomp.polyfill=function(l,z,A,q){z&&($jscomp.ISOLATE_POLYFILLS?$jscomp.polyfillIsolated(l,z,A,q):$jscomp.polyfillUnisolated(l,z,A,q))};$jscomp.polyfillUnisolated=function(l,z,A,q){A=$jscomp.global;l=l.split(".");for(q=0;q<l.length-1;q++){var E=l[q];if(!(E in A))return;A=A[E]}l=l[l.length-1];q=A[l];z=z(q);z!=q&&null!=z&&$jscomp.defineProperty(A,l,{configurable:!0,writable:!0,value:z})};
+$jscomp.polyfillIsolated=function(l,z,A,q){var E=l.split(".");l=1===E.length;q=E[0];q=!l&&q in $jscomp.polyfills?$jscomp.polyfills:$jscomp.global;for(var P=0;P<E.length-1;P++){var ma=E[P];if(!(ma in q))return;q=q[ma]}E=E[E.length-1];A=$jscomp.IS_SYMBOL_NATIVE&&"es6"===A?q[E]:null;z=z(A);null!=z&&(l?$jscomp.defineProperty($jscomp.polyfills,E,{configurable:!0,writable:!0,value:z}):z!==A&&($jscomp.propertyToPolyfillSymbol[E]=$jscomp.IS_SYMBOL_NATIVE?$jscomp.global.Symbol(E):$jscomp.POLYFILL_PREFIX+E,
+E=$jscomp.propertyToPolyfillSymbol[E],$jscomp.defineProperty(q,E,{configurable:!0,writable:!0,value:z})))};$jscomp.polyfill("Array.prototype.find",function(l){return l?l:function(z,A){return $jscomp.findInternal(this,z,A).v}},"es6","es3");
+(function(l){ true?!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js")], __WEBPACK_AMD_DEFINE_RESULT__ = (function(z){return l(z,window,document)}).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+		__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__)):0})(function(l,z,A,q){function E(a){var b,c,d={};l.each(a,function(e,h){(b=e.match(/^([^A-Z]+?)([A-Z])/))&&-1!=="a aa ai ao as b fn i m o s ".indexOf(b[1]+" ")&&(c=e.replace(b[0],
+b[2].toLowerCase()),d[c]=e,"o"===b[1]&&E(a[e]))});a._hungarianMap=d}function P(a,b,c){a._hungarianMap||E(a);var d;l.each(b,function(e,h){d=a._hungarianMap[e];d===q||!c&&b[d]!==q||("o"===d.charAt(0)?(b[d]||(b[d]={}),l.extend(!0,b[d],b[e]),P(a[d],b[d],c)):b[d]=b[e])})}function ma(a){var b=u.defaults.oLanguage,c=b.sDecimal;c&&Wa(c);if(a){var d=a.sZeroRecords;!a.sEmptyTable&&d&&"No data available in table"===b.sEmptyTable&&X(a,a,"sZeroRecords","sEmptyTable");!a.sLoadingRecords&&d&&"Loading..."===b.sLoadingRecords&&
+X(a,a,"sZeroRecords","sLoadingRecords");a.sInfoThousands&&(a.sThousands=a.sInfoThousands);(a=a.sDecimal)&&c!==a&&Wa(a)}}function zb(a){S(a,"ordering","bSort");S(a,"orderMulti","bSortMulti");S(a,"orderClasses","bSortClasses");S(a,"orderCellsTop","bSortCellsTop");S(a,"order","aaSorting");S(a,"orderFixed","aaSortingFixed");S(a,"paging","bPaginate");S(a,"pagingType","sPaginationType");S(a,"pageLength","iDisplayLength");S(a,"searching","bFilter");"boolean"===typeof a.sScrollX&&(a.sScrollX=a.sScrollX?"100%":
+"");"boolean"===typeof a.scrollX&&(a.scrollX=a.scrollX?"100%":"");if(a=a.aoSearchCols)for(var b=0,c=a.length;b<c;b++)a[b]&&P(u.models.oSearch,a[b])}function Ab(a){S(a,"orderable","bSortable");S(a,"orderData","aDataSort");S(a,"orderSequence","asSorting");S(a,"orderDataType","sortDataType");var b=a.aDataSort;"number"!==typeof b||Array.isArray(b)||(a.aDataSort=[b])}function Bb(a){if(!u.__browser){var b={};u.__browser=b;var c=l("<div/>").css({position:"fixed",top:0,left:-1*l(z).scrollLeft(),height:1,
+width:1,overflow:"hidden"}).append(l("<div/>").css({position:"absolute",top:1,left:1,width:100,overflow:"scroll"}).append(l("<div/>").css({width:"100%",height:10}))).appendTo("body"),d=c.children(),e=d.children();b.barWidth=d[0].offsetWidth-d[0].clientWidth;b.bScrollOversize=100===e[0].offsetWidth&&100!==d[0].clientWidth;b.bScrollbarLeft=1!==Math.round(e.offset().left);b.bBounding=c[0].getBoundingClientRect().width?!0:!1;c.remove()}l.extend(a.oBrowser,u.__browser);a.oScroll.iBarWidth=u.__browser.barWidth}
+function Cb(a,b,c,d,e,h){var f=!1;if(c!==q){var g=c;f=!0}for(;d!==e;)a.hasOwnProperty(d)&&(g=f?b(g,a[d],d,a):a[d],f=!0,d+=h);return g}function Xa(a,b){var c=u.defaults.column,d=a.aoColumns.length;c=l.extend({},u.models.oColumn,c,{nTh:b?b:A.createElement("th"),sTitle:c.sTitle?c.sTitle:b?b.innerHTML:"",aDataSort:c.aDataSort?c.aDataSort:[d],mData:c.mData?c.mData:d,idx:d});a.aoColumns.push(c);c=a.aoPreSearchCols;c[d]=l.extend({},u.models.oSearch,c[d]);Ga(a,d,l(b).data())}function Ga(a,b,c){b=a.aoColumns[b];
+var d=a.oClasses,e=l(b.nTh);if(!b.sWidthOrig){b.sWidthOrig=e.attr("width")||null;var h=(e.attr("style")||"").match(/width:\s*(\d+[pxem%]+)/);h&&(b.sWidthOrig=h[1])}c!==q&&null!==c&&(Ab(c),P(u.defaults.column,c,!0),c.mDataProp===q||c.mData||(c.mData=c.mDataProp),c.sType&&(b._sManualType=c.sType),c.className&&!c.sClass&&(c.sClass=c.className),c.sClass&&e.addClass(c.sClass),l.extend(b,c),X(b,c,"sWidth","sWidthOrig"),c.iDataSort!==q&&(b.aDataSort=[c.iDataSort]),X(b,c,"aDataSort"));var f=b.mData,g=na(f),
+k=b.mRender?na(b.mRender):null;c=function(m){return"string"===typeof m&&-1!==m.indexOf("@")};b._bAttrSrc=l.isPlainObject(f)&&(c(f.sort)||c(f.type)||c(f.filter));b._setter=null;b.fnGetData=function(m,n,p){var t=g(m,n,q,p);return k&&n?k(t,n,m,p):t};b.fnSetData=function(m,n,p){return ha(f)(m,n,p)};"number"!==typeof f&&(a._rowReadObject=!0);a.oFeatures.bSort||(b.bSortable=!1,e.addClass(d.sSortableNone));a=-1!==l.inArray("asc",b.asSorting);c=-1!==l.inArray("desc",b.asSorting);b.bSortable&&(a||c)?a&&!c?
+(b.sSortingClass=d.sSortableAsc,b.sSortingClassJUI=d.sSortJUIAscAllowed):!a&&c?(b.sSortingClass=d.sSortableDesc,b.sSortingClassJUI=d.sSortJUIDescAllowed):(b.sSortingClass=d.sSortable,b.sSortingClassJUI=d.sSortJUI):(b.sSortingClass=d.sSortableNone,b.sSortingClassJUI="")}function ta(a){if(!1!==a.oFeatures.bAutoWidth){var b=a.aoColumns;Ya(a);for(var c=0,d=b.length;c<d;c++)b[c].nTh.style.width=b[c].sWidth}b=a.oScroll;""===b.sY&&""===b.sX||Ha(a);F(a,null,"column-sizing",[a])}function ua(a,b){a=Ia(a,"bVisible");
+return"number"===typeof a[b]?a[b]:null}function va(a,b){a=Ia(a,"bVisible");b=l.inArray(b,a);return-1!==b?b:null}function oa(a){var b=0;l.each(a.aoColumns,function(c,d){d.bVisible&&"none"!==l(d.nTh).css("display")&&b++});return b}function Ia(a,b){var c=[];l.map(a.aoColumns,function(d,e){d[b]&&c.push(e)});return c}function Za(a){var b=a.aoColumns,c=a.aoData,d=u.ext.type.detect,e,h,f;var g=0;for(e=b.length;g<e;g++){var k=b[g];var m=[];if(!k.sType&&k._sManualType)k.sType=k._sManualType;else if(!k.sType){var n=
+0;for(h=d.length;n<h;n++){var p=0;for(f=c.length;p<f;p++){m[p]===q&&(m[p]=T(a,p,g,"type"));var t=d[n](m[p],a);if(!t&&n!==d.length-1)break;if("html"===t&&!Z(m[p]))break}if(t){k.sType=t;break}}k.sType||(k.sType="string")}}}function Db(a,b,c,d){var e,h,f,g=a.aoColumns;if(b)for(e=b.length-1;0<=e;e--){var k=b[e];var m=k.targets!==q?k.targets:k.aTargets;Array.isArray(m)||(m=[m]);var n=0;for(h=m.length;n<h;n++)if("number"===typeof m[n]&&0<=m[n]){for(;g.length<=m[n];)Xa(a);d(m[n],k)}else if("number"===typeof m[n]&&
+0>m[n])d(g.length+m[n],k);else if("string"===typeof m[n]){var p=0;for(f=g.length;p<f;p++)("_all"==m[n]||l(g[p].nTh).hasClass(m[n]))&&d(p,k)}}if(c)for(e=0,a=c.length;e<a;e++)d(e,c[e])}function ia(a,b,c,d){var e=a.aoData.length,h=l.extend(!0,{},u.models.oRow,{src:c?"dom":"data",idx:e});h._aData=b;a.aoData.push(h);for(var f=a.aoColumns,g=0,k=f.length;g<k;g++)f[g].sType=null;a.aiDisplayMaster.push(e);b=a.rowIdFn(b);b!==q&&(a.aIds[b]=h);!c&&a.oFeatures.bDeferRender||$a(a,e,c,d);return e}function Ja(a,
+b){var c;b instanceof l||(b=l(b));return b.map(function(d,e){c=ab(a,e);return ia(a,c.data,e,c.cells)})}function T(a,b,c,d){"search"===d?d="filter":"order"===d&&(d="sort");var e=a.iDraw,h=a.aoColumns[c],f=a.aoData[b]._aData,g=h.sDefaultContent,k=h.fnGetData(f,d,{settings:a,row:b,col:c});if(k===q)return a.iDrawError!=e&&null===g&&(da(a,0,"Requested unknown parameter "+("function"==typeof h.mData?"{function}":"'"+h.mData+"'")+" for row "+b+", column "+c,4),a.iDrawError=e),g;if((k===f||null===k)&&null!==
+g&&d!==q)k=g;else if("function"===typeof k)return k.call(f);if(null===k&&"display"===d)return"";"filter"===d&&(a=u.ext.type.search,a[h.sType]&&(k=a[h.sType](k)));return k}function Eb(a,b,c,d){a.aoColumns[c].fnSetData(a.aoData[b]._aData,d,{settings:a,row:b,col:c})}function bb(a){return l.map(a.match(/(\\.|[^\.])+/g)||[""],function(b){return b.replace(/\\\./g,".")})}function cb(a){return U(a.aoData,"_aData")}function Ka(a){a.aoData.length=0;a.aiDisplayMaster.length=0;a.aiDisplay.length=0;a.aIds={}}
+function La(a,b,c){for(var d=-1,e=0,h=a.length;e<h;e++)a[e]==b?d=e:a[e]>b&&a[e]--; -1!=d&&c===q&&a.splice(d,1)}function wa(a,b,c,d){var e=a.aoData[b],h,f=function(k,m){for(;k.childNodes.length;)k.removeChild(k.firstChild);k.innerHTML=T(a,b,m,"display")};if("dom"!==c&&(c&&"auto"!==c||"dom"!==e.src)){var g=e.anCells;if(g)if(d!==q)f(g[d],d);else for(c=0,h=g.length;c<h;c++)f(g[c],c)}else e._aData=ab(a,e,d,d===q?q:e._aData).data;e._aSortData=null;e._aFilterData=null;f=a.aoColumns;if(d!==q)f[d].sType=null;
+else{c=0;for(h=f.length;c<h;c++)f[c].sType=null;db(a,e)}}function ab(a,b,c,d){var e=[],h=b.firstChild,f,g=0,k,m=a.aoColumns,n=a._rowReadObject;d=d!==q?d:n?{}:[];var p=function(x,w){if("string"===typeof x){var r=x.indexOf("@");-1!==r&&(r=x.substring(r+1),ha(x)(d,w.getAttribute(r)))}},t=function(x){if(c===q||c===g)f=m[g],k=x.innerHTML.trim(),f&&f._bAttrSrc?(ha(f.mData._)(d,k),p(f.mData.sort,x),p(f.mData.type,x),p(f.mData.filter,x)):n?(f._setter||(f._setter=ha(f.mData)),f._setter(d,k)):d[g]=k;g++};if(h)for(;h;){var v=
+h.nodeName.toUpperCase();if("TD"==v||"TH"==v)t(h),e.push(h);h=h.nextSibling}else for(e=b.anCells,h=0,v=e.length;h<v;h++)t(e[h]);(b=b.firstChild?b:b.nTr)&&(b=b.getAttribute("id"))&&ha(a.rowId)(d,b);return{data:d,cells:e}}function $a(a,b,c,d){var e=a.aoData[b],h=e._aData,f=[],g,k;if(null===e.nTr){var m=c||A.createElement("tr");e.nTr=m;e.anCells=f;m._DT_RowIndex=b;db(a,e);var n=0;for(g=a.aoColumns.length;n<g;n++){var p=a.aoColumns[n];e=(k=c?!1:!0)?A.createElement(p.sCellType):d[n];e._DT_CellIndex={row:b,
+column:n};f.push(e);if(k||!(!p.mRender&&p.mData===n||l.isPlainObject(p.mData)&&p.mData._===n+".display"))e.innerHTML=T(a,b,n,"display");p.sClass&&(e.className+=" "+p.sClass);p.bVisible&&!c?m.appendChild(e):!p.bVisible&&c&&e.parentNode.removeChild(e);p.fnCreatedCell&&p.fnCreatedCell.call(a.oInstance,e,T(a,b,n),h,b,n)}F(a,"aoRowCreatedCallback",null,[m,h,b,f])}}function db(a,b){var c=b.nTr,d=b._aData;if(c){if(a=a.rowIdFn(d))c.id=a;d.DT_RowClass&&(a=d.DT_RowClass.split(" "),b.__rowc=b.__rowc?Ma(b.__rowc.concat(a)):
+a,l(c).removeClass(b.__rowc.join(" ")).addClass(d.DT_RowClass));d.DT_RowAttr&&l(c).attr(d.DT_RowAttr);d.DT_RowData&&l(c).data(d.DT_RowData)}}function Fb(a){var b,c,d=a.nTHead,e=a.nTFoot,h=0===l("th, td",d).length,f=a.oClasses,g=a.aoColumns;h&&(c=l("<tr/>").appendTo(d));var k=0;for(b=g.length;k<b;k++){var m=g[k];var n=l(m.nTh).addClass(m.sClass);h&&n.appendTo(c);a.oFeatures.bSort&&(n.addClass(m.sSortingClass),!1!==m.bSortable&&(n.attr("tabindex",a.iTabIndex).attr("aria-controls",a.sTableId),eb(a,m.nTh,
+k)));m.sTitle!=n[0].innerHTML&&n.html(m.sTitle);fb(a,"header")(a,n,m,f)}h&&xa(a.aoHeader,d);l(d).children("tr").children("th, td").addClass(f.sHeaderTH);l(e).children("tr").children("th, td").addClass(f.sFooterTH);if(null!==e)for(a=a.aoFooter[0],k=0,b=a.length;k<b;k++)m=g[k],m.nTf=a[k].cell,m.sClass&&l(m.nTf).addClass(m.sClass)}function ya(a,b,c){var d,e,h=[],f=[],g=a.aoColumns.length;if(b){c===q&&(c=!1);var k=0;for(d=b.length;k<d;k++){h[k]=b[k].slice();h[k].nTr=b[k].nTr;for(e=g-1;0<=e;e--)a.aoColumns[e].bVisible||
+c||h[k].splice(e,1);f.push([])}k=0;for(d=h.length;k<d;k++){if(a=h[k].nTr)for(;e=a.firstChild;)a.removeChild(e);e=0;for(b=h[k].length;e<b;e++){var m=g=1;if(f[k][e]===q){a.appendChild(h[k][e].cell);for(f[k][e]=1;h[k+g]!==q&&h[k][e].cell==h[k+g][e].cell;)f[k+g][e]=1,g++;for(;h[k][e+m]!==q&&h[k][e].cell==h[k][e+m].cell;){for(c=0;c<g;c++)f[k+c][e+m]=1;m++}l(h[k][e].cell).attr("rowspan",g).attr("colspan",m)}}}}}function ja(a,b){var c=F(a,"aoPreDrawCallback","preDraw",[a]);if(-1!==l.inArray(!1,c))V(a,!1);
+else{c=[];var d=0,e=a.asStripeClasses,h=e.length,f=a.oLanguage,g=a.iInitDisplayStart,k="ssp"==Q(a),m=a.aiDisplay;a.bDrawing=!0;g!==q&&-1!==g&&(a._iDisplayStart=k?g:g>=a.fnRecordsDisplay()?0:g,a.iInitDisplayStart=-1);g=a._iDisplayStart;var n=a.fnDisplayEnd();if(a.bDeferLoading)a.bDeferLoading=!1,a.iDraw++,V(a,!1);else if(!k)a.iDraw++;else if(!a.bDestroying&&!b){Gb(a);return}if(0!==m.length)for(b=k?a.aoData.length:n,f=k?0:g;f<b;f++){k=m[f];var p=a.aoData[k];null===p.nTr&&$a(a,k);var t=p.nTr;if(0!==
+h){var v=e[d%h];p._sRowStripe!=v&&(l(t).removeClass(p._sRowStripe).addClass(v),p._sRowStripe=v)}F(a,"aoRowCallback",null,[t,p._aData,d,f,k]);c.push(t);d++}else d=f.sZeroRecords,1==a.iDraw&&"ajax"==Q(a)?d=f.sLoadingRecords:f.sEmptyTable&&0===a.fnRecordsTotal()&&(d=f.sEmptyTable),c[0]=l("<tr/>",{"class":h?e[0]:""}).append(l("<td />",{valign:"top",colSpan:oa(a),"class":a.oClasses.sRowEmpty}).html(d))[0];F(a,"aoHeaderCallback","header",[l(a.nTHead).children("tr")[0],cb(a),g,n,m]);F(a,"aoFooterCallback",
+"footer",[l(a.nTFoot).children("tr")[0],cb(a),g,n,m]);e=l(a.nTBody);e.children().detach();e.append(l(c));F(a,"aoDrawCallback","draw",[a]);a.bSorted=!1;a.bFiltered=!1;a.bDrawing=!1}}function ka(a,b){var c=a.oFeatures,d=c.bFilter;c.bSort&&Hb(a);d?za(a,a.oPreviousSearch):a.aiDisplay=a.aiDisplayMaster.slice();!0!==b&&(a._iDisplayStart=0);a._drawHold=b;ja(a);a._drawHold=!1}function Ib(a){var b=a.oClasses,c=l(a.nTable);c=l("<div/>").insertBefore(c);var d=a.oFeatures,e=l("<div/>",{id:a.sTableId+"_wrapper",
+"class":b.sWrapper+(a.nTFoot?"":" "+b.sNoFooter)});a.nHolding=c[0];a.nTableWrapper=e[0];a.nTableReinsertBefore=a.nTable.nextSibling;for(var h=a.sDom.split(""),f,g,k,m,n,p,t=0;t<h.length;t++){f=null;g=h[t];if("<"==g){k=l("<div/>")[0];m=h[t+1];if("'"==m||'"'==m){n="";for(p=2;h[t+p]!=m;)n+=h[t+p],p++;"H"==n?n=b.sJUIHeader:"F"==n&&(n=b.sJUIFooter);-1!=n.indexOf(".")?(m=n.split("."),k.id=m[0].substr(1,m[0].length-1),k.className=m[1]):"#"==n.charAt(0)?k.id=n.substr(1,n.length-1):k.className=n;t+=p}e.append(k);
+e=l(k)}else if(">"==g)e=e.parent();else if("l"==g&&d.bPaginate&&d.bLengthChange)f=Jb(a);else if("f"==g&&d.bFilter)f=Kb(a);else if("r"==g&&d.bProcessing)f=Lb(a);else if("t"==g)f=Mb(a);else if("i"==g&&d.bInfo)f=Nb(a);else if("p"==g&&d.bPaginate)f=Ob(a);else if(0!==u.ext.feature.length)for(k=u.ext.feature,p=0,m=k.length;p<m;p++)if(g==k[p].cFeature){f=k[p].fnInit(a);break}f&&(k=a.aanFeatures,k[g]||(k[g]=[]),k[g].push(f),e.append(f))}c.replaceWith(e);a.nHolding=null}function xa(a,b){b=l(b).children("tr");
+var c,d,e;a.splice(0,a.length);var h=0;for(e=b.length;h<e;h++)a.push([]);h=0;for(e=b.length;h<e;h++){var f=b[h];for(c=f.firstChild;c;){if("TD"==c.nodeName.toUpperCase()||"TH"==c.nodeName.toUpperCase()){var g=1*c.getAttribute("colspan");var k=1*c.getAttribute("rowspan");g=g&&0!==g&&1!==g?g:1;k=k&&0!==k&&1!==k?k:1;var m=0;for(d=a[h];d[m];)m++;var n=m;var p=1===g?!0:!1;for(d=0;d<g;d++)for(m=0;m<k;m++)a[h+m][n+d]={cell:c,unique:p},a[h+m].nTr=f}c=c.nextSibling}}}function Na(a,b,c){var d=[];c||(c=a.aoHeader,
+b&&(c=[],xa(c,b)));b=0;for(var e=c.length;b<e;b++)for(var h=0,f=c[b].length;h<f;h++)!c[b][h].unique||d[h]&&a.bSortCellsTop||(d[h]=c[b][h].cell);return d}function Oa(a,b,c){F(a,"aoServerParams","serverParams",[b]);if(b&&Array.isArray(b)){var d={},e=/(.*?)\[\]$/;l.each(b,function(n,p){(n=p.name.match(e))?(n=n[0],d[n]||(d[n]=[]),d[n].push(p.value)):d[p.name]=p.value});b=d}var h=a.ajax,f=a.oInstance,g=function(n){var p=a.jqXhr?a.jqXhr.status:null;if(null===n||"number"===typeof p&&204==p)n={},Aa(a,n,[]);
+(p=n.error||n.sError)&&da(a,0,p);a.json=n;F(a,null,"xhr",[a,n,a.jqXHR]);c(n)};if(l.isPlainObject(h)&&h.data){var k=h.data;var m="function"===typeof k?k(b,a):k;b="function"===typeof k&&m?m:l.extend(!0,b,m);delete h.data}m={data:b,success:g,dataType:"json",cache:!1,type:a.sServerMethod,error:function(n,p,t){t=F(a,null,"xhr",[a,null,a.jqXHR]);-1===l.inArray(!0,t)&&("parsererror"==p?da(a,0,"Invalid JSON response",1):4===n.readyState&&da(a,0,"Ajax error",7));V(a,!1)}};a.oAjaxData=b;F(a,null,"preXhr",[a,
+b]);a.fnServerData?a.fnServerData.call(f,a.sAjaxSource,l.map(b,function(n,p){return{name:p,value:n}}),g,a):a.sAjaxSource||"string"===typeof h?a.jqXHR=l.ajax(l.extend(m,{url:h||a.sAjaxSource})):"function"===typeof h?a.jqXHR=h.call(f,b,g,a):(a.jqXHR=l.ajax(l.extend(m,h)),h.data=k)}function Gb(a){a.iDraw++;V(a,!0);Oa(a,Pb(a),function(b){Qb(a,b)})}function Pb(a){var b=a.aoColumns,c=b.length,d=a.oFeatures,e=a.oPreviousSearch,h=a.aoPreSearchCols,f=[],g=pa(a);var k=a._iDisplayStart;var m=!1!==d.bPaginate?
+a._iDisplayLength:-1;var n=function(x,w){f.push({name:x,value:w})};n("sEcho",a.iDraw);n("iColumns",c);n("sColumns",U(b,"sName").join(","));n("iDisplayStart",k);n("iDisplayLength",m);var p={draw:a.iDraw,columns:[],order:[],start:k,length:m,search:{value:e.sSearch,regex:e.bRegex}};for(k=0;k<c;k++){var t=b[k];var v=h[k];m="function"==typeof t.mData?"function":t.mData;p.columns.push({data:m,name:t.sName,searchable:t.bSearchable,orderable:t.bSortable,search:{value:v.sSearch,regex:v.bRegex}});n("mDataProp_"+
+k,m);d.bFilter&&(n("sSearch_"+k,v.sSearch),n("bRegex_"+k,v.bRegex),n("bSearchable_"+k,t.bSearchable));d.bSort&&n("bSortable_"+k,t.bSortable)}d.bFilter&&(n("sSearch",e.sSearch),n("bRegex",e.bRegex));d.bSort&&(l.each(g,function(x,w){p.order.push({column:w.col,dir:w.dir});n("iSortCol_"+x,w.col);n("sSortDir_"+x,w.dir)}),n("iSortingCols",g.length));b=u.ext.legacy.ajax;return null===b?a.sAjaxSource?f:p:b?f:p}function Qb(a,b){var c=function(f,g){return b[f]!==q?b[f]:b[g]},d=Aa(a,b),e=c("sEcho","draw"),h=
+c("iTotalRecords","recordsTotal");c=c("iTotalDisplayRecords","recordsFiltered");if(e!==q){if(1*e<a.iDraw)return;a.iDraw=1*e}d||(d=[]);Ka(a);a._iRecordsTotal=parseInt(h,10);a._iRecordsDisplay=parseInt(c,10);e=0;for(h=d.length;e<h;e++)ia(a,d[e]);a.aiDisplay=a.aiDisplayMaster.slice();ja(a,!0);a._bInitComplete||Pa(a,b);V(a,!1)}function Aa(a,b,c){a=l.isPlainObject(a.ajax)&&a.ajax.dataSrc!==q?a.ajax.dataSrc:a.sAjaxDataProp;if(!c)return"data"===a?b.aaData||b[a]:""!==a?na(a)(b):b;ha(a)(b,c)}function Kb(a){var b=
+a.oClasses,c=a.sTableId,d=a.oLanguage,e=a.oPreviousSearch,h=a.aanFeatures,f='<input type="search" class="'+b.sFilterInput+'"/>',g=d.sSearch;g=g.match(/_INPUT_/)?g.replace("_INPUT_",f):g+f;b=l("<div/>",{id:h.f?null:c+"_filter","class":b.sFilter}).append(l("<label/>").append(g));var k=function(n){var p=this.value?this.value:"";e.return&&"Enter"!==n.key||p==e.sSearch||(za(a,{sSearch:p,bRegex:e.bRegex,bSmart:e.bSmart,bCaseInsensitive:e.bCaseInsensitive,"return":e.return}),a._iDisplayStart=0,ja(a))};h=
+null!==a.searchDelay?a.searchDelay:"ssp"===Q(a)?400:0;var m=l("input",b).val(e.sSearch).attr("placeholder",d.sSearchPlaceholder).on("keyup.DT search.DT input.DT paste.DT cut.DT",h?gb(k,h):k).on("mouseup",function(n){setTimeout(function(){k.call(m[0],n)},10)}).on("keypress.DT",function(n){if(13==n.keyCode)return!1}).attr("aria-controls",c);l(a.nTable).on("search.dt.DT",function(n,p){if(a===p)try{m[0]!==A.activeElement&&m.val(e.sSearch)}catch(t){}});return b[0]}function za(a,b,c){var d=a.oPreviousSearch,
+e=a.aoPreSearchCols,h=function(g){d.sSearch=g.sSearch;d.bRegex=g.bRegex;d.bSmart=g.bSmart;d.bCaseInsensitive=g.bCaseInsensitive;d.return=g.return},f=function(g){return g.bEscapeRegex!==q?!g.bEscapeRegex:g.bRegex};Za(a);if("ssp"!=Q(a)){Rb(a,b.sSearch,c,f(b),b.bSmart,b.bCaseInsensitive,b.return);h(b);for(b=0;b<e.length;b++)Sb(a,e[b].sSearch,b,f(e[b]),e[b].bSmart,e[b].bCaseInsensitive);Tb(a)}else h(b);a.bFiltered=!0;F(a,null,"search",[a])}function Tb(a){for(var b=u.ext.search,c=a.aiDisplay,d,e,h=0,f=
+b.length;h<f;h++){for(var g=[],k=0,m=c.length;k<m;k++)e=c[k],d=a.aoData[e],b[h](a,d._aFilterData,e,d._aData,k)&&g.push(e);c.length=0;l.merge(c,g)}}function Sb(a,b,c,d,e,h){if(""!==b){var f=[],g=a.aiDisplay;d=hb(b,d,e,h);for(e=0;e<g.length;e++)b=a.aoData[g[e]]._aFilterData[c],d.test(b)&&f.push(g[e]);a.aiDisplay=f}}function Rb(a,b,c,d,e,h){e=hb(b,d,e,h);var f=a.oPreviousSearch.sSearch,g=a.aiDisplayMaster;h=[];0!==u.ext.search.length&&(c=!0);var k=Ub(a);if(0>=b.length)a.aiDisplay=g.slice();else{if(k||
+c||d||f.length>b.length||0!==b.indexOf(f)||a.bSorted)a.aiDisplay=g.slice();b=a.aiDisplay;for(c=0;c<b.length;c++)e.test(a.aoData[b[c]]._sFilterRow)&&h.push(b[c]);a.aiDisplay=h}}function hb(a,b,c,d){a=b?a:ib(a);c&&(a="^(?=.*?"+l.map(a.match(/"[^"]+"|[^ ]+/g)||[""],function(e){if('"'===e.charAt(0)){var h=e.match(/^"(.*)"$/);e=h?h[1]:e}return e.replace('"',"")}).join(")(?=.*?")+").*$");return new RegExp(a,d?"i":"")}function Ub(a){var b=a.aoColumns,c,d;var e=!1;var h=0;for(c=a.aoData.length;h<c;h++){var f=
+a.aoData[h];if(!f._aFilterData){var g=[];e=0;for(d=b.length;e<d;e++){var k=b[e];k.bSearchable?(k=T(a,h,e,"filter"),null===k&&(k=""),"string"!==typeof k&&k.toString&&(k=k.toString())):k="";k.indexOf&&-1!==k.indexOf("&")&&(Qa.innerHTML=k,k=sc?Qa.textContent:Qa.innerText);k.replace&&(k=k.replace(/[\r\n\u2028]/g,""));g.push(k)}f._aFilterData=g;f._sFilterRow=g.join("  ");e=!0}}return e}function Vb(a){return{search:a.sSearch,smart:a.bSmart,regex:a.bRegex,caseInsensitive:a.bCaseInsensitive}}function Wb(a){return{sSearch:a.search,
+bSmart:a.smart,bRegex:a.regex,bCaseInsensitive:a.caseInsensitive}}function Nb(a){var b=a.sTableId,c=a.aanFeatures.i,d=l("<div/>",{"class":a.oClasses.sInfo,id:c?null:b+"_info"});c||(a.aoDrawCallback.push({fn:Xb,sName:"information"}),d.attr("role","status").attr("aria-live","polite"),l(a.nTable).attr("aria-describedby",b+"_info"));return d[0]}function Xb(a){var b=a.aanFeatures.i;if(0!==b.length){var c=a.oLanguage,d=a._iDisplayStart+1,e=a.fnDisplayEnd(),h=a.fnRecordsTotal(),f=a.fnRecordsDisplay(),g=
+f?c.sInfo:c.sInfoEmpty;f!==h&&(g+=" "+c.sInfoFiltered);g+=c.sInfoPostFix;g=Yb(a,g);c=c.fnInfoCallback;null!==c&&(g=c.call(a.oInstance,a,d,e,h,f,g));l(b).html(g)}}function Yb(a,b){var c=a.fnFormatNumber,d=a._iDisplayStart+1,e=a._iDisplayLength,h=a.fnRecordsDisplay(),f=-1===e;return b.replace(/_START_/g,c.call(a,d)).replace(/_END_/g,c.call(a,a.fnDisplayEnd())).replace(/_MAX_/g,c.call(a,a.fnRecordsTotal())).replace(/_TOTAL_/g,c.call(a,h)).replace(/_PAGE_/g,c.call(a,f?1:Math.ceil(d/e))).replace(/_PAGES_/g,
+c.call(a,f?1:Math.ceil(h/e)))}function Ba(a){var b=a.iInitDisplayStart,c=a.aoColumns;var d=a.oFeatures;var e=a.bDeferLoading;if(a.bInitialised){Ib(a);Fb(a);ya(a,a.aoHeader);ya(a,a.aoFooter);V(a,!0);d.bAutoWidth&&Ya(a);var h=0;for(d=c.length;h<d;h++){var f=c[h];f.sWidth&&(f.nTh.style.width=K(f.sWidth))}F(a,null,"preInit",[a]);ka(a);c=Q(a);if("ssp"!=c||e)"ajax"==c?Oa(a,[],function(g){var k=Aa(a,g);for(h=0;h<k.length;h++)ia(a,k[h]);a.iInitDisplayStart=b;ka(a);V(a,!1);Pa(a,g)},a):(V(a,!1),Pa(a))}else setTimeout(function(){Ba(a)},
+200)}function Pa(a,b){a._bInitComplete=!0;(b||a.oInit.aaData)&&ta(a);F(a,null,"plugin-init",[a,b]);F(a,"aoInitComplete","init",[a,b])}function jb(a,b){b=parseInt(b,10);a._iDisplayLength=b;kb(a);F(a,null,"length",[a,b])}function Jb(a){var b=a.oClasses,c=a.sTableId,d=a.aLengthMenu,e=Array.isArray(d[0]),h=e?d[0]:d;d=e?d[1]:d;e=l("<select/>",{name:c+"_length","aria-controls":c,"class":b.sLengthSelect});for(var f=0,g=h.length;f<g;f++)e[0][f]=new Option("number"===typeof d[f]?a.fnFormatNumber(d[f]):d[f],
+h[f]);var k=l("<div><label/></div>").addClass(b.sLength);a.aanFeatures.l||(k[0].id=c+"_length");k.children().append(a.oLanguage.sLengthMenu.replace("_MENU_",e[0].outerHTML));l("select",k).val(a._iDisplayLength).on("change.DT",function(m){jb(a,l(this).val());ja(a)});l(a.nTable).on("length.dt.DT",function(m,n,p){a===n&&l("select",k).val(p)});return k[0]}function Ob(a){var b=a.sPaginationType,c=u.ext.pager[b],d="function"===typeof c,e=function(f){ja(f)};b=l("<div/>").addClass(a.oClasses.sPaging+b)[0];
+var h=a.aanFeatures;d||c.fnInit(a,b,e);h.p||(b.id=a.sTableId+"_paginate",a.aoDrawCallback.push({fn:function(f){if(d){var g=f._iDisplayStart,k=f._iDisplayLength,m=f.fnRecordsDisplay(),n=-1===k;g=n?0:Math.ceil(g/k);k=n?1:Math.ceil(m/k);m=c(g,k);var p;n=0;for(p=h.p.length;n<p;n++)fb(f,"pageButton")(f,h.p[n],n,m,g,k)}else c.fnUpdate(f,e)},sName:"pagination"}));return b}function lb(a,b,c){var d=a._iDisplayStart,e=a._iDisplayLength,h=a.fnRecordsDisplay();0===h||-1===e?d=0:"number"===typeof b?(d=b*e,d>h&&
+(d=0)):"first"==b?d=0:"previous"==b?(d=0<=e?d-e:0,0>d&&(d=0)):"next"==b?d+e<h&&(d+=e):"last"==b?d=Math.floor((h-1)/e)*e:da(a,0,"Unknown paging action: "+b,5);b=a._iDisplayStart!==d;a._iDisplayStart=d;b&&(F(a,null,"page",[a]),c&&ja(a));return b}function Lb(a){return l("<div/>",{id:a.aanFeatures.r?null:a.sTableId+"_processing","class":a.oClasses.sProcessing}).html(a.oLanguage.sProcessing).insertBefore(a.nTable)[0]}function V(a,b){a.oFeatures.bProcessing&&l(a.aanFeatures.r).css("display",b?"block":"none");
+F(a,null,"processing",[a,b])}function Mb(a){var b=l(a.nTable),c=a.oScroll;if(""===c.sX&&""===c.sY)return a.nTable;var d=c.sX,e=c.sY,h=a.oClasses,f=b.children("caption"),g=f.length?f[0]._captionSide:null,k=l(b[0].cloneNode(!1)),m=l(b[0].cloneNode(!1)),n=b.children("tfoot");n.length||(n=null);k=l("<div/>",{"class":h.sScrollWrapper}).append(l("<div/>",{"class":h.sScrollHead}).css({overflow:"hidden",position:"relative",border:0,width:d?d?K(d):null:"100%"}).append(l("<div/>",{"class":h.sScrollHeadInner}).css({"box-sizing":"content-box",
+width:c.sXInner||"100%"}).append(k.removeAttr("id").css("margin-left",0).append("top"===g?f:null).append(b.children("thead"))))).append(l("<div/>",{"class":h.sScrollBody}).css({position:"relative",overflow:"auto",width:d?K(d):null}).append(b));n&&k.append(l("<div/>",{"class":h.sScrollFoot}).css({overflow:"hidden",border:0,width:d?d?K(d):null:"100%"}).append(l("<div/>",{"class":h.sScrollFootInner}).append(m.removeAttr("id").css("margin-left",0).append("bottom"===g?f:null).append(b.children("tfoot")))));
+b=k.children();var p=b[0];h=b[1];var t=n?b[2]:null;if(d)l(h).on("scroll.DT",function(v){v=this.scrollLeft;p.scrollLeft=v;n&&(t.scrollLeft=v)});l(h).css("max-height",e);c.bCollapse||l(h).css("height",e);a.nScrollHead=p;a.nScrollBody=h;a.nScrollFoot=t;a.aoDrawCallback.push({fn:Ha,sName:"scrolling"});return k[0]}function Ha(a){var b=a.oScroll,c=b.sX,d=b.sXInner,e=b.sY;b=b.iBarWidth;var h=l(a.nScrollHead),f=h[0].style,g=h.children("div"),k=g[0].style,m=g.children("table");g=a.nScrollBody;var n=l(g),p=
+g.style,t=l(a.nScrollFoot).children("div"),v=t.children("table"),x=l(a.nTHead),w=l(a.nTable),r=w[0],C=r.style,G=a.nTFoot?l(a.nTFoot):null,aa=a.oBrowser,L=aa.bScrollOversize;U(a.aoColumns,"nTh");var O=[],I=[],H=[],ea=[],Y,Ca=function(D){D=D.style;D.paddingTop="0";D.paddingBottom="0";D.borderTopWidth="0";D.borderBottomWidth="0";D.height=0};var fa=g.scrollHeight>g.clientHeight;if(a.scrollBarVis!==fa&&a.scrollBarVis!==q)a.scrollBarVis=fa,ta(a);else{a.scrollBarVis=fa;w.children("thead, tfoot").remove();
+if(G){var ba=G.clone().prependTo(w);var la=G.find("tr");ba=ba.find("tr")}var mb=x.clone().prependTo(w);x=x.find("tr");fa=mb.find("tr");mb.find("th, td").removeAttr("tabindex");c||(p.width="100%",h[0].style.width="100%");l.each(Na(a,mb),function(D,W){Y=ua(a,D);W.style.width=a.aoColumns[Y].sWidth});G&&ca(function(D){D.style.width=""},ba);h=w.outerWidth();""===c?(C.width="100%",L&&(w.find("tbody").height()>g.offsetHeight||"scroll"==n.css("overflow-y"))&&(C.width=K(w.outerWidth()-b)),h=w.outerWidth()):
+""!==d&&(C.width=K(d),h=w.outerWidth());ca(Ca,fa);ca(function(D){var W=z.getComputedStyle?z.getComputedStyle(D).width:K(l(D).width());H.push(D.innerHTML);O.push(W)},fa);ca(function(D,W){D.style.width=O[W]},x);l(fa).height(0);G&&(ca(Ca,ba),ca(function(D){ea.push(D.innerHTML);I.push(K(l(D).css("width")))},ba),ca(function(D,W){D.style.width=I[W]},la),l(ba).height(0));ca(function(D,W){D.innerHTML='<div class="dataTables_sizing">'+H[W]+"</div>";D.childNodes[0].style.height="0";D.childNodes[0].style.overflow=
+"hidden";D.style.width=O[W]},fa);G&&ca(function(D,W){D.innerHTML='<div class="dataTables_sizing">'+ea[W]+"</div>";D.childNodes[0].style.height="0";D.childNodes[0].style.overflow="hidden";D.style.width=I[W]},ba);w.outerWidth()<h?(la=g.scrollHeight>g.offsetHeight||"scroll"==n.css("overflow-y")?h+b:h,L&&(g.scrollHeight>g.offsetHeight||"scroll"==n.css("overflow-y"))&&(C.width=K(la-b)),""!==c&&""===d||da(a,1,"Possible column misalignment",6)):la="100%";p.width=K(la);f.width=K(la);G&&(a.nScrollFoot.style.width=
+K(la));!e&&L&&(p.height=K(r.offsetHeight+b));c=w.outerWidth();m[0].style.width=K(c);k.width=K(c);d=w.height()>g.clientHeight||"scroll"==n.css("overflow-y");e="padding"+(aa.bScrollbarLeft?"Left":"Right");k[e]=d?b+"px":"0px";G&&(v[0].style.width=K(c),t[0].style.width=K(c),t[0].style[e]=d?b+"px":"0px");w.children("colgroup").insertBefore(w.children("thead"));n.trigger("scroll");!a.bSorted&&!a.bFiltered||a._drawHold||(g.scrollTop=0)}}function ca(a,b,c){for(var d=0,e=0,h=b.length,f,g;e<h;){f=b[e].firstChild;
+for(g=c?c[e].firstChild:null;f;)1===f.nodeType&&(c?a(f,g,d):a(f,d),d++),f=f.nextSibling,g=c?g.nextSibling:null;e++}}function Ya(a){var b=a.nTable,c=a.aoColumns,d=a.oScroll,e=d.sY,h=d.sX,f=d.sXInner,g=c.length,k=Ia(a,"bVisible"),m=l("th",a.nTHead),n=b.getAttribute("width"),p=b.parentNode,t=!1,v,x=a.oBrowser;d=x.bScrollOversize;(v=b.style.width)&&-1!==v.indexOf("%")&&(n=v);for(v=0;v<k.length;v++){var w=c[k[v]];null!==w.sWidth&&(w.sWidth=Zb(w.sWidthOrig,p),t=!0)}if(d||!t&&!h&&!e&&g==oa(a)&&g==m.length)for(v=
+0;v<g;v++)k=ua(a,v),null!==k&&(c[k].sWidth=K(m.eq(v).width()));else{g=l(b).clone().css("visibility","hidden").removeAttr("id");g.find("tbody tr").remove();var r=l("<tr/>").appendTo(g.find("tbody"));g.find("thead, tfoot").remove();g.append(l(a.nTHead).clone()).append(l(a.nTFoot).clone());g.find("tfoot th, tfoot td").css("width","");m=Na(a,g.find("thead")[0]);for(v=0;v<k.length;v++)w=c[k[v]],m[v].style.width=null!==w.sWidthOrig&&""!==w.sWidthOrig?K(w.sWidthOrig):"",w.sWidthOrig&&h&&l(m[v]).append(l("<div/>").css({width:w.sWidthOrig,
+margin:0,padding:0,border:0,height:1}));if(a.aoData.length)for(v=0;v<k.length;v++)t=k[v],w=c[t],l($b(a,t)).clone(!1).append(w.sContentPadding).appendTo(r);l("[name]",g).removeAttr("name");w=l("<div/>").css(h||e?{position:"absolute",top:0,left:0,height:1,right:0,overflow:"hidden"}:{}).append(g).appendTo(p);h&&f?g.width(f):h?(g.css("width","auto"),g.removeAttr("width"),g.width()<p.clientWidth&&n&&g.width(p.clientWidth)):e?g.width(p.clientWidth):n&&g.width(n);for(v=e=0;v<k.length;v++)p=l(m[v]),f=p.outerWidth()-
+p.width(),p=x.bBounding?Math.ceil(m[v].getBoundingClientRect().width):p.outerWidth(),e+=p,c[k[v]].sWidth=K(p-f);b.style.width=K(e);w.remove()}n&&(b.style.width=K(n));!n&&!h||a._reszEvt||(b=function(){l(z).on("resize.DT-"+a.sInstance,gb(function(){ta(a)}))},d?setTimeout(b,1E3):b(),a._reszEvt=!0)}function Zb(a,b){if(!a)return 0;a=l("<div/>").css("width",K(a)).appendTo(b||A.body);b=a[0].offsetWidth;a.remove();return b}function $b(a,b){var c=ac(a,b);if(0>c)return null;var d=a.aoData[c];return d.nTr?d.anCells[b]:
+l("<td/>").html(T(a,c,b,"display"))[0]}function ac(a,b){for(var c,d=-1,e=-1,h=0,f=a.aoData.length;h<f;h++)c=T(a,h,b,"display")+"",c=c.replace(tc,""),c=c.replace(/&nbsp;/g," "),c.length>d&&(d=c.length,e=h);return e}function K(a){return null===a?"0px":"number"==typeof a?0>a?"0px":a+"px":a.match(/\d$/)?a+"px":a}function pa(a){var b=[],c=a.aoColumns;var d=a.aaSortingFixed;var e=l.isPlainObject(d);var h=[];var f=function(n){n.length&&!Array.isArray(n[0])?h.push(n):l.merge(h,n)};Array.isArray(d)&&f(d);
+e&&d.pre&&f(d.pre);f(a.aaSorting);e&&d.post&&f(d.post);for(a=0;a<h.length;a++){var g=h[a][0];f=c[g].aDataSort;d=0;for(e=f.length;d<e;d++){var k=f[d];var m=c[k].sType||"string";h[a]._idx===q&&(h[a]._idx=l.inArray(h[a][1],c[k].asSorting));b.push({src:g,col:k,dir:h[a][1],index:h[a]._idx,type:m,formatter:u.ext.type.order[m+"-pre"]})}}return b}function Hb(a){var b,c=[],d=u.ext.type.order,e=a.aoData,h=0,f=a.aiDisplayMaster;Za(a);var g=pa(a);var k=0;for(b=g.length;k<b;k++){var m=g[k];m.formatter&&h++;bc(a,
+m.col)}if("ssp"!=Q(a)&&0!==g.length){k=0;for(b=f.length;k<b;k++)c[f[k]]=k;h===g.length?f.sort(function(n,p){var t,v=g.length,x=e[n]._aSortData,w=e[p]._aSortData;for(t=0;t<v;t++){var r=g[t];var C=x[r.col];var G=w[r.col];C=C<G?-1:C>G?1:0;if(0!==C)return"asc"===r.dir?C:-C}C=c[n];G=c[p];return C<G?-1:C>G?1:0}):f.sort(function(n,p){var t,v=g.length,x=e[n]._aSortData,w=e[p]._aSortData;for(t=0;t<v;t++){var r=g[t];var C=x[r.col];var G=w[r.col];r=d[r.type+"-"+r.dir]||d["string-"+r.dir];C=r(C,G);if(0!==C)return C}C=
+c[n];G=c[p];return C<G?-1:C>G?1:0})}a.bSorted=!0}function cc(a){var b=a.aoColumns,c=pa(a);a=a.oLanguage.oAria;for(var d=0,e=b.length;d<e;d++){var h=b[d];var f=h.asSorting;var g=h.ariaTitle||h.sTitle.replace(/<.*?>/g,"");var k=h.nTh;k.removeAttribute("aria-sort");h.bSortable&&(0<c.length&&c[0].col==d?(k.setAttribute("aria-sort","asc"==c[0].dir?"ascending":"descending"),h=f[c[0].index+1]||f[0]):h=f[0],g+="asc"===h?a.sSortAscending:a.sSortDescending);k.setAttribute("aria-label",g)}}function nb(a,b,c,
+d){var e=a.aaSorting,h=a.aoColumns[b].asSorting,f=function(g,k){var m=g._idx;m===q&&(m=l.inArray(g[1],h));return m+1<h.length?m+1:k?null:0};"number"===typeof e[0]&&(e=a.aaSorting=[e]);c&&a.oFeatures.bSortMulti?(c=l.inArray(b,U(e,"0")),-1!==c?(b=f(e[c],!0),null===b&&1===e.length&&(b=0),null===b?e.splice(c,1):(e[c][1]=h[b],e[c]._idx=b)):(e.push([b,h[0],0]),e[e.length-1]._idx=0)):e.length&&e[0][0]==b?(b=f(e[0]),e.length=1,e[0][1]=h[b],e[0]._idx=b):(e.length=0,e.push([b,h[0]]),e[0]._idx=0);ka(a);"function"==
+typeof d&&d(a)}function eb(a,b,c,d){var e=a.aoColumns[c];ob(b,{},function(h){!1!==e.bSortable&&(a.oFeatures.bProcessing?(V(a,!0),setTimeout(function(){nb(a,c,h.shiftKey,d);"ssp"!==Q(a)&&V(a,!1)},0)):nb(a,c,h.shiftKey,d))})}function Ra(a){var b=a.aLastSort,c=a.oClasses.sSortColumn,d=pa(a),e=a.oFeatures,h;if(e.bSort&&e.bSortClasses){e=0;for(h=b.length;e<h;e++){var f=b[e].src;l(U(a.aoData,"anCells",f)).removeClass(c+(2>e?e+1:3))}e=0;for(h=d.length;e<h;e++)f=d[e].src,l(U(a.aoData,"anCells",f)).addClass(c+
+(2>e?e+1:3))}a.aLastSort=d}function bc(a,b){var c=a.aoColumns[b],d=u.ext.order[c.sSortDataType],e;d&&(e=d.call(a.oInstance,a,b,va(a,b)));for(var h,f=u.ext.type.order[c.sType+"-pre"],g=0,k=a.aoData.length;g<k;g++)if(c=a.aoData[g],c._aSortData||(c._aSortData=[]),!c._aSortData[b]||d)h=d?e[g]:T(a,g,b,"sort"),c._aSortData[b]=f?f(h):h}function qa(a){if(!a._bLoadingState){var b={time:+new Date,start:a._iDisplayStart,length:a._iDisplayLength,order:l.extend(!0,[],a.aaSorting),search:Vb(a.oPreviousSearch),
+columns:l.map(a.aoColumns,function(c,d){return{visible:c.bVisible,search:Vb(a.aoPreSearchCols[d])}})};a.oSavedState=b;F(a,"aoStateSaveParams","stateSaveParams",[a,b]);a.oFeatures.bStateSave&&!a.bDestroying&&a.fnStateSaveCallback.call(a.oInstance,a,b)}}function dc(a,b,c){if(a.oFeatures.bStateSave)return b=a.fnStateLoadCallback.call(a.oInstance,a,function(d){pb(a,d,c)}),b!==q&&pb(a,b,c),!0;c()}function pb(a,b,c){var d,e=a.aoColumns;a._bLoadingState=!0;var h=a._bInitComplete?new u.Api(a):null;if(b&&
+b.time){var f=F(a,"aoStateLoadParams","stateLoadParams",[a,b]);if(-1!==l.inArray(!1,f))a._bLoadingState=!1;else if(f=a.iStateDuration,0<f&&b.time<+new Date-1E3*f)a._bLoadingState=!1;else if(b.columns&&e.length!==b.columns.length)a._bLoadingState=!1;else{a.oLoadedState=l.extend(!0,{},b);b.start!==q&&(a._iDisplayStart=b.start,null===h&&(a.iInitDisplayStart=b.start));b.length!==q&&(a._iDisplayLength=b.length);b.order!==q&&(a.aaSorting=[],l.each(b.order,function(k,m){a.aaSorting.push(m[0]>=e.length?[0,
+m[1]]:m)}));b.search!==q&&l.extend(a.oPreviousSearch,Wb(b.search));if(b.columns){f=0;for(d=b.columns.length;f<d;f++){var g=b.columns[f];g.visible!==q&&(h?h.column(f).visible(g.visible,!1):e[f].bVisible=g.visible);g.search!==q&&l.extend(a.aoPreSearchCols[f],Wb(g.search))}h&&h.columns.adjust()}a._bLoadingState=!1;F(a,"aoStateLoaded","stateLoaded",[a,b])}}else a._bLoadingState=!1;c()}function Sa(a){var b=u.settings;a=l.inArray(a,U(b,"nTable"));return-1!==a?b[a]:null}function da(a,b,c,d){c="DataTables warning: "+
+(a?"table id="+a.sTableId+" - ":"")+c;d&&(c+=". For more information about this error, please see http://datatables.net/tn/"+d);if(b)z.console&&console.log&&console.log(c);else if(b=u.ext,b=b.sErrMode||b.errMode,a&&F(a,null,"error",[a,d,c]),"alert"==b)alert(c);else{if("throw"==b)throw Error(c);"function"==typeof b&&b(a,d,c)}}function X(a,b,c,d){Array.isArray(c)?l.each(c,function(e,h){Array.isArray(h)?X(a,b,h[0],h[1]):X(a,b,h)}):(d===q&&(d=c),b[c]!==q&&(a[d]=b[c]))}function qb(a,b,c){var d;for(d in b)if(b.hasOwnProperty(d)){var e=
+b[d];l.isPlainObject(e)?(l.isPlainObject(a[d])||(a[d]={}),l.extend(!0,a[d],e)):c&&"data"!==d&&"aaData"!==d&&Array.isArray(e)?a[d]=e.slice():a[d]=e}return a}function ob(a,b,c){l(a).on("click.DT",b,function(d){l(a).trigger("blur");c(d)}).on("keypress.DT",b,function(d){13===d.which&&(d.preventDefault(),c(d))}).on("selectstart.DT",function(){return!1})}function R(a,b,c,d){c&&a[b].push({fn:c,sName:d})}function F(a,b,c,d){var e=[];b&&(e=l.map(a[b].slice().reverse(),function(h,f){return h.fn.apply(a.oInstance,
+d)}));null!==c&&(b=l.Event(c+".dt"),l(a.nTable).trigger(b,d),e.push(b.result));return e}function kb(a){var b=a._iDisplayStart,c=a.fnDisplayEnd(),d=a._iDisplayLength;b>=c&&(b=c-d);b-=b%d;if(-1===d||0>b)b=0;a._iDisplayStart=b}function fb(a,b){a=a.renderer;var c=u.ext.renderer[b];return l.isPlainObject(a)&&a[b]?c[a[b]]||c._:"string"===typeof a?c[a]||c._:c._}function Q(a){return a.oFeatures.bServerSide?"ssp":a.ajax||a.sAjaxSource?"ajax":"dom"}function Da(a,b){var c=ec.numbers_length,d=Math.floor(c/2);
+b<=c?a=ra(0,b):a<=d?(a=ra(0,c-2),a.push("ellipsis"),a.push(b-1)):(a>=b-1-d?a=ra(b-(c-2),b):(a=ra(a-d+2,a+d-1),a.push("ellipsis"),a.push(b-1)),a.splice(0,0,"ellipsis"),a.splice(0,0,0));a.DT_el="span";return a}function Wa(a){l.each({num:function(b){return Ta(b,a)},"num-fmt":function(b){return Ta(b,a,rb)},"html-num":function(b){return Ta(b,a,Ua)},"html-num-fmt":function(b){return Ta(b,a,Ua,rb)}},function(b,c){M.type.order[b+a+"-pre"]=c;b.match(/^html\-/)&&(M.type.search[b+a]=M.type.search.html)})}function fc(a){return function(){var b=
+[Sa(this[u.ext.iApiIndex])].concat(Array.prototype.slice.call(arguments));return u.ext.internal[a].apply(this,b)}}var u=function(a,b){if(this instanceof u)return l(a).DataTable(b);b=a;this.$=function(f,g){return this.api(!0).$(f,g)};this._=function(f,g){return this.api(!0).rows(f,g).data()};this.api=function(f){return f?new B(Sa(this[M.iApiIndex])):new B(this)};this.fnAddData=function(f,g){var k=this.api(!0);f=Array.isArray(f)&&(Array.isArray(f[0])||l.isPlainObject(f[0]))?k.rows.add(f):k.row.add(f);
+(g===q||g)&&k.draw();return f.flatten().toArray()};this.fnAdjustColumnSizing=function(f){var g=this.api(!0).columns.adjust(),k=g.settings()[0],m=k.oScroll;f===q||f?g.draw(!1):(""!==m.sX||""!==m.sY)&&Ha(k)};this.fnClearTable=function(f){var g=this.api(!0).clear();(f===q||f)&&g.draw()};this.fnClose=function(f){this.api(!0).row(f).child.hide()};this.fnDeleteRow=function(f,g,k){var m=this.api(!0);f=m.rows(f);var n=f.settings()[0],p=n.aoData[f[0][0]];f.remove();g&&g.call(this,n,p);(k===q||k)&&m.draw();
+return p};this.fnDestroy=function(f){this.api(!0).destroy(f)};this.fnDraw=function(f){this.api(!0).draw(f)};this.fnFilter=function(f,g,k,m,n,p){n=this.api(!0);null===g||g===q?n.search(f,k,m,p):n.column(g).search(f,k,m,p);n.draw()};this.fnGetData=function(f,g){var k=this.api(!0);if(f!==q){var m=f.nodeName?f.nodeName.toLowerCase():"";return g!==q||"td"==m||"th"==m?k.cell(f,g).data():k.row(f).data()||null}return k.data().toArray()};this.fnGetNodes=function(f){var g=this.api(!0);return f!==q?g.row(f).node():
+g.rows().nodes().flatten().toArray()};this.fnGetPosition=function(f){var g=this.api(!0),k=f.nodeName.toUpperCase();return"TR"==k?g.row(f).index():"TD"==k||"TH"==k?(f=g.cell(f).index(),[f.row,f.columnVisible,f.column]):null};this.fnIsOpen=function(f){return this.api(!0).row(f).child.isShown()};this.fnOpen=function(f,g,k){return this.api(!0).row(f).child(g,k).show().child()[0]};this.fnPageChange=function(f,g){f=this.api(!0).page(f);(g===q||g)&&f.draw(!1)};this.fnSetColumnVis=function(f,g,k){f=this.api(!0).column(f).visible(g);
+(k===q||k)&&f.columns.adjust().draw()};this.fnSettings=function(){return Sa(this[M.iApiIndex])};this.fnSort=function(f){this.api(!0).order(f).draw()};this.fnSortListener=function(f,g,k){this.api(!0).order.listener(f,g,k)};this.fnUpdate=function(f,g,k,m,n){var p=this.api(!0);k===q||null===k?p.row(g).data(f):p.cell(g,k).data(f);(n===q||n)&&p.columns.adjust();(m===q||m)&&p.draw();return 0};this.fnVersionCheck=M.fnVersionCheck;var c=this,d=b===q,e=this.length;d&&(b={});this.oApi=this.internal=M.internal;
+for(var h in u.ext.internal)h&&(this[h]=fc(h));this.each(function(){var f={},g=1<e?qb(f,b,!0):b,k=0,m;f=this.getAttribute("id");var n=!1,p=u.defaults,t=l(this);if("table"!=this.nodeName.toLowerCase())da(null,0,"Non-table node initialisation ("+this.nodeName+")",2);else{zb(p);Ab(p.column);P(p,p,!0);P(p.column,p.column,!0);P(p,l.extend(g,t.data()),!0);var v=u.settings;k=0;for(m=v.length;k<m;k++){var x=v[k];if(x.nTable==this||x.nTHead&&x.nTHead.parentNode==this||x.nTFoot&&x.nTFoot.parentNode==this){var w=
+g.bRetrieve!==q?g.bRetrieve:p.bRetrieve;if(d||w)return x.oInstance;if(g.bDestroy!==q?g.bDestroy:p.bDestroy){x.oInstance.fnDestroy();break}else{da(x,0,"Cannot reinitialise DataTable",3);return}}if(x.sTableId==this.id){v.splice(k,1);break}}if(null===f||""===f)this.id=f="DataTables_Table_"+u.ext._unique++;var r=l.extend(!0,{},u.models.oSettings,{sDestroyWidth:t[0].style.width,sInstance:f,sTableId:f});r.nTable=this;r.oApi=c.internal;r.oInit=g;v.push(r);r.oInstance=1===c.length?c:t.dataTable();zb(g);ma(g.oLanguage);
+g.aLengthMenu&&!g.iDisplayLength&&(g.iDisplayLength=Array.isArray(g.aLengthMenu[0])?g.aLengthMenu[0][0]:g.aLengthMenu[0]);g=qb(l.extend(!0,{},p),g);X(r.oFeatures,g,"bPaginate bLengthChange bFilter bSort bSortMulti bInfo bProcessing bAutoWidth bSortClasses bServerSide bDeferRender".split(" "));X(r,g,["asStripeClasses","ajax","fnServerData","fnFormatNumber","sServerMethod","aaSorting","aaSortingFixed","aLengthMenu","sPaginationType","sAjaxSource","sAjaxDataProp","iStateDuration","sDom","bSortCellsTop",
+"iTabIndex","fnStateLoadCallback","fnStateSaveCallback","renderer","searchDelay","rowId",["iCookieDuration","iStateDuration"],["oSearch","oPreviousSearch"],["aoSearchCols","aoPreSearchCols"],["iDisplayLength","_iDisplayLength"]]);X(r.oScroll,g,[["sScrollX","sX"],["sScrollXInner","sXInner"],["sScrollY","sY"],["bScrollCollapse","bCollapse"]]);X(r.oLanguage,g,"fnInfoCallback");R(r,"aoDrawCallback",g.fnDrawCallback,"user");R(r,"aoServerParams",g.fnServerParams,"user");R(r,"aoStateSaveParams",g.fnStateSaveParams,
+"user");R(r,"aoStateLoadParams",g.fnStateLoadParams,"user");R(r,"aoStateLoaded",g.fnStateLoaded,"user");R(r,"aoRowCallback",g.fnRowCallback,"user");R(r,"aoRowCreatedCallback",g.fnCreatedRow,"user");R(r,"aoHeaderCallback",g.fnHeaderCallback,"user");R(r,"aoFooterCallback",g.fnFooterCallback,"user");R(r,"aoInitComplete",g.fnInitComplete,"user");R(r,"aoPreDrawCallback",g.fnPreDrawCallback,"user");r.rowIdFn=na(g.rowId);Bb(r);var C=r.oClasses;l.extend(C,u.ext.classes,g.oClasses);t.addClass(C.sTable);r.iInitDisplayStart===
+q&&(r.iInitDisplayStart=g.iDisplayStart,r._iDisplayStart=g.iDisplayStart);null!==g.iDeferLoading&&(r.bDeferLoading=!0,f=Array.isArray(g.iDeferLoading),r._iRecordsDisplay=f?g.iDeferLoading[0]:g.iDeferLoading,r._iRecordsTotal=f?g.iDeferLoading[1]:g.iDeferLoading);var G=r.oLanguage;l.extend(!0,G,g.oLanguage);G.sUrl?(l.ajax({dataType:"json",url:G.sUrl,success:function(I){P(p.oLanguage,I);ma(I);l.extend(!0,G,I);F(r,null,"i18n",[r]);Ba(r)},error:function(){Ba(r)}}),n=!0):F(r,null,"i18n",[r]);null===g.asStripeClasses&&
+(r.asStripeClasses=[C.sStripeOdd,C.sStripeEven]);f=r.asStripeClasses;var aa=t.children("tbody").find("tr").eq(0);-1!==l.inArray(!0,l.map(f,function(I,H){return aa.hasClass(I)}))&&(l("tbody tr",this).removeClass(f.join(" ")),r.asDestroyStripes=f.slice());f=[];v=this.getElementsByTagName("thead");0!==v.length&&(xa(r.aoHeader,v[0]),f=Na(r));if(null===g.aoColumns)for(v=[],k=0,m=f.length;k<m;k++)v.push(null);else v=g.aoColumns;k=0;for(m=v.length;k<m;k++)Xa(r,f?f[k]:null);Db(r,g.aoColumnDefs,v,function(I,
+H){Ga(r,I,H)});if(aa.length){var L=function(I,H){return null!==I.getAttribute("data-"+H)?H:null};l(aa[0]).children("th, td").each(function(I,H){var ea=r.aoColumns[I];if(ea.mData===I){var Y=L(H,"sort")||L(H,"order");H=L(H,"filter")||L(H,"search");if(null!==Y||null!==H)ea.mData={_:I+".display",sort:null!==Y?I+".@data-"+Y:q,type:null!==Y?I+".@data-"+Y:q,filter:null!==H?I+".@data-"+H:q},Ga(r,I)}})}var O=r.oFeatures;f=function(){if(g.aaSorting===q){var I=r.aaSorting;k=0;for(m=I.length;k<m;k++)I[k][1]=
+r.aoColumns[k].asSorting[0]}Ra(r);O.bSort&&R(r,"aoDrawCallback",function(){if(r.bSorted){var Y=pa(r),Ca={};l.each(Y,function(fa,ba){Ca[ba.src]=ba.dir});F(r,null,"order",[r,Y,Ca]);cc(r)}});R(r,"aoDrawCallback",function(){(r.bSorted||"ssp"===Q(r)||O.bDeferRender)&&Ra(r)},"sc");I=t.children("caption").each(function(){this._captionSide=l(this).css("caption-side")});var H=t.children("thead");0===H.length&&(H=l("<thead/>").appendTo(t));r.nTHead=H[0];var ea=t.children("tbody");0===ea.length&&(ea=l("<tbody/>").insertAfter(H));
+r.nTBody=ea[0];H=t.children("tfoot");0===H.length&&0<I.length&&(""!==r.oScroll.sX||""!==r.oScroll.sY)&&(H=l("<tfoot/>").appendTo(t));0===H.length||0===H.children().length?t.addClass(C.sNoFooter):0<H.length&&(r.nTFoot=H[0],xa(r.aoFooter,r.nTFoot));if(g.aaData)for(k=0;k<g.aaData.length;k++)ia(r,g.aaData[k]);else(r.bDeferLoading||"dom"==Q(r))&&Ja(r,l(r.nTBody).children("tr"));r.aiDisplay=r.aiDisplayMaster.slice();r.bInitialised=!0;!1===n&&Ba(r)};R(r,"aoDrawCallback",qa,"state_save");g.bStateSave?(O.bStateSave=
+!0,dc(r,g,f)):f()}});c=null;return this},M,y,J,sb={},gc=/[\r\n\u2028]/g,Ua=/<.*?>/g,uc=/^\d{2,4}[\.\/\-]\d{1,2}[\.\/\-]\d{1,2}([T ]{1}\d{1,2}[:\.]\d{2}([\.:]\d{2})?)?$/,vc=/(\/|\.|\*|\+|\?|\||\(|\)|\[|\]|\{|\}|\\|\$|\^|\-)/g,rb=/['\u00A0,$£€¥%\u2009\u202F\u20BD\u20a9\u20BArfkɃΞ]/gi,Z=function(a){return a&&!0!==a&&"-"!==a?!1:!0},hc=function(a){var b=parseInt(a,10);return!isNaN(b)&&isFinite(a)?b:null},ic=function(a,b){sb[b]||(sb[b]=new RegExp(ib(b),"g"));return"string"===typeof a&&"."!==b?a.replace(/\./g,
+"").replace(sb[b],"."):a},tb=function(a,b,c){var d="string"===typeof a;if(Z(a))return!0;b&&d&&(a=ic(a,b));c&&d&&(a=a.replace(rb,""));return!isNaN(parseFloat(a))&&isFinite(a)},jc=function(a,b,c){return Z(a)?!0:Z(a)||"string"===typeof a?tb(a.replace(Ua,""),b,c)?!0:null:null},U=function(a,b,c){var d=[],e=0,h=a.length;if(c!==q)for(;e<h;e++)a[e]&&a[e][b]&&d.push(a[e][b][c]);else for(;e<h;e++)a[e]&&d.push(a[e][b]);return d},Ea=function(a,b,c,d){var e=[],h=0,f=b.length;if(d!==q)for(;h<f;h++)a[b[h]][c]&&
+e.push(a[b[h]][c][d]);else for(;h<f;h++)e.push(a[b[h]][c]);return e},ra=function(a,b){var c=[];if(b===q){b=0;var d=a}else d=b,b=a;for(a=b;a<d;a++)c.push(a);return c},kc=function(a){for(var b=[],c=0,d=a.length;c<d;c++)a[c]&&b.push(a[c]);return b},Ma=function(a){a:{if(!(2>a.length)){var b=a.slice().sort();for(var c=b[0],d=1,e=b.length;d<e;d++){if(b[d]===c){b=!1;break a}c=b[d]}}b=!0}if(b)return a.slice();b=[];e=a.length;var h,f=0;d=0;a:for(;d<e;d++){c=a[d];for(h=0;h<f;h++)if(b[h]===c)continue a;b.push(c);
+f++}return b},lc=function(a,b){if(Array.isArray(b))for(var c=0;c<b.length;c++)lc(a,b[c]);else a.push(b);return a},mc=function(a,b){b===q&&(b=0);return-1!==this.indexOf(a,b)};Array.isArray||(Array.isArray=function(a){return"[object Array]"===Object.prototype.toString.call(a)});Array.prototype.includes||(Array.prototype.includes=mc);String.prototype.trim||(String.prototype.trim=function(){return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g,"")});String.prototype.includes||(String.prototype.includes=
+mc);u.util={throttle:function(a,b){var c=b!==q?b:200,d,e;return function(){var h=this,f=+new Date,g=arguments;d&&f<d+c?(clearTimeout(e),e=setTimeout(function(){d=q;a.apply(h,g)},c)):(d=f,a.apply(h,g))}},escapeRegex:function(a){return a.replace(vc,"\\$1")},set:function(a){if(l.isPlainObject(a))return u.util.set(a._);if(null===a)return function(){};if("function"===typeof a)return function(c,d,e){a(c,"set",d,e)};if("string"!==typeof a||-1===a.indexOf(".")&&-1===a.indexOf("[")&&-1===a.indexOf("("))return function(c,
+d){c[a]=d};var b=function(c,d,e){e=bb(e);var h=e[e.length-1];for(var f,g,k=0,m=e.length-1;k<m;k++){if("__proto__"===e[k]||"constructor"===e[k])throw Error("Cannot set prototype values");f=e[k].match(Fa);g=e[k].match(sa);if(f){e[k]=e[k].replace(Fa,"");c[e[k]]=[];h=e.slice();h.splice(0,k+1);f=h.join(".");if(Array.isArray(d))for(g=0,m=d.length;g<m;g++)h={},b(h,d[g],f),c[e[k]].push(h);else c[e[k]]=d;return}g&&(e[k]=e[k].replace(sa,""),c=c[e[k]](d));if(null===c[e[k]]||c[e[k]]===q)c[e[k]]={};c=c[e[k]]}if(h.match(sa))c[h.replace(sa,
+"")](d);else c[h.replace(Fa,"")]=d};return function(c,d){return b(c,d,a)}},get:function(a){if(l.isPlainObject(a)){var b={};l.each(a,function(d,e){e&&(b[d]=u.util.get(e))});return function(d,e,h,f){var g=b[e]||b._;return g!==q?g(d,e,h,f):d}}if(null===a)return function(d){return d};if("function"===typeof a)return function(d,e,h,f){return a(d,e,h,f)};if("string"!==typeof a||-1===a.indexOf(".")&&-1===a.indexOf("[")&&-1===a.indexOf("("))return function(d,e){return d[a]};var c=function(d,e,h){if(""!==h){var f=
+bb(h);for(var g=0,k=f.length;g<k;g++){h=f[g].match(Fa);var m=f[g].match(sa);if(h){f[g]=f[g].replace(Fa,"");""!==f[g]&&(d=d[f[g]]);m=[];f.splice(0,g+1);f=f.join(".");if(Array.isArray(d))for(g=0,k=d.length;g<k;g++)m.push(c(d[g],e,f));d=h[0].substring(1,h[0].length-1);d=""===d?m:m.join(d);break}else if(m){f[g]=f[g].replace(sa,"");d=d[f[g]]();continue}if(null===d||d[f[g]]===q)return q;d=d[f[g]]}}return d};return function(d,e){return c(d,e,a)}}};var S=function(a,b,c){a[b]!==q&&(a[c]=a[b])},Fa=/\[.*?\]$/,
+sa=/\(\)$/,na=u.util.get,ha=u.util.set,ib=u.util.escapeRegex,Qa=l("<div>")[0],sc=Qa.textContent!==q,tc=/<.*?>/g,gb=u.util.throttle,nc=[],N=Array.prototype,wc=function(a){var b,c=u.settings,d=l.map(c,function(h,f){return h.nTable});if(a){if(a.nTable&&a.oApi)return[a];if(a.nodeName&&"table"===a.nodeName.toLowerCase()){var e=l.inArray(a,d);return-1!==e?[c[e]]:null}if(a&&"function"===typeof a.settings)return a.settings().toArray();"string"===typeof a?b=l(a):a instanceof l&&(b=a)}else return[];if(b)return b.map(function(h){e=
+l.inArray(this,d);return-1!==e?c[e]:null}).toArray()};var B=function(a,b){if(!(this instanceof B))return new B(a,b);var c=[],d=function(f){(f=wc(f))&&c.push.apply(c,f)};if(Array.isArray(a))for(var e=0,h=a.length;e<h;e++)d(a[e]);else d(a);this.context=Ma(c);b&&l.merge(this,b);this.selector={rows:null,cols:null,opts:null};B.extend(this,this,nc)};u.Api=B;l.extend(B.prototype,{any:function(){return 0!==this.count()},concat:N.concat,context:[],count:function(){return this.flatten().length},each:function(a){for(var b=
+0,c=this.length;b<c;b++)a.call(this,this[b],b,this);return this},eq:function(a){var b=this.context;return b.length>a?new B(b[a],this[a]):null},filter:function(a){var b=[];if(N.filter)b=N.filter.call(this,a,this);else for(var c=0,d=this.length;c<d;c++)a.call(this,this[c],c,this)&&b.push(this[c]);return new B(this.context,b)},flatten:function(){var a=[];return new B(this.context,a.concat.apply(a,this.toArray()))},join:N.join,indexOf:N.indexOf||function(a,b){b=b||0;for(var c=this.length;b<c;b++)if(this[b]===
+a)return b;return-1},iterator:function(a,b,c,d){var e=[],h,f,g=this.context,k,m=this.selector;"string"===typeof a&&(d=c,c=b,b=a,a=!1);var n=0;for(h=g.length;n<h;n++){var p=new B(g[n]);if("table"===b){var t=c.call(p,g[n],n);t!==q&&e.push(t)}else if("columns"===b||"rows"===b)t=c.call(p,g[n],this[n],n),t!==q&&e.push(t);else if("column"===b||"column-rows"===b||"row"===b||"cell"===b){var v=this[n];"column-rows"===b&&(k=Va(g[n],m.opts));var x=0;for(f=v.length;x<f;x++)t=v[x],t="cell"===b?c.call(p,g[n],t.row,
+t.column,n,x):c.call(p,g[n],t,n,x,k),t!==q&&e.push(t)}}return e.length||d?(a=new B(g,a?e.concat.apply([],e):e),b=a.selector,b.rows=m.rows,b.cols=m.cols,b.opts=m.opts,a):this},lastIndexOf:N.lastIndexOf||function(a,b){return this.indexOf.apply(this.toArray.reverse(),arguments)},length:0,map:function(a){var b=[];if(N.map)b=N.map.call(this,a,this);else for(var c=0,d=this.length;c<d;c++)b.push(a.call(this,this[c],c));return new B(this.context,b)},pluck:function(a){return this.map(function(b){return b[a]})},
+pop:N.pop,push:N.push,reduce:N.reduce||function(a,b){return Cb(this,a,b,0,this.length,1)},reduceRight:N.reduceRight||function(a,b){return Cb(this,a,b,this.length-1,-1,-1)},reverse:N.reverse,selector:null,shift:N.shift,slice:function(){return new B(this.context,this)},sort:N.sort,splice:N.splice,toArray:function(){return N.slice.call(this)},to$:function(){return l(this)},toJQuery:function(){return l(this)},unique:function(){return new B(this.context,Ma(this))},unshift:N.unshift});B.extend=function(a,
+b,c){if(c.length&&b&&(b instanceof B||b.__dt_wrapper)){var d,e=function(g,k,m){return function(){var n=k.apply(g,arguments);B.extend(n,n,m.methodExt);return n}};var h=0;for(d=c.length;h<d;h++){var f=c[h];b[f.name]="function"===f.type?e(a,f.val,f):"object"===f.type?{}:f.val;b[f.name].__dt_wrapper=!0;B.extend(a,b[f.name],f.propExt)}}};B.register=y=function(a,b){if(Array.isArray(a))for(var c=0,d=a.length;c<d;c++)B.register(a[c],b);else{d=a.split(".");var e=nc,h;a=0;for(c=d.length;a<c;a++){var f=(h=-1!==
+d[a].indexOf("()"))?d[a].replace("()",""):d[a];a:{var g=0;for(var k=e.length;g<k;g++)if(e[g].name===f){g=e[g];break a}g=null}g||(g={name:f,val:{},methodExt:[],propExt:[],type:"object"},e.push(g));a===c-1?(g.val=b,g.type="function"===typeof b?"function":l.isPlainObject(b)?"object":"other"):e=h?g.methodExt:g.propExt}}};B.registerPlural=J=function(a,b,c){B.register(a,c);B.register(b,function(){var d=c.apply(this,arguments);return d===this?this:d instanceof B?d.length?Array.isArray(d[0])?new B(d.context,
+d[0]):d[0]:q:d})};var oc=function(a,b){if(Array.isArray(a))return l.map(a,function(d){return oc(d,b)});if("number"===typeof a)return[b[a]];var c=l.map(b,function(d,e){return d.nTable});return l(c).filter(a).map(function(d){d=l.inArray(this,c);return b[d]}).toArray()};y("tables()",function(a){return a!==q&&null!==a?new B(oc(a,this.context)):this});y("table()",function(a){a=this.tables(a);var b=a.context;return b.length?new B(b[0]):a});J("tables().nodes()","table().node()",function(){return this.iterator("table",
+function(a){return a.nTable},1)});J("tables().body()","table().body()",function(){return this.iterator("table",function(a){return a.nTBody},1)});J("tables().header()","table().header()",function(){return this.iterator("table",function(a){return a.nTHead},1)});J("tables().footer()","table().footer()",function(){return this.iterator("table",function(a){return a.nTFoot},1)});J("tables().containers()","table().container()",function(){return this.iterator("table",function(a){return a.nTableWrapper},1)});
+y("draw()",function(a){return this.iterator("table",function(b){"page"===a?ja(b):("string"===typeof a&&(a="full-hold"===a?!1:!0),ka(b,!1===a))})});y("page()",function(a){return a===q?this.page.info().page:this.iterator("table",function(b){lb(b,a)})});y("page.info()",function(a){if(0===this.context.length)return q;a=this.context[0];var b=a._iDisplayStart,c=a.oFeatures.bPaginate?a._iDisplayLength:-1,d=a.fnRecordsDisplay(),e=-1===c;return{page:e?0:Math.floor(b/c),pages:e?1:Math.ceil(d/c),start:b,end:a.fnDisplayEnd(),
+length:c,recordsTotal:a.fnRecordsTotal(),recordsDisplay:d,serverSide:"ssp"===Q(a)}});y("page.len()",function(a){return a===q?0!==this.context.length?this.context[0]._iDisplayLength:q:this.iterator("table",function(b){jb(b,a)})});var pc=function(a,b,c){if(c){var d=new B(a);d.one("draw",function(){c(d.ajax.json())})}if("ssp"==Q(a))ka(a,b);else{V(a,!0);var e=a.jqXHR;e&&4!==e.readyState&&e.abort();Oa(a,[],function(h){Ka(a);h=Aa(a,h);for(var f=0,g=h.length;f<g;f++)ia(a,h[f]);ka(a,b);V(a,!1)})}};y("ajax.json()",
+function(){var a=this.context;if(0<a.length)return a[0].json});y("ajax.params()",function(){var a=this.context;if(0<a.length)return a[0].oAjaxData});y("ajax.reload()",function(a,b){return this.iterator("table",function(c){pc(c,!1===b,a)})});y("ajax.url()",function(a){var b=this.context;if(a===q){if(0===b.length)return q;b=b[0];return b.ajax?l.isPlainObject(b.ajax)?b.ajax.url:b.ajax:b.sAjaxSource}return this.iterator("table",function(c){l.isPlainObject(c.ajax)?c.ajax.url=a:c.ajax=a})});y("ajax.url().load()",
+function(a,b){return this.iterator("table",function(c){pc(c,!1===b,a)})});var ub=function(a,b,c,d,e){var h=[],f,g,k;var m=typeof b;b&&"string"!==m&&"function"!==m&&b.length!==q||(b=[b]);m=0;for(g=b.length;m<g;m++){var n=b[m]&&b[m].split&&!b[m].match(/[\[\(:]/)?b[m].split(","):[b[m]];var p=0;for(k=n.length;p<k;p++)(f=c("string"===typeof n[p]?n[p].trim():n[p]))&&f.length&&(h=h.concat(f))}a=M.selector[a];if(a.length)for(m=0,g=a.length;m<g;m++)h=a[m](d,e,h);return Ma(h)},vb=function(a){a||(a={});a.filter&&
+a.search===q&&(a.search=a.filter);return l.extend({search:"none",order:"current",page:"all"},a)},wb=function(a){for(var b=0,c=a.length;b<c;b++)if(0<a[b].length)return a[0]=a[b],a[0].length=1,a.length=1,a.context=[a.context[b]],a;a.length=0;return a},Va=function(a,b){var c=[],d=a.aiDisplay;var e=a.aiDisplayMaster;var h=b.search;var f=b.order;b=b.page;if("ssp"==Q(a))return"removed"===h?[]:ra(0,e.length);if("current"==b)for(f=a._iDisplayStart,a=a.fnDisplayEnd();f<a;f++)c.push(d[f]);else if("current"==
+f||"applied"==f)if("none"==h)c=e.slice();else if("applied"==h)c=d.slice();else{if("removed"==h){var g={};f=0;for(a=d.length;f<a;f++)g[d[f]]=null;c=l.map(e,function(k){return g.hasOwnProperty(k)?null:k})}}else if("index"==f||"original"==f)for(f=0,a=a.aoData.length;f<a;f++)"none"==h?c.push(f):(e=l.inArray(f,d),(-1===e&&"removed"==h||0<=e&&"applied"==h)&&c.push(f));return c},xc=function(a,b,c){var d;return ub("row",b,function(e){var h=hc(e),f=a.aoData;if(null!==h&&!c)return[h];d||(d=Va(a,c));if(null!==
+h&&-1!==l.inArray(h,d))return[h];if(null===e||e===q||""===e)return d;if("function"===typeof e)return l.map(d,function(k){var m=f[k];return e(k,m._aData,m.nTr)?k:null});if(e.nodeName){h=e._DT_RowIndex;var g=e._DT_CellIndex;if(h!==q)return f[h]&&f[h].nTr===e?[h]:[];if(g)return f[g.row]&&f[g.row].nTr===e.parentNode?[g.row]:[];h=l(e).closest("*[data-dt-row]");return h.length?[h.data("dt-row")]:[]}if("string"===typeof e&&"#"===e.charAt(0)&&(h=a.aIds[e.replace(/^#/,"")],h!==q))return[h.idx];h=kc(Ea(a.aoData,
+d,"nTr"));return l(h).filter(e).map(function(){return this._DT_RowIndex}).toArray()},a,c)};y("rows()",function(a,b){a===q?a="":l.isPlainObject(a)&&(b=a,a="");b=vb(b);var c=this.iterator("table",function(d){return xc(d,a,b)},1);c.selector.rows=a;c.selector.opts=b;return c});y("rows().nodes()",function(){return this.iterator("row",function(a,b){return a.aoData[b].nTr||q},1)});y("rows().data()",function(){return this.iterator(!0,"rows",function(a,b){return Ea(a.aoData,b,"_aData")},1)});J("rows().cache()",
+"row().cache()",function(a){return this.iterator("row",function(b,c){b=b.aoData[c];return"search"===a?b._aFilterData:b._aSortData},1)});J("rows().invalidate()","row().invalidate()",function(a){return this.iterator("row",function(b,c){wa(b,c,a)})});J("rows().indexes()","row().index()",function(){return this.iterator("row",function(a,b){return b},1)});J("rows().ids()","row().id()",function(a){for(var b=[],c=this.context,d=0,e=c.length;d<e;d++)for(var h=0,f=this[d].length;h<f;h++){var g=c[d].rowIdFn(c[d].aoData[this[d][h]]._aData);
+b.push((!0===a?"#":"")+g)}return new B(c,b)});J("rows().remove()","row().remove()",function(){var a=this;this.iterator("row",function(b,c,d){var e=b.aoData,h=e[c],f,g;e.splice(c,1);var k=0;for(f=e.length;k<f;k++){var m=e[k];var n=m.anCells;null!==m.nTr&&(m.nTr._DT_RowIndex=k);if(null!==n)for(m=0,g=n.length;m<g;m++)n[m]._DT_CellIndex.row=k}La(b.aiDisplayMaster,c);La(b.aiDisplay,c);La(a[d],c,!1);0<b._iRecordsDisplay&&b._iRecordsDisplay--;kb(b);c=b.rowIdFn(h._aData);c!==q&&delete b.aIds[c]});this.iterator("table",
+function(b){for(var c=0,d=b.aoData.length;c<d;c++)b.aoData[c].idx=c});return this});y("rows.add()",function(a){var b=this.iterator("table",function(d){var e,h=[];var f=0;for(e=a.length;f<e;f++){var g=a[f];g.nodeName&&"TR"===g.nodeName.toUpperCase()?h.push(Ja(d,g)[0]):h.push(ia(d,g))}return h},1),c=this.rows(-1);c.pop();l.merge(c,b);return c});y("row()",function(a,b){return wb(this.rows(a,b))});y("row().data()",function(a){var b=this.context;if(a===q)return b.length&&this.length?b[0].aoData[this[0]]._aData:
+q;var c=b[0].aoData[this[0]];c._aData=a;Array.isArray(a)&&c.nTr&&c.nTr.id&&ha(b[0].rowId)(a,c.nTr.id);wa(b[0],this[0],"data");return this});y("row().node()",function(){var a=this.context;return a.length&&this.length?a[0].aoData[this[0]].nTr||null:null});y("row.add()",function(a){a instanceof l&&a.length&&(a=a[0]);var b=this.iterator("table",function(c){return a.nodeName&&"TR"===a.nodeName.toUpperCase()?Ja(c,a)[0]:ia(c,a)});return this.row(b[0])});l(A).on("plugin-init.dt",function(a,b){var c=new B(b);
+c.on("stateSaveParams",function(d,e,h){d=c.rows().iterator("row",function(f,g){return f.aoData[g]._detailsShow?g:q});h.childRows=c.rows(d).ids(!0).toArray()});(a=c.state.loaded())&&a.childRows&&c.rows(a.childRows).every(function(){F(b,null,"requestChild",[this])})});var yc=function(a,b,c,d){var e=[],h=function(f,g){if(Array.isArray(f)||f instanceof l)for(var k=0,m=f.length;k<m;k++)h(f[k],g);else f.nodeName&&"tr"===f.nodeName.toLowerCase()?e.push(f):(k=l("<tr><td></td></tr>").addClass(g),l("td",k).addClass(g).html(f)[0].colSpan=
+oa(a),e.push(k[0]))};h(c,d);b._details&&b._details.detach();b._details=l(e);b._detailsShow&&b._details.insertAfter(b.nTr)},xb=function(a,b){var c=a.context;c.length&&(a=c[0].aoData[b!==q?b:a[0]])&&a._details&&(a._details.remove(),a._detailsShow=q,a._details=q,l(a.nTr).removeClass("dt-hasChild"),qa(c[0]))},qc=function(a,b){var c=a.context;if(c.length&&a.length){var d=c[0].aoData[a[0]];d._details&&((d._detailsShow=b)?(d._details.insertAfter(d.nTr),l(d.nTr).addClass("dt-hasChild")):(d._details.detach(),
+l(d.nTr).removeClass("dt-hasChild")),F(c[0],null,"childRow",[b,a.row(a[0])]),zc(c[0]),qa(c[0]))}},zc=function(a){var b=new B(a),c=a.aoData;b.off("draw.dt.DT_details column-visibility.dt.DT_details destroy.dt.DT_details");0<U(c,"_details").length&&(b.on("draw.dt.DT_details",function(d,e){a===e&&b.rows({page:"current"}).eq(0).each(function(h){h=c[h];h._detailsShow&&h._details.insertAfter(h.nTr)})}),b.on("column-visibility.dt.DT_details",function(d,e,h,f){if(a===e)for(e=oa(e),h=0,f=c.length;h<f;h++)d=
+c[h],d._details&&d._details.children("td[colspan]").attr("colspan",e)}),b.on("destroy.dt.DT_details",function(d,e){if(a===e)for(d=0,e=c.length;d<e;d++)c[d]._details&&xb(b,d)}))};y("row().child()",function(a,b){var c=this.context;if(a===q)return c.length&&this.length?c[0].aoData[this[0]]._details:q;!0===a?this.child.show():!1===a?xb(this):c.length&&this.length&&yc(c[0],c[0].aoData[this[0]],a,b);return this});y(["row().child.show()","row().child().show()"],function(a){qc(this,!0);return this});y(["row().child.hide()",
+"row().child().hide()"],function(){qc(this,!1);return this});y(["row().child.remove()","row().child().remove()"],function(){xb(this);return this});y("row().child.isShown()",function(){var a=this.context;return a.length&&this.length?a[0].aoData[this[0]]._detailsShow||!1:!1});var Ac=/^([^:]+):(name|visIdx|visible)$/,rc=function(a,b,c,d,e){c=[];d=0;for(var h=e.length;d<h;d++)c.push(T(a,e[d],b));return c},Bc=function(a,b,c){var d=a.aoColumns,e=U(d,"sName"),h=U(d,"nTh");return ub("column",b,function(f){var g=
+hc(f);if(""===f)return ra(d.length);if(null!==g)return[0<=g?g:d.length+g];if("function"===typeof f){var k=Va(a,c);return l.map(d,function(p,t){return f(t,rc(a,t,0,0,k),h[t])?t:null})}var m="string"===typeof f?f.match(Ac):"";if(m)switch(m[2]){case "visIdx":case "visible":g=parseInt(m[1],10);if(0>g){var n=l.map(d,function(p,t){return p.bVisible?t:null});return[n[n.length+g]]}return[ua(a,g)];case "name":return l.map(e,function(p,t){return p===m[1]?t:null});default:return[]}if(f.nodeName&&f._DT_CellIndex)return[f._DT_CellIndex.column];
+g=l(h).filter(f).map(function(){return l.inArray(this,h)}).toArray();if(g.length||!f.nodeName)return g;g=l(f).closest("*[data-dt-column]");return g.length?[g.data("dt-column")]:[]},a,c)};y("columns()",function(a,b){a===q?a="":l.isPlainObject(a)&&(b=a,a="");b=vb(b);var c=this.iterator("table",function(d){return Bc(d,a,b)},1);c.selector.cols=a;c.selector.opts=b;return c});J("columns().header()","column().header()",function(a,b){return this.iterator("column",function(c,d){return c.aoColumns[d].nTh},
+1)});J("columns().footer()","column().footer()",function(a,b){return this.iterator("column",function(c,d){return c.aoColumns[d].nTf},1)});J("columns().data()","column().data()",function(){return this.iterator("column-rows",rc,1)});J("columns().dataSrc()","column().dataSrc()",function(){return this.iterator("column",function(a,b){return a.aoColumns[b].mData},1)});J("columns().cache()","column().cache()",function(a){return this.iterator("column-rows",function(b,c,d,e,h){return Ea(b.aoData,h,"search"===
+a?"_aFilterData":"_aSortData",c)},1)});J("columns().nodes()","column().nodes()",function(){return this.iterator("column-rows",function(a,b,c,d,e){return Ea(a.aoData,e,"anCells",b)},1)});J("columns().visible()","column().visible()",function(a,b){var c=this,d=this.iterator("column",function(e,h){if(a===q)return e.aoColumns[h].bVisible;var f=e.aoColumns,g=f[h],k=e.aoData,m;if(a!==q&&g.bVisible!==a){if(a){var n=l.inArray(!0,U(f,"bVisible"),h+1);f=0;for(m=k.length;f<m;f++){var p=k[f].nTr;e=k[f].anCells;
+p&&p.insertBefore(e[h],e[n]||null)}}else l(U(e.aoData,"anCells",h)).detach();g.bVisible=a}});a!==q&&this.iterator("table",function(e){ya(e,e.aoHeader);ya(e,e.aoFooter);e.aiDisplay.length||l(e.nTBody).find("td[colspan]").attr("colspan",oa(e));qa(e);c.iterator("column",function(h,f){F(h,null,"column-visibility",[h,f,a,b])});(b===q||b)&&c.columns.adjust()});return d});J("columns().indexes()","column().index()",function(a){return this.iterator("column",function(b,c){return"visible"===a?va(b,c):c},1)});
+y("columns.adjust()",function(){return this.iterator("table",function(a){ta(a)},1)});y("column.index()",function(a,b){if(0!==this.context.length){var c=this.context[0];if("fromVisible"===a||"toData"===a)return ua(c,b);if("fromData"===a||"toVisible"===a)return va(c,b)}});y("column()",function(a,b){return wb(this.columns(a,b))});var Cc=function(a,b,c){var d=a.aoData,e=Va(a,c),h=kc(Ea(d,e,"anCells")),f=l(lc([],h)),g,k=a.aoColumns.length,m,n,p,t,v,x;return ub("cell",b,function(w){var r="function"===typeof w;
+if(null===w||w===q||r){m=[];n=0;for(p=e.length;n<p;n++)for(g=e[n],t=0;t<k;t++)v={row:g,column:t},r?(x=d[g],w(v,T(a,g,t),x.anCells?x.anCells[t]:null)&&m.push(v)):m.push(v);return m}if(l.isPlainObject(w))return w.column!==q&&w.row!==q&&-1!==l.inArray(w.row,e)?[w]:[];r=f.filter(w).map(function(C,G){return{row:G._DT_CellIndex.row,column:G._DT_CellIndex.column}}).toArray();if(r.length||!w.nodeName)return r;x=l(w).closest("*[data-dt-row]");return x.length?[{row:x.data("dt-row"),column:x.data("dt-column")}]:
+[]},a,c)};y("cells()",function(a,b,c){l.isPlainObject(a)&&(a.row===q?(c=a,a=null):(c=b,b=null));l.isPlainObject(b)&&(c=b,b=null);if(null===b||b===q)return this.iterator("table",function(n){return Cc(n,a,vb(c))});var d=c?{page:c.page,order:c.order,search:c.search}:{},e=this.columns(b,d),h=this.rows(a,d),f,g,k,m;d=this.iterator("table",function(n,p){n=[];f=0;for(g=h[p].length;f<g;f++)for(k=0,m=e[p].length;k<m;k++)n.push({row:h[p][f],column:e[p][k]});return n},1);d=c&&c.selected?this.cells(d,c):d;l.extend(d.selector,
+{cols:b,rows:a,opts:c});return d});J("cells().nodes()","cell().node()",function(){return this.iterator("cell",function(a,b,c){return(a=a.aoData[b])&&a.anCells?a.anCells[c]:q},1)});y("cells().data()",function(){return this.iterator("cell",function(a,b,c){return T(a,b,c)},1)});J("cells().cache()","cell().cache()",function(a){a="search"===a?"_aFilterData":"_aSortData";return this.iterator("cell",function(b,c,d){return b.aoData[c][a][d]},1)});J("cells().render()","cell().render()",function(a){return this.iterator("cell",
+function(b,c,d){return T(b,c,d,a)},1)});J("cells().indexes()","cell().index()",function(){return this.iterator("cell",function(a,b,c){return{row:b,column:c,columnVisible:va(a,c)}},1)});J("cells().invalidate()","cell().invalidate()",function(a){return this.iterator("cell",function(b,c,d){wa(b,c,a,d)})});y("cell()",function(a,b,c){return wb(this.cells(a,b,c))});y("cell().data()",function(a){var b=this.context,c=this[0];if(a===q)return b.length&&c.length?T(b[0],c[0].row,c[0].column):q;Eb(b[0],c[0].row,
+c[0].column,a);wa(b[0],c[0].row,"data",c[0].column);return this});y("order()",function(a,b){var c=this.context;if(a===q)return 0!==c.length?c[0].aaSorting:q;"number"===typeof a?a=[[a,b]]:a.length&&!Array.isArray(a[0])&&(a=Array.prototype.slice.call(arguments));return this.iterator("table",function(d){d.aaSorting=a.slice()})});y("order.listener()",function(a,b,c){return this.iterator("table",function(d){eb(d,a,b,c)})});y("order.fixed()",function(a){if(!a){var b=this.context;b=b.length?b[0].aaSortingFixed:
+q;return Array.isArray(b)?{pre:b}:b}return this.iterator("table",function(c){c.aaSortingFixed=l.extend(!0,{},a)})});y(["columns().order()","column().order()"],function(a){var b=this;return this.iterator("table",function(c,d){var e=[];l.each(b[d],function(h,f){e.push([f,a])});c.aaSorting=e})});y("search()",function(a,b,c,d){var e=this.context;return a===q?0!==e.length?e[0].oPreviousSearch.sSearch:q:this.iterator("table",function(h){h.oFeatures.bFilter&&za(h,l.extend({},h.oPreviousSearch,{sSearch:a+
+"",bRegex:null===b?!1:b,bSmart:null===c?!0:c,bCaseInsensitive:null===d?!0:d}),1)})});J("columns().search()","column().search()",function(a,b,c,d){return this.iterator("column",function(e,h){var f=e.aoPreSearchCols;if(a===q)return f[h].sSearch;e.oFeatures.bFilter&&(l.extend(f[h],{sSearch:a+"",bRegex:null===b?!1:b,bSmart:null===c?!0:c,bCaseInsensitive:null===d?!0:d}),za(e,e.oPreviousSearch,1))})});y("state()",function(){return this.context.length?this.context[0].oSavedState:null});y("state.clear()",
+function(){return this.iterator("table",function(a){a.fnStateSaveCallback.call(a.oInstance,a,{})})});y("state.loaded()",function(){return this.context.length?this.context[0].oLoadedState:null});y("state.save()",function(){return this.iterator("table",function(a){qa(a)})});u.versionCheck=u.fnVersionCheck=function(a){var b=u.version.split(".");a=a.split(".");for(var c,d,e=0,h=a.length;e<h;e++)if(c=parseInt(b[e],10)||0,d=parseInt(a[e],10)||0,c!==d)return c>d;return!0};u.isDataTable=u.fnIsDataTable=function(a){var b=
+l(a).get(0),c=!1;if(a instanceof u.Api)return!0;l.each(u.settings,function(d,e){d=e.nScrollHead?l("table",e.nScrollHead)[0]:null;var h=e.nScrollFoot?l("table",e.nScrollFoot)[0]:null;if(e.nTable===b||d===b||h===b)c=!0});return c};u.tables=u.fnTables=function(a){var b=!1;l.isPlainObject(a)&&(b=a.api,a=a.visible);var c=l.map(u.settings,function(d){if(!a||a&&l(d.nTable).is(":visible"))return d.nTable});return b?new B(c):c};u.camelToHungarian=P;y("$()",function(a,b){b=this.rows(b).nodes();b=l(b);return l([].concat(b.filter(a).toArray(),
+b.find(a).toArray()))});l.each(["on","one","off"],function(a,b){y(b+"()",function(){var c=Array.prototype.slice.call(arguments);c[0]=l.map(c[0].split(/\s/),function(e){return e.match(/\.dt\b/)?e:e+".dt"}).join(" ");var d=l(this.tables().nodes());d[b].apply(d,c);return this})});y("clear()",function(){return this.iterator("table",function(a){Ka(a)})});y("settings()",function(){return new B(this.context,this.context)});y("init()",function(){var a=this.context;return a.length?a[0].oInit:null});y("data()",
+function(){return this.iterator("table",function(a){return U(a.aoData,"_aData")}).flatten()});y("destroy()",function(a){a=a||!1;return this.iterator("table",function(b){var c=b.nTableWrapper.parentNode,d=b.oClasses,e=b.nTable,h=b.nTBody,f=b.nTHead,g=b.nTFoot,k=l(e);h=l(h);var m=l(b.nTableWrapper),n=l.map(b.aoData,function(t){return t.nTr}),p;b.bDestroying=!0;F(b,"aoDestroyCallback","destroy",[b]);a||(new B(b)).columns().visible(!0);m.off(".DT").find(":not(tbody *)").off(".DT");l(z).off(".DT-"+b.sInstance);
+e!=f.parentNode&&(k.children("thead").detach(),k.append(f));g&&e!=g.parentNode&&(k.children("tfoot").detach(),k.append(g));b.aaSorting=[];b.aaSortingFixed=[];Ra(b);l(n).removeClass(b.asStripeClasses.join(" "));l("th, td",f).removeClass(d.sSortable+" "+d.sSortableAsc+" "+d.sSortableDesc+" "+d.sSortableNone);h.children().detach();h.append(n);f=a?"remove":"detach";k[f]();m[f]();!a&&c&&(c.insertBefore(e,b.nTableReinsertBefore),k.css("width",b.sDestroyWidth).removeClass(d.sTable),(p=b.asDestroyStripes.length)&&
+h.children().each(function(t){l(this).addClass(b.asDestroyStripes[t%p])}));c=l.inArray(b,u.settings);-1!==c&&u.settings.splice(c,1)})});l.each(["column","row","cell"],function(a,b){y(b+"s().every()",function(c){var d=this.selector.opts,e=this;return this.iterator(b,function(h,f,g,k,m){c.call(e[b](f,"cell"===b?g:d,"cell"===b?d:q),f,g,k,m)})})});y("i18n()",function(a,b,c){var d=this.context[0];a=na(a)(d.oLanguage);a===q&&(a=b);c!==q&&l.isPlainObject(a)&&(a=a[c]!==q?a[c]:a._);return a.replace("%d",c)});
+u.version="1.11.3";u.settings=[];u.models={};u.models.oSearch={bCaseInsensitive:!0,sSearch:"",bRegex:!1,bSmart:!0,"return":!1};u.models.oRow={nTr:null,anCells:null,_aData:[],_aSortData:null,_aFilterData:null,_sFilterRow:null,_sRowStripe:"",src:null,idx:-1};u.models.oColumn={idx:null,aDataSort:null,asSorting:null,bSearchable:null,bSortable:null,bVisible:null,_sManualType:null,_bAttrSrc:!1,fnCreatedCell:null,fnGetData:null,fnSetData:null,mData:null,mRender:null,nTh:null,nTf:null,sClass:null,sContentPadding:null,
+sDefaultContent:null,sName:null,sSortDataType:"std",sSortingClass:null,sSortingClassJUI:null,sTitle:null,sType:null,sWidth:null,sWidthOrig:null};u.defaults={aaData:null,aaSorting:[[0,"asc"]],aaSortingFixed:[],ajax:null,aLengthMenu:[10,25,50,100],aoColumns:null,aoColumnDefs:null,aoSearchCols:[],asStripeClasses:null,bAutoWidth:!0,bDeferRender:!1,bDestroy:!1,bFilter:!0,bInfo:!0,bLengthChange:!0,bPaginate:!0,bProcessing:!1,bRetrieve:!1,bScrollCollapse:!1,bServerSide:!1,bSort:!0,bSortMulti:!0,bSortCellsTop:!1,
+bSortClasses:!0,bStateSave:!1,fnCreatedRow:null,fnDrawCallback:null,fnFooterCallback:null,fnFormatNumber:function(a){return a.toString().replace(/\B(?=(\d{3})+(?!\d))/g,this.oLanguage.sThousands)},fnHeaderCallback:null,fnInfoCallback:null,fnInitComplete:null,fnPreDrawCallback:null,fnRowCallback:null,fnServerData:null,fnServerParams:null,fnStateLoadCallback:function(a){try{return JSON.parse((-1===a.iStateDuration?sessionStorage:localStorage).getItem("DataTables_"+a.sInstance+"_"+location.pathname))}catch(b){return{}}},
+fnStateLoadParams:null,fnStateLoaded:null,fnStateSaveCallback:function(a,b){try{(-1===a.iStateDuration?sessionStorage:localStorage).setItem("DataTables_"+a.sInstance+"_"+location.pathname,JSON.stringify(b))}catch(c){}},fnStateSaveParams:null,iStateDuration:7200,iDeferLoading:null,iDisplayLength:10,iDisplayStart:0,iTabIndex:0,oClasses:{},oLanguage:{oAria:{sSortAscending:": activate to sort column ascending",sSortDescending:": activate to sort column descending"},oPaginate:{sFirst:"First",sLast:"Last",
+sNext:"Next",sPrevious:"Previous"},sEmptyTable:"No data available in table",sInfo:"Showing _START_ to _END_ of _TOTAL_ entries",sInfoEmpty:"Showing 0 to 0 of 0 entries",sInfoFiltered:"(filtered from _MAX_ total entries)",sInfoPostFix:"",sDecimal:"",sThousands:",",sLengthMenu:"Show _MENU_ entries",sLoadingRecords:"Loading...",sProcessing:"Processing...",sSearch:"Search:",sSearchPlaceholder:"",sUrl:"",sZeroRecords:"No matching records found"},oSearch:l.extend({},u.models.oSearch),sAjaxDataProp:"data",
+sAjaxSource:null,sDom:"lfrtip",searchDelay:null,sPaginationType:"simple_numbers",sScrollX:"",sScrollXInner:"",sScrollY:"",sServerMethod:"GET",renderer:null,rowId:"DT_RowId"};E(u.defaults);u.defaults.column={aDataSort:null,iDataSort:-1,asSorting:["asc","desc"],bSearchable:!0,bSortable:!0,bVisible:!0,fnCreatedCell:null,mData:null,mRender:null,sCellType:"td",sClass:"",sContentPadding:"",sDefaultContent:null,sName:"",sSortDataType:"std",sTitle:null,sType:null,sWidth:null};E(u.defaults.column);u.models.oSettings=
+{oFeatures:{bAutoWidth:null,bDeferRender:null,bFilter:null,bInfo:null,bLengthChange:null,bPaginate:null,bProcessing:null,bServerSide:null,bSort:null,bSortMulti:null,bSortClasses:null,bStateSave:null},oScroll:{bCollapse:null,iBarWidth:0,sX:null,sXInner:null,sY:null},oLanguage:{fnInfoCallback:null},oBrowser:{bScrollOversize:!1,bScrollbarLeft:!1,bBounding:!1,barWidth:0},ajax:null,aanFeatures:[],aoData:[],aiDisplay:[],aiDisplayMaster:[],aIds:{},aoColumns:[],aoHeader:[],aoFooter:[],oPreviousSearch:{},
+aoPreSearchCols:[],aaSorting:null,aaSortingFixed:[],asStripeClasses:null,asDestroyStripes:[],sDestroyWidth:0,aoRowCallback:[],aoHeaderCallback:[],aoFooterCallback:[],aoDrawCallback:[],aoRowCreatedCallback:[],aoPreDrawCallback:[],aoInitComplete:[],aoStateSaveParams:[],aoStateLoadParams:[],aoStateLoaded:[],sTableId:"",nTable:null,nTHead:null,nTFoot:null,nTBody:null,nTableWrapper:null,bDeferLoading:!1,bInitialised:!1,aoOpenRows:[],sDom:null,searchDelay:null,sPaginationType:"two_button",iStateDuration:0,
+aoStateSave:[],aoStateLoad:[],oSavedState:null,oLoadedState:null,sAjaxSource:null,sAjaxDataProp:null,jqXHR:null,json:q,oAjaxData:q,fnServerData:null,aoServerParams:[],sServerMethod:null,fnFormatNumber:null,aLengthMenu:null,iDraw:0,bDrawing:!1,iDrawError:-1,_iDisplayLength:10,_iDisplayStart:0,_iRecordsTotal:0,_iRecordsDisplay:0,oClasses:{},bFiltered:!1,bSorted:!1,bSortCellsTop:null,oInit:null,aoDestroyCallback:[],fnRecordsTotal:function(){return"ssp"==Q(this)?1*this._iRecordsTotal:this.aiDisplayMaster.length},
+fnRecordsDisplay:function(){return"ssp"==Q(this)?1*this._iRecordsDisplay:this.aiDisplay.length},fnDisplayEnd:function(){var a=this._iDisplayLength,b=this._iDisplayStart,c=b+a,d=this.aiDisplay.length,e=this.oFeatures,h=e.bPaginate;return e.bServerSide?!1===h||-1===a?b+d:Math.min(b+a,this._iRecordsDisplay):!h||c>d||-1===a?d:c},oInstance:null,sInstance:null,iTabIndex:0,nScrollHead:null,nScrollFoot:null,aLastSort:[],oPlugins:{},rowIdFn:null,rowId:null};u.ext=M={buttons:{},classes:{},builder:"-source-",
+errMode:"alert",feature:[],search:[],selector:{cell:[],column:[],row:[]},internal:{},legacy:{ajax:null},pager:{},renderer:{pageButton:{},header:{}},order:{},type:{detect:[],search:{},order:{}},_unique:0,fnVersionCheck:u.fnVersionCheck,iApiIndex:0,oJUIClasses:{},sVersion:u.version};l.extend(M,{afnFiltering:M.search,aTypes:M.type.detect,ofnSearch:M.type.search,oSort:M.type.order,afnSortData:M.order,aoFeatures:M.feature,oApi:M.internal,oStdClasses:M.classes,oPagination:M.pager});l.extend(u.ext.classes,
+{sTable:"dataTable",sNoFooter:"no-footer",sPageButton:"paginate_button",sPageButtonActive:"current",sPageButtonDisabled:"disabled",sStripeOdd:"odd",sStripeEven:"even",sRowEmpty:"dataTables_empty",sWrapper:"dataTables_wrapper",sFilter:"dataTables_filter",sInfo:"dataTables_info",sPaging:"dataTables_paginate paging_",sLength:"dataTables_length",sProcessing:"dataTables_processing",sSortAsc:"sorting_asc",sSortDesc:"sorting_desc",sSortable:"sorting",sSortableAsc:"sorting_desc_disabled",sSortableDesc:"sorting_asc_disabled",
+sSortableNone:"sorting_disabled",sSortColumn:"sorting_",sFilterInput:"",sLengthSelect:"",sScrollWrapper:"dataTables_scroll",sScrollHead:"dataTables_scrollHead",sScrollHeadInner:"dataTables_scrollHeadInner",sScrollBody:"dataTables_scrollBody",sScrollFoot:"dataTables_scrollFoot",sScrollFootInner:"dataTables_scrollFootInner",sHeaderTH:"",sFooterTH:"",sSortJUIAsc:"",sSortJUIDesc:"",sSortJUI:"",sSortJUIAscAllowed:"",sSortJUIDescAllowed:"",sSortJUIWrapper:"",sSortIcon:"",sJUIHeader:"",sJUIFooter:""});var ec=
+u.ext.pager;l.extend(ec,{simple:function(a,b){return["previous","next"]},full:function(a,b){return["first","previous","next","last"]},numbers:function(a,b){return[Da(a,b)]},simple_numbers:function(a,b){return["previous",Da(a,b),"next"]},full_numbers:function(a,b){return["first","previous",Da(a,b),"next","last"]},first_last_numbers:function(a,b){return["first",Da(a,b),"last"]},_numbers:Da,numbers_length:7});l.extend(!0,u.ext.renderer,{pageButton:{_:function(a,b,c,d,e,h){var f=a.oClasses,g=a.oLanguage.oPaginate,
+k=a.oLanguage.oAria.paginate||{},m,n,p=0,t=function(x,w){var r,C=f.sPageButtonDisabled,G=function(I){lb(a,I.data.action,!0)};var aa=0;for(r=w.length;aa<r;aa++){var L=w[aa];if(Array.isArray(L)){var O=l("<"+(L.DT_el||"div")+"/>").appendTo(x);t(O,L)}else{m=null;n=L;O=a.iTabIndex;switch(L){case "ellipsis":x.append('<span class="ellipsis">&#x2026;</span>');break;case "first":m=g.sFirst;0===e&&(O=-1,n+=" "+C);break;case "previous":m=g.sPrevious;0===e&&(O=-1,n+=" "+C);break;case "next":m=g.sNext;if(0===
+h||e===h-1)O=-1,n+=" "+C;break;case "last":m=g.sLast;if(0===h||e===h-1)O=-1,n+=" "+C;break;default:m=a.fnFormatNumber(L+1),n=e===L?f.sPageButtonActive:""}null!==m&&(O=l("<a>",{"class":f.sPageButton+" "+n,"aria-controls":a.sTableId,"aria-label":k[L],"data-dt-idx":p,tabindex:O,id:0===c&&"string"===typeof L?a.sTableId+"_"+L:null}).html(m).appendTo(x),ob(O,{action:L},G),p++)}}};try{var v=l(b).find(A.activeElement).data("dt-idx")}catch(x){}t(l(b).empty(),d);v!==q&&l(b).find("[data-dt-idx="+v+"]").trigger("focus")}}});
+l.extend(u.ext.type.detect,[function(a,b){b=b.oLanguage.sDecimal;return tb(a,b)?"num"+b:null},function(a,b){if(a&&!(a instanceof Date)&&!uc.test(a))return null;b=Date.parse(a);return null!==b&&!isNaN(b)||Z(a)?"date":null},function(a,b){b=b.oLanguage.sDecimal;return tb(a,b,!0)?"num-fmt"+b:null},function(a,b){b=b.oLanguage.sDecimal;return jc(a,b)?"html-num"+b:null},function(a,b){b=b.oLanguage.sDecimal;return jc(a,b,!0)?"html-num-fmt"+b:null},function(a,b){return Z(a)||"string"===typeof a&&-1!==a.indexOf("<")?
+"html":null}]);l.extend(u.ext.type.search,{html:function(a){return Z(a)?a:"string"===typeof a?a.replace(gc," ").replace(Ua,""):""},string:function(a){return Z(a)?a:"string"===typeof a?a.replace(gc," "):a}});var Ta=function(a,b,c,d){if(0!==a&&(!a||"-"===a))return-Infinity;b&&(a=ic(a,b));a.replace&&(c&&(a=a.replace(c,"")),d&&(a=a.replace(d,"")));return 1*a};l.extend(M.type.order,{"date-pre":function(a){a=Date.parse(a);return isNaN(a)?-Infinity:a},"html-pre":function(a){return Z(a)?"":a.replace?a.replace(/<.*?>/g,
+"").toLowerCase():a+""},"string-pre":function(a){return Z(a)?"":"string"===typeof a?a.toLowerCase():a.toString?a.toString():""},"string-asc":function(a,b){return a<b?-1:a>b?1:0},"string-desc":function(a,b){return a<b?1:a>b?-1:0}});Wa("");l.extend(!0,u.ext.renderer,{header:{_:function(a,b,c,d){l(a.nTable).on("order.dt.DT",function(e,h,f,g){a===h&&(e=c.idx,b.removeClass(d.sSortAsc+" "+d.sSortDesc).addClass("asc"==g[e]?d.sSortAsc:"desc"==g[e]?d.sSortDesc:c.sSortingClass))})},jqueryui:function(a,b,c,
+d){l("<div/>").addClass(d.sSortJUIWrapper).append(b.contents()).append(l("<span/>").addClass(d.sSortIcon+" "+c.sSortingClassJUI)).appendTo(b);l(a.nTable).on("order.dt.DT",function(e,h,f,g){a===h&&(e=c.idx,b.removeClass(d.sSortAsc+" "+d.sSortDesc).addClass("asc"==g[e]?d.sSortAsc:"desc"==g[e]?d.sSortDesc:c.sSortingClass),b.find("span."+d.sSortIcon).removeClass(d.sSortJUIAsc+" "+d.sSortJUIDesc+" "+d.sSortJUI+" "+d.sSortJUIAscAllowed+" "+d.sSortJUIDescAllowed).addClass("asc"==g[e]?d.sSortJUIAsc:"desc"==
+g[e]?d.sSortJUIDesc:c.sSortingClassJUI))})}}});var yb=function(a){Array.isArray(a)&&(a=a.join(","));return"string"===typeof a?a.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"):a};u.render={number:function(a,b,c,d,e){return{display:function(h){if("number"!==typeof h&&"string"!==typeof h)return h;var f=0>h?"-":"",g=parseFloat(h);if(isNaN(g))return yb(h);g=g.toFixed(c);h=Math.abs(g);g=parseInt(h,10);h=c?b+(h-g).toFixed(c).substring(2):"";0===g&&0===parseFloat(h)&&
+(f="");return f+(d||"")+g.toString().replace(/\B(?=(\d{3})+(?!\d))/g,a)+h+(e||"")}}},text:function(){return{display:yb,filter:yb}}};l.extend(u.ext.internal,{_fnExternApiFunc:fc,_fnBuildAjax:Oa,_fnAjaxUpdate:Gb,_fnAjaxParameters:Pb,_fnAjaxUpdateDraw:Qb,_fnAjaxDataSrc:Aa,_fnAddColumn:Xa,_fnColumnOptions:Ga,_fnAdjustColumnSizing:ta,_fnVisibleToColumnIndex:ua,_fnColumnIndexToVisible:va,_fnVisbleColumns:oa,_fnGetColumns:Ia,_fnColumnTypes:Za,_fnApplyColumnDefs:Db,_fnHungarianMap:E,_fnCamelToHungarian:P,
+_fnLanguageCompat:ma,_fnBrowserDetect:Bb,_fnAddData:ia,_fnAddTr:Ja,_fnNodeToDataIndex:function(a,b){return b._DT_RowIndex!==q?b._DT_RowIndex:null},_fnNodeToColumnIndex:function(a,b,c){return l.inArray(c,a.aoData[b].anCells)},_fnGetCellData:T,_fnSetCellData:Eb,_fnSplitObjNotation:bb,_fnGetObjectDataFn:na,_fnSetObjectDataFn:ha,_fnGetDataMaster:cb,_fnClearTable:Ka,_fnDeleteIndex:La,_fnInvalidate:wa,_fnGetRowElements:ab,_fnCreateTr:$a,_fnBuildHead:Fb,_fnDrawHead:ya,_fnDraw:ja,_fnReDraw:ka,_fnAddOptionsHtml:Ib,
+_fnDetectHeader:xa,_fnGetUniqueThs:Na,_fnFeatureHtmlFilter:Kb,_fnFilterComplete:za,_fnFilterCustom:Tb,_fnFilterColumn:Sb,_fnFilter:Rb,_fnFilterCreateSearch:hb,_fnEscapeRegex:ib,_fnFilterData:Ub,_fnFeatureHtmlInfo:Nb,_fnUpdateInfo:Xb,_fnInfoMacros:Yb,_fnInitialise:Ba,_fnInitComplete:Pa,_fnLengthChange:jb,_fnFeatureHtmlLength:Jb,_fnFeatureHtmlPaginate:Ob,_fnPageChange:lb,_fnFeatureHtmlProcessing:Lb,_fnProcessingDisplay:V,_fnFeatureHtmlTable:Mb,_fnScrollDraw:Ha,_fnApplyToChildren:ca,_fnCalculateColumnWidths:Ya,
+_fnThrottle:gb,_fnConvertToWidth:Zb,_fnGetWidestNode:$b,_fnGetMaxLenString:ac,_fnStringToCss:K,_fnSortFlatten:pa,_fnSort:Hb,_fnSortAria:cc,_fnSortListener:nb,_fnSortAttachListener:eb,_fnSortingClasses:Ra,_fnSortData:bc,_fnSaveState:qa,_fnLoadState:dc,_fnImplementState:pb,_fnSettingsFromNode:Sa,_fnLog:da,_fnMap:X,_fnBindAction:ob,_fnCallbackReg:R,_fnCallbackFire:F,_fnLengthOverflow:kb,_fnRenderer:fb,_fnDataSource:Q,_fnRowAttributes:db,_fnExtend:qb,_fnCalculateEnd:function(){}});l.fn.dataTable=u;u.$=
+l;l.fn.dataTableSettings=u.settings;l.fn.dataTableExt=u.ext;l.fn.DataTable=function(a){return l(this).dataTable(a).api()};l.each(u,function(a,b){l.fn.DataTable[a]=b});return u});
+
+
+/***/ }),
+
+/***/ "./node_modules/feather-icons/dist/feather.js":
+/*!****************************************************!*\
+  !*** ./node_modules/feather-icons/dist/feather.js ***!
+  \****************************************************/
+/***/ (function(module) {
+
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(true)
+		module.exports = factory();
+	else {}
+})(typeof self !== 'undefined' ? self : this, function() {
+return /******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __nested_webpack_require_574__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __nested_webpack_require_574__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__nested_webpack_require_574__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__nested_webpack_require_574__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__nested_webpack_require_574__.d = function(exports, name, getter) {
+/******/ 		if(!__nested_webpack_require_574__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__nested_webpack_require_574__.r = function(exports) {
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__nested_webpack_require_574__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__nested_webpack_require_574__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__nested_webpack_require_574__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__nested_webpack_require_574__.p = "";
+/******/
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __nested_webpack_require_574__(__nested_webpack_require_574__.s = 0);
+/******/ })
+/************************************************************************/
+/******/ ({
+
+/***/ "./dist/icons.json":
+/*!*************************!*\
+  !*** ./dist/icons.json ***!
+  \*************************/
+/*! exports provided: activity, airplay, alert-circle, alert-octagon, alert-triangle, align-center, align-justify, align-left, align-right, anchor, aperture, archive, arrow-down-circle, arrow-down-left, arrow-down-right, arrow-down, arrow-left-circle, arrow-left, arrow-right-circle, arrow-right, arrow-up-circle, arrow-up-left, arrow-up-right, arrow-up, at-sign, award, bar-chart-2, bar-chart, battery-charging, battery, bell-off, bell, bluetooth, bold, book-open, book, bookmark, box, briefcase, calendar, camera-off, camera, cast, check-circle, check-square, check, chevron-down, chevron-left, chevron-right, chevron-up, chevrons-down, chevrons-left, chevrons-right, chevrons-up, chrome, circle, clipboard, clock, cloud-drizzle, cloud-lightning, cloud-off, cloud-rain, cloud-snow, cloud, code, codepen, codesandbox, coffee, columns, command, compass, copy, corner-down-left, corner-down-right, corner-left-down, corner-left-up, corner-right-down, corner-right-up, corner-up-left, corner-up-right, cpu, credit-card, crop, crosshair, database, delete, disc, divide-circle, divide-square, divide, dollar-sign, download-cloud, download, dribbble, droplet, edit-2, edit-3, edit, external-link, eye-off, eye, facebook, fast-forward, feather, figma, file-minus, file-plus, file-text, file, film, filter, flag, folder-minus, folder-plus, folder, framer, frown, gift, git-branch, git-commit, git-merge, git-pull-request, github, gitlab, globe, grid, hard-drive, hash, headphones, heart, help-circle, hexagon, home, image, inbox, info, instagram, italic, key, layers, layout, life-buoy, link-2, link, linkedin, list, loader, lock, log-in, log-out, mail, map-pin, map, maximize-2, maximize, meh, menu, message-circle, message-square, mic-off, mic, minimize-2, minimize, minus-circle, minus-square, minus, monitor, moon, more-horizontal, more-vertical, mouse-pointer, move, music, navigation-2, navigation, octagon, package, paperclip, pause-circle, pause, pen-tool, percent, phone-call, phone-forwarded, phone-incoming, phone-missed, phone-off, phone-outgoing, phone, pie-chart, play-circle, play, plus-circle, plus-square, plus, pocket, power, printer, radio, refresh-ccw, refresh-cw, repeat, rewind, rotate-ccw, rotate-cw, rss, save, scissors, search, send, server, settings, share-2, share, shield-off, shield, shopping-bag, shopping-cart, shuffle, sidebar, skip-back, skip-forward, slack, slash, sliders, smartphone, smile, speaker, square, star, stop-circle, sun, sunrise, sunset, tablet, tag, target, terminal, thermometer, thumbs-down, thumbs-up, toggle-left, toggle-right, tool, trash-2, trash, trello, trending-down, trending-up, triangle, truck, tv, twitch, twitter, type, umbrella, underline, unlock, upload-cloud, upload, user-check, user-minus, user-plus, user-x, user, users, video-off, video, voicemail, volume-1, volume-2, volume-x, volume, watch, wifi-off, wifi, wind, x-circle, x-octagon, x-square, x, youtube, zap-off, zap, zoom-in, zoom-out, default */
+/***/ (function(module) {
+
+module.exports = {"activity":"<polyline points=\"22 12 18 12 15 21 9 3 6 12 2 12\"></polyline>","airplay":"<path d=\"M5 17H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1\"></path><polygon points=\"12 15 17 21 7 21 12 15\"></polygon>","alert-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"12\"></line><line x1=\"12\" y1=\"16\" x2=\"12.01\" y2=\"16\"></line>","alert-octagon":"<polygon points=\"7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2\"></polygon><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"12\"></line><line x1=\"12\" y1=\"16\" x2=\"12.01\" y2=\"16\"></line>","alert-triangle":"<path d=\"M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z\"></path><line x1=\"12\" y1=\"9\" x2=\"12\" y2=\"13\"></line><line x1=\"12\" y1=\"17\" x2=\"12.01\" y2=\"17\"></line>","align-center":"<line x1=\"18\" y1=\"10\" x2=\"6\" y2=\"10\"></line><line x1=\"21\" y1=\"6\" x2=\"3\" y2=\"6\"></line><line x1=\"21\" y1=\"14\" x2=\"3\" y2=\"14\"></line><line x1=\"18\" y1=\"18\" x2=\"6\" y2=\"18\"></line>","align-justify":"<line x1=\"21\" y1=\"10\" x2=\"3\" y2=\"10\"></line><line x1=\"21\" y1=\"6\" x2=\"3\" y2=\"6\"></line><line x1=\"21\" y1=\"14\" x2=\"3\" y2=\"14\"></line><line x1=\"21\" y1=\"18\" x2=\"3\" y2=\"18\"></line>","align-left":"<line x1=\"17\" y1=\"10\" x2=\"3\" y2=\"10\"></line><line x1=\"21\" y1=\"6\" x2=\"3\" y2=\"6\"></line><line x1=\"21\" y1=\"14\" x2=\"3\" y2=\"14\"></line><line x1=\"17\" y1=\"18\" x2=\"3\" y2=\"18\"></line>","align-right":"<line x1=\"21\" y1=\"10\" x2=\"7\" y2=\"10\"></line><line x1=\"21\" y1=\"6\" x2=\"3\" y2=\"6\"></line><line x1=\"21\" y1=\"14\" x2=\"3\" y2=\"14\"></line><line x1=\"21\" y1=\"18\" x2=\"7\" y2=\"18\"></line>","anchor":"<circle cx=\"12\" cy=\"5\" r=\"3\"></circle><line x1=\"12\" y1=\"22\" x2=\"12\" y2=\"8\"></line><path d=\"M5 12H2a10 10 0 0 0 20 0h-3\"></path>","aperture":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"14.31\" y1=\"8\" x2=\"20.05\" y2=\"17.94\"></line><line x1=\"9.69\" y1=\"8\" x2=\"21.17\" y2=\"8\"></line><line x1=\"7.38\" y1=\"12\" x2=\"13.12\" y2=\"2.06\"></line><line x1=\"9.69\" y1=\"16\" x2=\"3.95\" y2=\"6.06\"></line><line x1=\"14.31\" y1=\"16\" x2=\"2.83\" y2=\"16\"></line><line x1=\"16.62\" y1=\"12\" x2=\"10.88\" y2=\"21.94\"></line>","archive":"<polyline points=\"21 8 21 21 3 21 3 8\"></polyline><rect x=\"1\" y=\"3\" width=\"22\" height=\"5\"></rect><line x1=\"10\" y1=\"12\" x2=\"14\" y2=\"12\"></line>","arrow-down-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><polyline points=\"8 12 12 16 16 12\"></polyline><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"16\"></line>","arrow-down-left":"<line x1=\"17\" y1=\"7\" x2=\"7\" y2=\"17\"></line><polyline points=\"17 17 7 17 7 7\"></polyline>","arrow-down-right":"<line x1=\"7\" y1=\"7\" x2=\"17\" y2=\"17\"></line><polyline points=\"17 7 17 17 7 17\"></polyline>","arrow-down":"<line x1=\"12\" y1=\"5\" x2=\"12\" y2=\"19\"></line><polyline points=\"19 12 12 19 5 12\"></polyline>","arrow-left-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><polyline points=\"12 8 8 12 12 16\"></polyline><line x1=\"16\" y1=\"12\" x2=\"8\" y2=\"12\"></line>","arrow-left":"<line x1=\"19\" y1=\"12\" x2=\"5\" y2=\"12\"></line><polyline points=\"12 19 5 12 12 5\"></polyline>","arrow-right-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><polyline points=\"12 16 16 12 12 8\"></polyline><line x1=\"8\" y1=\"12\" x2=\"16\" y2=\"12\"></line>","arrow-right":"<line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"></line><polyline points=\"12 5 19 12 12 19\"></polyline>","arrow-up-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><polyline points=\"16 12 12 8 8 12\"></polyline><line x1=\"12\" y1=\"16\" x2=\"12\" y2=\"8\"></line>","arrow-up-left":"<line x1=\"17\" y1=\"17\" x2=\"7\" y2=\"7\"></line><polyline points=\"7 17 7 7 17 7\"></polyline>","arrow-up-right":"<line x1=\"7\" y1=\"17\" x2=\"17\" y2=\"7\"></line><polyline points=\"7 7 17 7 17 17\"></polyline>","arrow-up":"<line x1=\"12\" y1=\"19\" x2=\"12\" y2=\"5\"></line><polyline points=\"5 12 12 5 19 12\"></polyline>","at-sign":"<circle cx=\"12\" cy=\"12\" r=\"4\"></circle><path d=\"M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94\"></path>","award":"<circle cx=\"12\" cy=\"8\" r=\"7\"></circle><polyline points=\"8.21 13.89 7 23 12 20 17 23 15.79 13.88\"></polyline>","bar-chart-2":"<line x1=\"18\" y1=\"20\" x2=\"18\" y2=\"10\"></line><line x1=\"12\" y1=\"20\" x2=\"12\" y2=\"4\"></line><line x1=\"6\" y1=\"20\" x2=\"6\" y2=\"14\"></line>","bar-chart":"<line x1=\"12\" y1=\"20\" x2=\"12\" y2=\"10\"></line><line x1=\"18\" y1=\"20\" x2=\"18\" y2=\"4\"></line><line x1=\"6\" y1=\"20\" x2=\"6\" y2=\"16\"></line>","battery-charging":"<path d=\"M5 18H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.19M15 6h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3.19\"></path><line x1=\"23\" y1=\"13\" x2=\"23\" y2=\"11\"></line><polyline points=\"11 6 7 12 13 12 9 18\"></polyline>","battery":"<rect x=\"1\" y=\"6\" width=\"18\" height=\"12\" rx=\"2\" ry=\"2\"></rect><line x1=\"23\" y1=\"13\" x2=\"23\" y2=\"11\"></line>","bell-off":"<path d=\"M13.73 21a2 2 0 0 1-3.46 0\"></path><path d=\"M18.63 13A17.89 17.89 0 0 1 18 8\"></path><path d=\"M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14\"></path><path d=\"M18 8a6 6 0 0 0-9.33-5\"></path><line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"></line>","bell":"<path d=\"M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9\"></path><path d=\"M13.73 21a2 2 0 0 1-3.46 0\"></path>","bluetooth":"<polyline points=\"6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5\"></polyline>","bold":"<path d=\"M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z\"></path><path d=\"M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z\"></path>","book-open":"<path d=\"M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z\"></path><path d=\"M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z\"></path>","book":"<path d=\"M4 19.5A2.5 2.5 0 0 1 6.5 17H20\"></path><path d=\"M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z\"></path>","bookmark":"<path d=\"M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z\"></path>","box":"<path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line>","briefcase":"<rect x=\"2\" y=\"7\" width=\"20\" height=\"14\" rx=\"2\" ry=\"2\"></rect><path d=\"M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16\"></path>","calendar":"<rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"></line><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"></line><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"></line>","camera-off":"<line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"></line><path d=\"M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3m3-3h6l2 3h4a2 2 0 0 1 2 2v9.34m-7.72-2.06a4 4 0 1 1-5.56-5.56\"></path>","camera":"<path d=\"M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z\"></path><circle cx=\"12\" cy=\"13\" r=\"4\"></circle>","cast":"<path d=\"M2 16.1A5 5 0 0 1 5.9 20M2 12.05A9 9 0 0 1 9.95 20M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6\"></path><line x1=\"2\" y1=\"20\" x2=\"2.01\" y2=\"20\"></line>","check-circle":"<path d=\"M22 11.08V12a10 10 0 1 1-5.93-9.14\"></path><polyline points=\"22 4 12 14.01 9 11.01\"></polyline>","check-square":"<polyline points=\"9 11 12 14 22 4\"></polyline><path d=\"M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11\"></path>","check":"<polyline points=\"20 6 9 17 4 12\"></polyline>","chevron-down":"<polyline points=\"6 9 12 15 18 9\"></polyline>","chevron-left":"<polyline points=\"15 18 9 12 15 6\"></polyline>","chevron-right":"<polyline points=\"9 18 15 12 9 6\"></polyline>","chevron-up":"<polyline points=\"18 15 12 9 6 15\"></polyline>","chevrons-down":"<polyline points=\"7 13 12 18 17 13\"></polyline><polyline points=\"7 6 12 11 17 6\"></polyline>","chevrons-left":"<polyline points=\"11 17 6 12 11 7\"></polyline><polyline points=\"18 17 13 12 18 7\"></polyline>","chevrons-right":"<polyline points=\"13 17 18 12 13 7\"></polyline><polyline points=\"6 17 11 12 6 7\"></polyline>","chevrons-up":"<polyline points=\"17 11 12 6 7 11\"></polyline><polyline points=\"17 18 12 13 7 18\"></polyline>","chrome":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><circle cx=\"12\" cy=\"12\" r=\"4\"></circle><line x1=\"21.17\" y1=\"8\" x2=\"12\" y2=\"8\"></line><line x1=\"3.95\" y1=\"6.06\" x2=\"8.54\" y2=\"14\"></line><line x1=\"10.88\" y1=\"21.94\" x2=\"15.46\" y2=\"14\"></line>","circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle>","clipboard":"<path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\"></path><rect x=\"8\" y=\"2\" width=\"8\" height=\"4\" rx=\"1\" ry=\"1\"></rect>","clock":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><polyline points=\"12 6 12 12 16 14\"></polyline>","cloud-drizzle":"<line x1=\"8\" y1=\"19\" x2=\"8\" y2=\"21\"></line><line x1=\"8\" y1=\"13\" x2=\"8\" y2=\"15\"></line><line x1=\"16\" y1=\"19\" x2=\"16\" y2=\"21\"></line><line x1=\"16\" y1=\"13\" x2=\"16\" y2=\"15\"></line><line x1=\"12\" y1=\"21\" x2=\"12\" y2=\"23\"></line><line x1=\"12\" y1=\"15\" x2=\"12\" y2=\"17\"></line><path d=\"M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25\"></path>","cloud-lightning":"<path d=\"M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9\"></path><polyline points=\"13 11 9 17 15 17 11 23\"></polyline>","cloud-off":"<path d=\"M22.61 16.95A5 5 0 0 0 18 10h-1.26a8 8 0 0 0-7.05-6M5 5a8 8 0 0 0 4 15h9a5 5 0 0 0 1.7-.3\"></path><line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"></line>","cloud-rain":"<line x1=\"16\" y1=\"13\" x2=\"16\" y2=\"21\"></line><line x1=\"8\" y1=\"13\" x2=\"8\" y2=\"21\"></line><line x1=\"12\" y1=\"15\" x2=\"12\" y2=\"23\"></line><path d=\"M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25\"></path>","cloud-snow":"<path d=\"M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25\"></path><line x1=\"8\" y1=\"16\" x2=\"8.01\" y2=\"16\"></line><line x1=\"8\" y1=\"20\" x2=\"8.01\" y2=\"20\"></line><line x1=\"12\" y1=\"18\" x2=\"12.01\" y2=\"18\"></line><line x1=\"12\" y1=\"22\" x2=\"12.01\" y2=\"22\"></line><line x1=\"16\" y1=\"16\" x2=\"16.01\" y2=\"16\"></line><line x1=\"16\" y1=\"20\" x2=\"16.01\" y2=\"20\"></line>","cloud":"<path d=\"M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z\"></path>","code":"<polyline points=\"16 18 22 12 16 6\"></polyline><polyline points=\"8 6 2 12 8 18\"></polyline>","codepen":"<polygon points=\"12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2\"></polygon><line x1=\"12\" y1=\"22\" x2=\"12\" y2=\"15.5\"></line><polyline points=\"22 8.5 12 15.5 2 8.5\"></polyline><polyline points=\"2 15.5 12 8.5 22 15.5\"></polyline><line x1=\"12\" y1=\"2\" x2=\"12\" y2=\"8.5\"></line>","codesandbox":"<path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"7.5 4.21 12 6.81 16.5 4.21\"></polyline><polyline points=\"7.5 19.79 7.5 14.6 3 12\"></polyline><polyline points=\"21 12 16.5 14.6 16.5 19.79\"></polyline><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line>","coffee":"<path d=\"M18 8h1a4 4 0 0 1 0 8h-1\"></path><path d=\"M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z\"></path><line x1=\"6\" y1=\"1\" x2=\"6\" y2=\"4\"></line><line x1=\"10\" y1=\"1\" x2=\"10\" y2=\"4\"></line><line x1=\"14\" y1=\"1\" x2=\"14\" y2=\"4\"></line>","columns":"<path d=\"M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7m0-18H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7m0-18v18\"></path>","command":"<path d=\"M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z\"></path>","compass":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><polygon points=\"16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76\"></polygon>","copy":"<rect x=\"9\" y=\"9\" width=\"13\" height=\"13\" rx=\"2\" ry=\"2\"></rect><path d=\"M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\"></path>","corner-down-left":"<polyline points=\"9 10 4 15 9 20\"></polyline><path d=\"M20 4v7a4 4 0 0 1-4 4H4\"></path>","corner-down-right":"<polyline points=\"15 10 20 15 15 20\"></polyline><path d=\"M4 4v7a4 4 0 0 0 4 4h12\"></path>","corner-left-down":"<polyline points=\"14 15 9 20 4 15\"></polyline><path d=\"M20 4h-7a4 4 0 0 0-4 4v12\"></path>","corner-left-up":"<polyline points=\"14 9 9 4 4 9\"></polyline><path d=\"M20 20h-7a4 4 0 0 1-4-4V4\"></path>","corner-right-down":"<polyline points=\"10 15 15 20 20 15\"></polyline><path d=\"M4 4h7a4 4 0 0 1 4 4v12\"></path>","corner-right-up":"<polyline points=\"10 9 15 4 20 9\"></polyline><path d=\"M4 20h7a4 4 0 0 0 4-4V4\"></path>","corner-up-left":"<polyline points=\"9 14 4 9 9 4\"></polyline><path d=\"M20 20v-7a4 4 0 0 0-4-4H4\"></path>","corner-up-right":"<polyline points=\"15 14 20 9 15 4\"></polyline><path d=\"M4 20v-7a4 4 0 0 1 4-4h12\"></path>","cpu":"<rect x=\"4\" y=\"4\" width=\"16\" height=\"16\" rx=\"2\" ry=\"2\"></rect><rect x=\"9\" y=\"9\" width=\"6\" height=\"6\"></rect><line x1=\"9\" y1=\"1\" x2=\"9\" y2=\"4\"></line><line x1=\"15\" y1=\"1\" x2=\"15\" y2=\"4\"></line><line x1=\"9\" y1=\"20\" x2=\"9\" y2=\"23\"></line><line x1=\"15\" y1=\"20\" x2=\"15\" y2=\"23\"></line><line x1=\"20\" y1=\"9\" x2=\"23\" y2=\"9\"></line><line x1=\"20\" y1=\"14\" x2=\"23\" y2=\"14\"></line><line x1=\"1\" y1=\"9\" x2=\"4\" y2=\"9\"></line><line x1=\"1\" y1=\"14\" x2=\"4\" y2=\"14\"></line>","credit-card":"<rect x=\"1\" y=\"4\" width=\"22\" height=\"16\" rx=\"2\" ry=\"2\"></rect><line x1=\"1\" y1=\"10\" x2=\"23\" y2=\"10\"></line>","crop":"<path d=\"M6.13 1L6 16a2 2 0 0 0 2 2h15\"></path><path d=\"M1 6.13L16 6a2 2 0 0 1 2 2v15\"></path>","crosshair":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"22\" y1=\"12\" x2=\"18\" y2=\"12\"></line><line x1=\"6\" y1=\"12\" x2=\"2\" y2=\"12\"></line><line x1=\"12\" y1=\"6\" x2=\"12\" y2=\"2\"></line><line x1=\"12\" y1=\"22\" x2=\"12\" y2=\"18\"></line>","database":"<ellipse cx=\"12\" cy=\"5\" rx=\"9\" ry=\"3\"></ellipse><path d=\"M21 12c0 1.66-4 3-9 3s-9-1.34-9-3\"></path><path d=\"M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5\"></path>","delete":"<path d=\"M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z\"></path><line x1=\"18\" y1=\"9\" x2=\"12\" y2=\"15\"></line><line x1=\"12\" y1=\"9\" x2=\"18\" y2=\"15\"></line>","disc":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><circle cx=\"12\" cy=\"12\" r=\"3\"></circle>","divide-circle":"<line x1=\"8\" y1=\"12\" x2=\"16\" y2=\"12\"></line><line x1=\"12\" y1=\"16\" x2=\"12\" y2=\"16\"></line><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"8\"></line><circle cx=\"12\" cy=\"12\" r=\"10\"></circle>","divide-square":"<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"8\" y1=\"12\" x2=\"16\" y2=\"12\"></line><line x1=\"12\" y1=\"16\" x2=\"12\" y2=\"16\"></line><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"8\"></line>","divide":"<circle cx=\"12\" cy=\"6\" r=\"2\"></circle><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"></line><circle cx=\"12\" cy=\"18\" r=\"2\"></circle>","dollar-sign":"<line x1=\"12\" y1=\"1\" x2=\"12\" y2=\"23\"></line><path d=\"M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6\"></path>","download-cloud":"<polyline points=\"8 17 12 21 16 17\"></polyline><line x1=\"12\" y1=\"12\" x2=\"12\" y2=\"21\"></line><path d=\"M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29\"></path>","download":"<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"></path><polyline points=\"7 10 12 15 17 10\"></polyline><line x1=\"12\" y1=\"15\" x2=\"12\" y2=\"3\"></line>","dribbble":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32\"></path>","droplet":"<path d=\"M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z\"></path>","edit-2":"<path d=\"M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z\"></path>","edit-3":"<path d=\"M12 20h9\"></path><path d=\"M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z\"></path>","edit":"<path d=\"M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7\"></path><path d=\"M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z\"></path>","external-link":"<path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\"></path><polyline points=\"15 3 21 3 21 9\"></polyline><line x1=\"10\" y1=\"14\" x2=\"21\" y2=\"3\"></line>","eye-off":"<path d=\"M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24\"></path><line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"></line>","eye":"<path d=\"M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z\"></path><circle cx=\"12\" cy=\"12\" r=\"3\"></circle>","facebook":"<path d=\"M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z\"></path>","fast-forward":"<polygon points=\"13 19 22 12 13 5 13 19\"></polygon><polygon points=\"2 19 11 12 2 5 2 19\"></polygon>","feather":"<path d=\"M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z\"></path><line x1=\"16\" y1=\"8\" x2=\"2\" y2=\"22\"></line><line x1=\"17.5\" y1=\"15\" x2=\"9\" y2=\"15\"></line>","figma":"<path d=\"M5 5.5A3.5 3.5 0 0 1 8.5 2H12v7H8.5A3.5 3.5 0 0 1 5 5.5z\"></path><path d=\"M12 2h3.5a3.5 3.5 0 1 1 0 7H12V2z\"></path><path d=\"M12 12.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 1 1-7 0z\"></path><path d=\"M5 19.5A3.5 3.5 0 0 1 8.5 16H12v3.5a3.5 3.5 0 1 1-7 0z\"></path><path d=\"M5 12.5A3.5 3.5 0 0 1 8.5 9H12v7H8.5A3.5 3.5 0 0 1 5 12.5z\"></path>","file-minus":"<path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"></path><polyline points=\"14 2 14 8 20 8\"></polyline><line x1=\"9\" y1=\"15\" x2=\"15\" y2=\"15\"></line>","file-plus":"<path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"></path><polyline points=\"14 2 14 8 20 8\"></polyline><line x1=\"12\" y1=\"18\" x2=\"12\" y2=\"12\"></line><line x1=\"9\" y1=\"15\" x2=\"15\" y2=\"15\"></line>","file-text":"<path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"></path><polyline points=\"14 2 14 8 20 8\"></polyline><line x1=\"16\" y1=\"13\" x2=\"8\" y2=\"13\"></line><line x1=\"16\" y1=\"17\" x2=\"8\" y2=\"17\"></line><polyline points=\"10 9 9 9 8 9\"></polyline>","file":"<path d=\"M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z\"></path><polyline points=\"13 2 13 9 20 9\"></polyline>","film":"<rect x=\"2\" y=\"2\" width=\"20\" height=\"20\" rx=\"2.18\" ry=\"2.18\"></rect><line x1=\"7\" y1=\"2\" x2=\"7\" y2=\"22\"></line><line x1=\"17\" y1=\"2\" x2=\"17\" y2=\"22\"></line><line x1=\"2\" y1=\"12\" x2=\"22\" y2=\"12\"></line><line x1=\"2\" y1=\"7\" x2=\"7\" y2=\"7\"></line><line x1=\"2\" y1=\"17\" x2=\"7\" y2=\"17\"></line><line x1=\"17\" y1=\"17\" x2=\"22\" y2=\"17\"></line><line x1=\"17\" y1=\"7\" x2=\"22\" y2=\"7\"></line>","filter":"<polygon points=\"22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3\"></polygon>","flag":"<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\"></path><line x1=\"4\" y1=\"22\" x2=\"4\" y2=\"15\"></line>","folder-minus":"<path d=\"M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z\"></path><line x1=\"9\" y1=\"14\" x2=\"15\" y2=\"14\"></line>","folder-plus":"<path d=\"M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z\"></path><line x1=\"12\" y1=\"11\" x2=\"12\" y2=\"17\"></line><line x1=\"9\" y1=\"14\" x2=\"15\" y2=\"14\"></line>","folder":"<path d=\"M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z\"></path>","framer":"<path d=\"M5 16V9h14V2H5l14 14h-7m-7 0l7 7v-7m-7 0h7\"></path>","frown":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M16 16s-1.5-2-4-2-4 2-4 2\"></path><line x1=\"9\" y1=\"9\" x2=\"9.01\" y2=\"9\"></line><line x1=\"15\" y1=\"9\" x2=\"15.01\" y2=\"9\"></line>","gift":"<polyline points=\"20 12 20 22 4 22 4 12\"></polyline><rect x=\"2\" y=\"7\" width=\"20\" height=\"5\"></rect><line x1=\"12\" y1=\"22\" x2=\"12\" y2=\"7\"></line><path d=\"M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z\"></path><path d=\"M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z\"></path>","git-branch":"<line x1=\"6\" y1=\"3\" x2=\"6\" y2=\"15\"></line><circle cx=\"18\" cy=\"6\" r=\"3\"></circle><circle cx=\"6\" cy=\"18\" r=\"3\"></circle><path d=\"M18 9a9 9 0 0 1-9 9\"></path>","git-commit":"<circle cx=\"12\" cy=\"12\" r=\"4\"></circle><line x1=\"1.05\" y1=\"12\" x2=\"7\" y2=\"12\"></line><line x1=\"17.01\" y1=\"12\" x2=\"22.96\" y2=\"12\"></line>","git-merge":"<circle cx=\"18\" cy=\"18\" r=\"3\"></circle><circle cx=\"6\" cy=\"6\" r=\"3\"></circle><path d=\"M6 21V9a9 9 0 0 0 9 9\"></path>","git-pull-request":"<circle cx=\"18\" cy=\"18\" r=\"3\"></circle><circle cx=\"6\" cy=\"6\" r=\"3\"></circle><path d=\"M13 6h3a2 2 0 0 1 2 2v7\"></path><line x1=\"6\" y1=\"9\" x2=\"6\" y2=\"21\"></line>","github":"<path d=\"M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22\"></path>","gitlab":"<path d=\"M22.65 14.39L12 22.13 1.35 14.39a.84.84 0 0 1-.3-.94l1.22-3.78 2.44-7.51A.42.42 0 0 1 4.82 2a.43.43 0 0 1 .58 0 .42.42 0 0 1 .11.18l2.44 7.49h8.1l2.44-7.51A.42.42 0 0 1 18.6 2a.43.43 0 0 1 .58 0 .42.42 0 0 1 .11.18l2.44 7.51L23 13.45a.84.84 0 0 1-.35.94z\"></path>","globe":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"2\" y1=\"12\" x2=\"22\" y2=\"12\"></line><path d=\"M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z\"></path>","grid":"<rect x=\"3\" y=\"3\" width=\"7\" height=\"7\"></rect><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\"></rect><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\"></rect><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\"></rect>","hard-drive":"<line x1=\"22\" y1=\"12\" x2=\"2\" y2=\"12\"></line><path d=\"M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z\"></path><line x1=\"6\" y1=\"16\" x2=\"6.01\" y2=\"16\"></line><line x1=\"10\" y1=\"16\" x2=\"10.01\" y2=\"16\"></line>","hash":"<line x1=\"4\" y1=\"9\" x2=\"20\" y2=\"9\"></line><line x1=\"4\" y1=\"15\" x2=\"20\" y2=\"15\"></line><line x1=\"10\" y1=\"3\" x2=\"8\" y2=\"21\"></line><line x1=\"16\" y1=\"3\" x2=\"14\" y2=\"21\"></line>","headphones":"<path d=\"M3 18v-6a9 9 0 0 1 18 0v6\"></path><path d=\"M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z\"></path>","heart":"<path d=\"M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z\"></path>","help-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3\"></path><line x1=\"12\" y1=\"17\" x2=\"12.01\" y2=\"17\"></line>","hexagon":"<path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path>","home":"<path d=\"M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"></path><polyline points=\"9 22 9 12 15 12 15 22\"></polyline>","image":"<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><circle cx=\"8.5\" cy=\"8.5\" r=\"1.5\"></circle><polyline points=\"21 15 16 10 5 21\"></polyline>","inbox":"<polyline points=\"22 12 16 12 14 15 10 15 8 12 2 12\"></polyline><path d=\"M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z\"></path>","info":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"12\" y1=\"16\" x2=\"12\" y2=\"12\"></line><line x1=\"12\" y1=\"8\" x2=\"12.01\" y2=\"8\"></line>","instagram":"<rect x=\"2\" y=\"2\" width=\"20\" height=\"20\" rx=\"5\" ry=\"5\"></rect><path d=\"M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z\"></path><line x1=\"17.5\" y1=\"6.5\" x2=\"17.51\" y2=\"6.5\"></line>","italic":"<line x1=\"19\" y1=\"4\" x2=\"10\" y2=\"4\"></line><line x1=\"14\" y1=\"20\" x2=\"5\" y2=\"20\"></line><line x1=\"15\" y1=\"4\" x2=\"9\" y2=\"20\"></line>","key":"<path d=\"M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4\"></path>","layers":"<polygon points=\"12 2 2 7 12 12 22 7 12 2\"></polygon><polyline points=\"2 17 12 22 22 17\"></polyline><polyline points=\"2 12 12 17 22 12\"></polyline>","layout":"<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"3\" y1=\"9\" x2=\"21\" y2=\"9\"></line><line x1=\"9\" y1=\"21\" x2=\"9\" y2=\"9\"></line>","life-buoy":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><circle cx=\"12\" cy=\"12\" r=\"4\"></circle><line x1=\"4.93\" y1=\"4.93\" x2=\"9.17\" y2=\"9.17\"></line><line x1=\"14.83\" y1=\"14.83\" x2=\"19.07\" y2=\"19.07\"></line><line x1=\"14.83\" y1=\"9.17\" x2=\"19.07\" y2=\"4.93\"></line><line x1=\"14.83\" y1=\"9.17\" x2=\"18.36\" y2=\"5.64\"></line><line x1=\"4.93\" y1=\"19.07\" x2=\"9.17\" y2=\"14.83\"></line>","link-2":"<path d=\"M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3\"></path><line x1=\"8\" y1=\"12\" x2=\"16\" y2=\"12\"></line>","link":"<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\"></path><path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\"></path>","linkedin":"<path d=\"M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z\"></path><rect x=\"2\" y=\"9\" width=\"4\" height=\"12\"></rect><circle cx=\"4\" cy=\"4\" r=\"2\"></circle>","list":"<line x1=\"8\" y1=\"6\" x2=\"21\" y2=\"6\"></line><line x1=\"8\" y1=\"12\" x2=\"21\" y2=\"12\"></line><line x1=\"8\" y1=\"18\" x2=\"21\" y2=\"18\"></line><line x1=\"3\" y1=\"6\" x2=\"3.01\" y2=\"6\"></line><line x1=\"3\" y1=\"12\" x2=\"3.01\" y2=\"12\"></line><line x1=\"3\" y1=\"18\" x2=\"3.01\" y2=\"18\"></line>","loader":"<line x1=\"12\" y1=\"2\" x2=\"12\" y2=\"6\"></line><line x1=\"12\" y1=\"18\" x2=\"12\" y2=\"22\"></line><line x1=\"4.93\" y1=\"4.93\" x2=\"7.76\" y2=\"7.76\"></line><line x1=\"16.24\" y1=\"16.24\" x2=\"19.07\" y2=\"19.07\"></line><line x1=\"2\" y1=\"12\" x2=\"6\" y2=\"12\"></line><line x1=\"18\" y1=\"12\" x2=\"22\" y2=\"12\"></line><line x1=\"4.93\" y1=\"19.07\" x2=\"7.76\" y2=\"16.24\"></line><line x1=\"16.24\" y1=\"7.76\" x2=\"19.07\" y2=\"4.93\"></line>","lock":"<rect x=\"3\" y=\"11\" width=\"18\" height=\"11\" rx=\"2\" ry=\"2\"></rect><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"></path>","log-in":"<path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\"></path><polyline points=\"10 17 15 12 10 7\"></polyline><line x1=\"15\" y1=\"12\" x2=\"3\" y2=\"12\"></line>","log-out":"<path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"></path><polyline points=\"16 17 21 12 16 7\"></polyline><line x1=\"21\" y1=\"12\" x2=\"9\" y2=\"12\"></line>","mail":"<path d=\"M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z\"></path><polyline points=\"22,6 12,13 2,6\"></polyline>","map-pin":"<path d=\"M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z\"></path><circle cx=\"12\" cy=\"10\" r=\"3\"></circle>","map":"<polygon points=\"1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6\"></polygon><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"18\"></line><line x1=\"16\" y1=\"6\" x2=\"16\" y2=\"22\"></line>","maximize-2":"<polyline points=\"15 3 21 3 21 9\"></polyline><polyline points=\"9 21 3 21 3 15\"></polyline><line x1=\"21\" y1=\"3\" x2=\"14\" y2=\"10\"></line><line x1=\"3\" y1=\"21\" x2=\"10\" y2=\"14\"></line>","maximize":"<path d=\"M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3\"></path>","meh":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"8\" y1=\"15\" x2=\"16\" y2=\"15\"></line><line x1=\"9\" y1=\"9\" x2=\"9.01\" y2=\"9\"></line><line x1=\"15\" y1=\"9\" x2=\"15.01\" y2=\"9\"></line>","menu":"<line x1=\"3\" y1=\"12\" x2=\"21\" y2=\"12\"></line><line x1=\"3\" y1=\"6\" x2=\"21\" y2=\"6\"></line><line x1=\"3\" y1=\"18\" x2=\"21\" y2=\"18\"></line>","message-circle":"<path d=\"M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z\"></path>","message-square":"<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\"></path>","mic-off":"<line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"></line><path d=\"M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6\"></path><path d=\"M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23\"></path><line x1=\"12\" y1=\"19\" x2=\"12\" y2=\"23\"></line><line x1=\"8\" y1=\"23\" x2=\"16\" y2=\"23\"></line>","mic":"<path d=\"M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z\"></path><path d=\"M19 10v2a7 7 0 0 1-14 0v-2\"></path><line x1=\"12\" y1=\"19\" x2=\"12\" y2=\"23\"></line><line x1=\"8\" y1=\"23\" x2=\"16\" y2=\"23\"></line>","minimize-2":"<polyline points=\"4 14 10 14 10 20\"></polyline><polyline points=\"20 10 14 10 14 4\"></polyline><line x1=\"14\" y1=\"10\" x2=\"21\" y2=\"3\"></line><line x1=\"3\" y1=\"21\" x2=\"10\" y2=\"14\"></line>","minimize":"<path d=\"M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3\"></path>","minus-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"8\" y1=\"12\" x2=\"16\" y2=\"12\"></line>","minus-square":"<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"8\" y1=\"12\" x2=\"16\" y2=\"12\"></line>","minus":"<line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"></line>","monitor":"<rect x=\"2\" y=\"3\" width=\"20\" height=\"14\" rx=\"2\" ry=\"2\"></rect><line x1=\"8\" y1=\"21\" x2=\"16\" y2=\"21\"></line><line x1=\"12\" y1=\"17\" x2=\"12\" y2=\"21\"></line>","moon":"<path d=\"M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z\"></path>","more-horizontal":"<circle cx=\"12\" cy=\"12\" r=\"1\"></circle><circle cx=\"19\" cy=\"12\" r=\"1\"></circle><circle cx=\"5\" cy=\"12\" r=\"1\"></circle>","more-vertical":"<circle cx=\"12\" cy=\"12\" r=\"1\"></circle><circle cx=\"12\" cy=\"5\" r=\"1\"></circle><circle cx=\"12\" cy=\"19\" r=\"1\"></circle>","mouse-pointer":"<path d=\"M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z\"></path><path d=\"M13 13l6 6\"></path>","move":"<polyline points=\"5 9 2 12 5 15\"></polyline><polyline points=\"9 5 12 2 15 5\"></polyline><polyline points=\"15 19 12 22 9 19\"></polyline><polyline points=\"19 9 22 12 19 15\"></polyline><line x1=\"2\" y1=\"12\" x2=\"22\" y2=\"12\"></line><line x1=\"12\" y1=\"2\" x2=\"12\" y2=\"22\"></line>","music":"<path d=\"M9 18V5l12-2v13\"></path><circle cx=\"6\" cy=\"18\" r=\"3\"></circle><circle cx=\"18\" cy=\"16\" r=\"3\"></circle>","navigation-2":"<polygon points=\"12 2 19 21 12 17 5 21 12 2\"></polygon>","navigation":"<polygon points=\"3 11 22 2 13 21 11 13 3 11\"></polygon>","octagon":"<polygon points=\"7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2\"></polygon>","package":"<line x1=\"16.5\" y1=\"9.4\" x2=\"7.5\" y2=\"4.21\"></line><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line>","paperclip":"<path d=\"M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48\"></path>","pause-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"10\" y1=\"15\" x2=\"10\" y2=\"9\"></line><line x1=\"14\" y1=\"15\" x2=\"14\" y2=\"9\"></line>","pause":"<rect x=\"6\" y=\"4\" width=\"4\" height=\"16\"></rect><rect x=\"14\" y=\"4\" width=\"4\" height=\"16\"></rect>","pen-tool":"<path d=\"M12 19l7-7 3 3-7 7-3-3z\"></path><path d=\"M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z\"></path><path d=\"M2 2l7.586 7.586\"></path><circle cx=\"11\" cy=\"11\" r=\"2\"></circle>","percent":"<line x1=\"19\" y1=\"5\" x2=\"5\" y2=\"19\"></line><circle cx=\"6.5\" cy=\"6.5\" r=\"2.5\"></circle><circle cx=\"17.5\" cy=\"17.5\" r=\"2.5\"></circle>","phone-call":"<path d=\"M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z\"></path>","phone-forwarded":"<polyline points=\"19 1 23 5 19 9\"></polyline><line x1=\"15\" y1=\"5\" x2=\"23\" y2=\"5\"></line><path d=\"M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z\"></path>","phone-incoming":"<polyline points=\"16 2 16 8 22 8\"></polyline><line x1=\"23\" y1=\"1\" x2=\"16\" y2=\"8\"></line><path d=\"M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z\"></path>","phone-missed":"<line x1=\"23\" y1=\"1\" x2=\"17\" y2=\"7\"></line><line x1=\"17\" y1=\"1\" x2=\"23\" y2=\"7\"></line><path d=\"M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z\"></path>","phone-off":"<path d=\"M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91\"></path><line x1=\"23\" y1=\"1\" x2=\"1\" y2=\"23\"></line>","phone-outgoing":"<polyline points=\"23 7 23 1 17 1\"></polyline><line x1=\"16\" y1=\"8\" x2=\"23\" y2=\"1\"></line><path d=\"M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z\"></path>","phone":"<path d=\"M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z\"></path>","pie-chart":"<path d=\"M21.21 15.89A10 10 0 1 1 8 2.83\"></path><path d=\"M22 12A10 10 0 0 0 12 2v10z\"></path>","play-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><polygon points=\"10 8 16 12 10 16 10 8\"></polygon>","play":"<polygon points=\"5 3 19 12 5 21 5 3\"></polygon>","plus-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"16\"></line><line x1=\"8\" y1=\"12\" x2=\"16\" y2=\"12\"></line>","plus-square":"<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"16\"></line><line x1=\"8\" y1=\"12\" x2=\"16\" y2=\"12\"></line>","plus":"<line x1=\"12\" y1=\"5\" x2=\"12\" y2=\"19\"></line><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"></line>","pocket":"<path d=\"M4 3h16a2 2 0 0 1 2 2v6a10 10 0 0 1-10 10A10 10 0 0 1 2 11V5a2 2 0 0 1 2-2z\"></path><polyline points=\"8 10 12 14 16 10\"></polyline>","power":"<path d=\"M18.36 6.64a9 9 0 1 1-12.73 0\"></path><line x1=\"12\" y1=\"2\" x2=\"12\" y2=\"12\"></line>","printer":"<polyline points=\"6 9 6 2 18 2 18 9\"></polyline><path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2\"></path><rect x=\"6\" y=\"14\" width=\"12\" height=\"8\"></rect>","radio":"<circle cx=\"12\" cy=\"12\" r=\"2\"></circle><path d=\"M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14\"></path>","refresh-ccw":"<polyline points=\"1 4 1 10 7 10\"></polyline><polyline points=\"23 20 23 14 17 14\"></polyline><path d=\"M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15\"></path>","refresh-cw":"<polyline points=\"23 4 23 10 17 10\"></polyline><polyline points=\"1 20 1 14 7 14\"></polyline><path d=\"M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15\"></path>","repeat":"<polyline points=\"17 1 21 5 17 9\"></polyline><path d=\"M3 11V9a4 4 0 0 1 4-4h14\"></path><polyline points=\"7 23 3 19 7 15\"></polyline><path d=\"M21 13v2a4 4 0 0 1-4 4H3\"></path>","rewind":"<polygon points=\"11 19 2 12 11 5 11 19\"></polygon><polygon points=\"22 19 13 12 22 5 22 19\"></polygon>","rotate-ccw":"<polyline points=\"1 4 1 10 7 10\"></polyline><path d=\"M3.51 15a9 9 0 1 0 2.13-9.36L1 10\"></path>","rotate-cw":"<polyline points=\"23 4 23 10 17 10\"></polyline><path d=\"M20.49 15a9 9 0 1 1-2.12-9.36L23 10\"></path>","rss":"<path d=\"M4 11a9 9 0 0 1 9 9\"></path><path d=\"M4 4a16 16 0 0 1 16 16\"></path><circle cx=\"5\" cy=\"19\" r=\"1\"></circle>","save":"<path d=\"M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z\"></path><polyline points=\"17 21 17 13 7 13 7 21\"></polyline><polyline points=\"7 3 7 8 15 8\"></polyline>","scissors":"<circle cx=\"6\" cy=\"6\" r=\"3\"></circle><circle cx=\"6\" cy=\"18\" r=\"3\"></circle><line x1=\"20\" y1=\"4\" x2=\"8.12\" y2=\"15.88\"></line><line x1=\"14.47\" y1=\"14.48\" x2=\"20\" y2=\"20\"></line><line x1=\"8.12\" y1=\"8.12\" x2=\"12\" y2=\"12\"></line>","search":"<circle cx=\"11\" cy=\"11\" r=\"8\"></circle><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"></line>","send":"<line x1=\"22\" y1=\"2\" x2=\"11\" y2=\"13\"></line><polygon points=\"22 2 15 22 11 13 2 9 22 2\"></polygon>","server":"<rect x=\"2\" y=\"2\" width=\"20\" height=\"8\" rx=\"2\" ry=\"2\"></rect><rect x=\"2\" y=\"14\" width=\"20\" height=\"8\" rx=\"2\" ry=\"2\"></rect><line x1=\"6\" y1=\"6\" x2=\"6.01\" y2=\"6\"></line><line x1=\"6\" y1=\"18\" x2=\"6.01\" y2=\"18\"></line>","settings":"<circle cx=\"12\" cy=\"12\" r=\"3\"></circle><path d=\"M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z\"></path>","share-2":"<circle cx=\"18\" cy=\"5\" r=\"3\"></circle><circle cx=\"6\" cy=\"12\" r=\"3\"></circle><circle cx=\"18\" cy=\"19\" r=\"3\"></circle><line x1=\"8.59\" y1=\"13.51\" x2=\"15.42\" y2=\"17.49\"></line><line x1=\"15.41\" y1=\"6.51\" x2=\"8.59\" y2=\"10.49\"></line>","share":"<path d=\"M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8\"></path><polyline points=\"16 6 12 2 8 6\"></polyline><line x1=\"12\" y1=\"2\" x2=\"12\" y2=\"15\"></line>","shield-off":"<path d=\"M19.69 14a6.9 6.9 0 0 0 .31-2V5l-8-3-3.16 1.18\"></path><path d=\"M4.73 4.73L4 5v7c0 6 8 10 8 10a20.29 20.29 0 0 0 5.62-4.38\"></path><line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"></line>","shield":"<path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z\"></path>","shopping-bag":"<path d=\"M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z\"></path><line x1=\"3\" y1=\"6\" x2=\"21\" y2=\"6\"></line><path d=\"M16 10a4 4 0 0 1-8 0\"></path>","shopping-cart":"<circle cx=\"9\" cy=\"21\" r=\"1\"></circle><circle cx=\"20\" cy=\"21\" r=\"1\"></circle><path d=\"M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6\"></path>","shuffle":"<polyline points=\"16 3 21 3 21 8\"></polyline><line x1=\"4\" y1=\"20\" x2=\"21\" y2=\"3\"></line><polyline points=\"21 16 21 21 16 21\"></polyline><line x1=\"15\" y1=\"15\" x2=\"21\" y2=\"21\"></line><line x1=\"4\" y1=\"4\" x2=\"9\" y2=\"9\"></line>","sidebar":"<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"9\" y1=\"3\" x2=\"9\" y2=\"21\"></line>","skip-back":"<polygon points=\"19 20 9 12 19 4 19 20\"></polygon><line x1=\"5\" y1=\"19\" x2=\"5\" y2=\"5\"></line>","skip-forward":"<polygon points=\"5 4 15 12 5 20 5 4\"></polygon><line x1=\"19\" y1=\"5\" x2=\"19\" y2=\"19\"></line>","slack":"<path d=\"M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z\"></path><path d=\"M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z\"></path><path d=\"M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z\"></path><path d=\"M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z\"></path><path d=\"M14 14.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5z\"></path><path d=\"M15.5 19H14v1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z\"></path><path d=\"M10 9.5C10 8.67 9.33 8 8.5 8h-5C2.67 8 2 8.67 2 9.5S2.67 11 3.5 11h5c.83 0 1.5-.67 1.5-1.5z\"></path><path d=\"M8.5 5H10V3.5C10 2.67 9.33 2 8.5 2S7 2.67 7 3.5 7.67 5 8.5 5z\"></path>","slash":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"4.93\" y1=\"4.93\" x2=\"19.07\" y2=\"19.07\"></line>","sliders":"<line x1=\"4\" y1=\"21\" x2=\"4\" y2=\"14\"></line><line x1=\"4\" y1=\"10\" x2=\"4\" y2=\"3\"></line><line x1=\"12\" y1=\"21\" x2=\"12\" y2=\"12\"></line><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"3\"></line><line x1=\"20\" y1=\"21\" x2=\"20\" y2=\"16\"></line><line x1=\"20\" y1=\"12\" x2=\"20\" y2=\"3\"></line><line x1=\"1\" y1=\"14\" x2=\"7\" y2=\"14\"></line><line x1=\"9\" y1=\"8\" x2=\"15\" y2=\"8\"></line><line x1=\"17\" y1=\"16\" x2=\"23\" y2=\"16\"></line>","smartphone":"<rect x=\"5\" y=\"2\" width=\"14\" height=\"20\" rx=\"2\" ry=\"2\"></rect><line x1=\"12\" y1=\"18\" x2=\"12.01\" y2=\"18\"></line>","smile":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M8 14s1.5 2 4 2 4-2 4-2\"></path><line x1=\"9\" y1=\"9\" x2=\"9.01\" y2=\"9\"></line><line x1=\"15\" y1=\"9\" x2=\"15.01\" y2=\"9\"></line>","speaker":"<rect x=\"4\" y=\"2\" width=\"16\" height=\"20\" rx=\"2\" ry=\"2\"></rect><circle cx=\"12\" cy=\"14\" r=\"4\"></circle><line x1=\"12\" y1=\"6\" x2=\"12.01\" y2=\"6\"></line>","square":"<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect>","star":"<polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"></polygon>","stop-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><rect x=\"9\" y=\"9\" width=\"6\" height=\"6\"></rect>","sun":"<circle cx=\"12\" cy=\"12\" r=\"5\"></circle><line x1=\"12\" y1=\"1\" x2=\"12\" y2=\"3\"></line><line x1=\"12\" y1=\"21\" x2=\"12\" y2=\"23\"></line><line x1=\"4.22\" y1=\"4.22\" x2=\"5.64\" y2=\"5.64\"></line><line x1=\"18.36\" y1=\"18.36\" x2=\"19.78\" y2=\"19.78\"></line><line x1=\"1\" y1=\"12\" x2=\"3\" y2=\"12\"></line><line x1=\"21\" y1=\"12\" x2=\"23\" y2=\"12\"></line><line x1=\"4.22\" y1=\"19.78\" x2=\"5.64\" y2=\"18.36\"></line><line x1=\"18.36\" y1=\"5.64\" x2=\"19.78\" y2=\"4.22\"></line>","sunrise":"<path d=\"M17 18a5 5 0 0 0-10 0\"></path><line x1=\"12\" y1=\"2\" x2=\"12\" y2=\"9\"></line><line x1=\"4.22\" y1=\"10.22\" x2=\"5.64\" y2=\"11.64\"></line><line x1=\"1\" y1=\"18\" x2=\"3\" y2=\"18\"></line><line x1=\"21\" y1=\"18\" x2=\"23\" y2=\"18\"></line><line x1=\"18.36\" y1=\"11.64\" x2=\"19.78\" y2=\"10.22\"></line><line x1=\"23\" y1=\"22\" x2=\"1\" y2=\"22\"></line><polyline points=\"8 6 12 2 16 6\"></polyline>","sunset":"<path d=\"M17 18a5 5 0 0 0-10 0\"></path><line x1=\"12\" y1=\"9\" x2=\"12\" y2=\"2\"></line><line x1=\"4.22\" y1=\"10.22\" x2=\"5.64\" y2=\"11.64\"></line><line x1=\"1\" y1=\"18\" x2=\"3\" y2=\"18\"></line><line x1=\"21\" y1=\"18\" x2=\"23\" y2=\"18\"></line><line x1=\"18.36\" y1=\"11.64\" x2=\"19.78\" y2=\"10.22\"></line><line x1=\"23\" y1=\"22\" x2=\"1\" y2=\"22\"></line><polyline points=\"16 5 12 9 8 5\"></polyline>","tablet":"<rect x=\"4\" y=\"2\" width=\"16\" height=\"20\" rx=\"2\" ry=\"2\"></rect><line x1=\"12\" y1=\"18\" x2=\"12.01\" y2=\"18\"></line>","tag":"<path d=\"M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z\"></path><line x1=\"7\" y1=\"7\" x2=\"7.01\" y2=\"7\"></line>","target":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><circle cx=\"12\" cy=\"12\" r=\"6\"></circle><circle cx=\"12\" cy=\"12\" r=\"2\"></circle>","terminal":"<polyline points=\"4 17 10 11 4 5\"></polyline><line x1=\"12\" y1=\"19\" x2=\"20\" y2=\"19\"></line>","thermometer":"<path d=\"M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z\"></path>","thumbs-down":"<path d=\"M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17\"></path>","thumbs-up":"<path d=\"M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3\"></path>","toggle-left":"<rect x=\"1\" y=\"5\" width=\"22\" height=\"14\" rx=\"7\" ry=\"7\"></rect><circle cx=\"8\" cy=\"12\" r=\"3\"></circle>","toggle-right":"<rect x=\"1\" y=\"5\" width=\"22\" height=\"14\" rx=\"7\" ry=\"7\"></rect><circle cx=\"16\" cy=\"12\" r=\"3\"></circle>","tool":"<path d=\"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z\"></path>","trash-2":"<polyline points=\"3 6 5 6 21 6\"></polyline><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"></path><line x1=\"10\" y1=\"11\" x2=\"10\" y2=\"17\"></line><line x1=\"14\" y1=\"11\" x2=\"14\" y2=\"17\"></line>","trash":"<polyline points=\"3 6 5 6 21 6\"></polyline><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"></path>","trello":"<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><rect x=\"7\" y=\"7\" width=\"3\" height=\"9\"></rect><rect x=\"14\" y=\"7\" width=\"3\" height=\"5\"></rect>","trending-down":"<polyline points=\"23 18 13.5 8.5 8.5 13.5 1 6\"></polyline><polyline points=\"17 18 23 18 23 12\"></polyline>","trending-up":"<polyline points=\"23 6 13.5 15.5 8.5 10.5 1 18\"></polyline><polyline points=\"17 6 23 6 23 12\"></polyline>","triangle":"<path d=\"M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z\"></path>","truck":"<rect x=\"1\" y=\"3\" width=\"15\" height=\"13\"></rect><polygon points=\"16 8 20 8 23 11 23 16 16 16 16 8\"></polygon><circle cx=\"5.5\" cy=\"18.5\" r=\"2.5\"></circle><circle cx=\"18.5\" cy=\"18.5\" r=\"2.5\"></circle>","tv":"<rect x=\"2\" y=\"7\" width=\"20\" height=\"15\" rx=\"2\" ry=\"2\"></rect><polyline points=\"17 2 12 7 7 2\"></polyline>","twitch":"<path d=\"M21 2H3v16h5v4l4-4h5l4-4V2zm-10 9V7m5 4V7\"></path>","twitter":"<path d=\"M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z\"></path>","type":"<polyline points=\"4 7 4 4 20 4 20 7\"></polyline><line x1=\"9\" y1=\"20\" x2=\"15\" y2=\"20\"></line><line x1=\"12\" y1=\"4\" x2=\"12\" y2=\"20\"></line>","umbrella":"<path d=\"M23 12a11.05 11.05 0 0 0-22 0zm-5 7a3 3 0 0 1-6 0v-7\"></path>","underline":"<path d=\"M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3\"></path><line x1=\"4\" y1=\"21\" x2=\"20\" y2=\"21\"></line>","unlock":"<rect x=\"3\" y=\"11\" width=\"18\" height=\"11\" rx=\"2\" ry=\"2\"></rect><path d=\"M7 11V7a5 5 0 0 1 9.9-1\"></path>","upload-cloud":"<polyline points=\"16 16 12 12 8 16\"></polyline><line x1=\"12\" y1=\"12\" x2=\"12\" y2=\"21\"></line><path d=\"M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3\"></path><polyline points=\"16 16 12 12 8 16\"></polyline>","upload":"<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"></path><polyline points=\"17 8 12 3 7 8\"></polyline><line x1=\"12\" y1=\"3\" x2=\"12\" y2=\"15\"></line>","user-check":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"></path><circle cx=\"8.5\" cy=\"7\" r=\"4\"></circle><polyline points=\"17 11 19 13 23 9\"></polyline>","user-minus":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"></path><circle cx=\"8.5\" cy=\"7\" r=\"4\"></circle><line x1=\"23\" y1=\"11\" x2=\"17\" y2=\"11\"></line>","user-plus":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"></path><circle cx=\"8.5\" cy=\"7\" r=\"4\"></circle><line x1=\"20\" y1=\"8\" x2=\"20\" y2=\"14\"></line><line x1=\"23\" y1=\"11\" x2=\"17\" y2=\"11\"></line>","user-x":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"></path><circle cx=\"8.5\" cy=\"7\" r=\"4\"></circle><line x1=\"18\" y1=\"8\" x2=\"23\" y2=\"13\"></line><line x1=\"23\" y1=\"8\" x2=\"18\" y2=\"13\"></line>","user":"<path d=\"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\"></path><circle cx=\"12\" cy=\"7\" r=\"4\"></circle>","users":"<path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"></path><circle cx=\"9\" cy=\"7\" r=\"4\"></circle><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"></path><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"></path>","video-off":"<path d=\"M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10\"></path><line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"></line>","video":"<polygon points=\"23 7 16 12 23 17 23 7\"></polygon><rect x=\"1\" y=\"5\" width=\"15\" height=\"14\" rx=\"2\" ry=\"2\"></rect>","voicemail":"<circle cx=\"5.5\" cy=\"11.5\" r=\"4.5\"></circle><circle cx=\"18.5\" cy=\"11.5\" r=\"4.5\"></circle><line x1=\"5.5\" y1=\"16\" x2=\"18.5\" y2=\"16\"></line>","volume-1":"<polygon points=\"11 5 6 9 2 9 2 15 6 15 11 19 11 5\"></polygon><path d=\"M15.54 8.46a5 5 0 0 1 0 7.07\"></path>","volume-2":"<polygon points=\"11 5 6 9 2 9 2 15 6 15 11 19 11 5\"></polygon><path d=\"M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07\"></path>","volume-x":"<polygon points=\"11 5 6 9 2 9 2 15 6 15 11 19 11 5\"></polygon><line x1=\"23\" y1=\"9\" x2=\"17\" y2=\"15\"></line><line x1=\"17\" y1=\"9\" x2=\"23\" y2=\"15\"></line>","volume":"<polygon points=\"11 5 6 9 2 9 2 15 6 15 11 19 11 5\"></polygon>","watch":"<circle cx=\"12\" cy=\"12\" r=\"7\"></circle><polyline points=\"12 9 12 12 13.5 13.5\"></polyline><path d=\"M16.51 17.35l-.35 3.83a2 2 0 0 1-2 1.82H9.83a2 2 0 0 1-2-1.82l-.35-3.83m.01-10.7l.35-3.83A2 2 0 0 1 9.83 1h4.35a2 2 0 0 1 2 1.82l.35 3.83\"></path>","wifi-off":"<line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"></line><path d=\"M16.72 11.06A10.94 10.94 0 0 1 19 12.55\"></path><path d=\"M5 12.55a10.94 10.94 0 0 1 5.17-2.39\"></path><path d=\"M10.71 5.05A16 16 0 0 1 22.58 9\"></path><path d=\"M1.42 9a15.91 15.91 0 0 1 4.7-2.88\"></path><path d=\"M8.53 16.11a6 6 0 0 1 6.95 0\"></path><line x1=\"12\" y1=\"20\" x2=\"12.01\" y2=\"20\"></line>","wifi":"<path d=\"M5 12.55a11 11 0 0 1 14.08 0\"></path><path d=\"M1.42 9a16 16 0 0 1 21.16 0\"></path><path d=\"M8.53 16.11a6 6 0 0 1 6.95 0\"></path><line x1=\"12\" y1=\"20\" x2=\"12.01\" y2=\"20\"></line>","wind":"<path d=\"M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2\"></path>","x-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"15\" y1=\"9\" x2=\"9\" y2=\"15\"></line><line x1=\"9\" y1=\"9\" x2=\"15\" y2=\"15\"></line>","x-octagon":"<polygon points=\"7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2\"></polygon><line x1=\"15\" y1=\"9\" x2=\"9\" y2=\"15\"></line><line x1=\"9\" y1=\"9\" x2=\"15\" y2=\"15\"></line>","x-square":"<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"9\" y1=\"9\" x2=\"15\" y2=\"15\"></line><line x1=\"15\" y1=\"9\" x2=\"9\" y2=\"15\"></line>","x":"<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"></line><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"></line>","youtube":"<path d=\"M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z\"></path><polygon points=\"9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02\"></polygon>","zap-off":"<polyline points=\"12.41 6.75 13 2 10.57 4.92\"></polyline><polyline points=\"18.57 12.91 21 10 15.66 10\"></polyline><polyline points=\"8 8 3 14 12 14 11 22 16 16\"></polyline><line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"></line>","zap":"<polygon points=\"13 2 3 14 12 14 11 22 21 10 12 10 13 2\"></polygon>","zoom-in":"<circle cx=\"11\" cy=\"11\" r=\"8\"></circle><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"></line><line x1=\"11\" y1=\"8\" x2=\"11\" y2=\"14\"></line><line x1=\"8\" y1=\"11\" x2=\"14\" y2=\"11\"></line>","zoom-out":"<circle cx=\"11\" cy=\"11\" r=\"8\"></circle><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"></line><line x1=\"8\" y1=\"11\" x2=\"14\" y2=\"11\"></line>"};
+
+/***/ }),
+
+/***/ "./node_modules/classnames/dedupe.js":
+/*!*******************************************!*\
+  !*** ./node_modules/classnames/dedupe.js ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
+  Copyright (c) 2016 Jed Watson.
+  Licensed under the MIT License (MIT), see
+  http://jedwatson.github.io/classnames
+*/
+/* global define */
+
+(function () {
+	'use strict';
+
+	var classNames = (function () {
+		// don't inherit from Object so we can skip hasOwnProperty check later
+		// http://stackoverflow.com/questions/15518328/creating-js-object-with-object-createnull#answer-21079232
+		function StorageObject() {}
+		StorageObject.prototype = Object.create(null);
+
+		function _parseArray (resultSet, array) {
+			var length = array.length;
+
+			for (var i = 0; i < length; ++i) {
+				_parse(resultSet, array[i]);
+			}
+		}
+
+		var hasOwn = {}.hasOwnProperty;
+
+		function _parseNumber (resultSet, num) {
+			resultSet[num] = true;
+		}
+
+		function _parseObject (resultSet, object) {
+			for (var k in object) {
+				if (hasOwn.call(object, k)) {
+					// set value to false instead of deleting it to avoid changing object structure
+					// https://www.smashingmagazine.com/2012/11/writing-fast-memory-efficient-javascript/#de-referencing-misconceptions
+					resultSet[k] = !!object[k];
+				}
+			}
+		}
+
+		var SPACE = /\s+/;
+		function _parseString (resultSet, str) {
+			var array = str.split(SPACE);
+			var length = array.length;
+
+			for (var i = 0; i < length; ++i) {
+				resultSet[array[i]] = true;
+			}
+		}
+
+		function _parse (resultSet, arg) {
+			if (!arg) return;
+			var argType = typeof arg;
+
+			// 'foo bar'
+			if (argType === 'string') {
+				_parseString(resultSet, arg);
+
+			// ['foo', 'bar', ...]
+			} else if (Array.isArray(arg)) {
+				_parseArray(resultSet, arg);
+
+			// { 'foo': true, ... }
+			} else if (argType === 'object') {
+				_parseObject(resultSet, arg);
+
+			// '130'
+			} else if (argType === 'number') {
+				_parseNumber(resultSet, arg);
+			}
+		}
+
+		function _classNames () {
+			// don't leak arguments
+			// https://github.com/petkaantonov/bluebird/wiki/Optimization-killers#32-leaking-arguments
+			var len = arguments.length;
+			var args = Array(len);
+			for (var i = 0; i < len; i++) {
+				args[i] = arguments[i];
+			}
+
+			var classSet = new StorageObject();
+			_parseArray(classSet, args);
+
+			var list = [];
+
+			for (var k in classSet) {
+				if (classSet[k]) {
+					list.push(k)
+				}
+			}
+
+			return list.join(' ');
+		}
+
+		return _classNames;
+	})();
+
+	if (typeof module !== 'undefined' && module.exports) {
+		module.exports = classNames;
+	} else if (true) {
+		// register as 'classnames', consistent with npm package name
+		!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = (function () {
+			return classNames;
+		}).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	} else {}
+}());
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/es/array/from.js":
+/*!***********************************************!*\
+  !*** ./node_modules/core-js/es/array/from.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_63153__) {
+
+__nested_webpack_require_63153__(/*! ../../modules/es.string.iterator */ "./node_modules/core-js/modules/es.string.iterator.js");
+__nested_webpack_require_63153__(/*! ../../modules/es.array.from */ "./node_modules/core-js/modules/es.array.from.js");
+var path = __nested_webpack_require_63153__(/*! ../../internals/path */ "./node_modules/core-js/internals/path.js");
+
+module.exports = path.Array.from;
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/a-function.js":
+/*!******************************************************!*\
+  !*** ./node_modules/core-js/internals/a-function.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function (it) {
+  if (typeof it != 'function') {
+    throw TypeError(String(it) + ' is not a function');
+  } return it;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/an-object.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/core-js/internals/an-object.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_64303__) {
+
+var isObject = __nested_webpack_require_64303__(/*! ../internals/is-object */ "./node_modules/core-js/internals/is-object.js");
+
+module.exports = function (it) {
+  if (!isObject(it)) {
+    throw TypeError(String(it) + ' is not an object');
+  } return it;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/array-from.js":
+/*!******************************************************!*\
+  !*** ./node_modules/core-js/internals/array-from.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_64884__) {
+
+"use strict";
+
+var bind = __nested_webpack_require_64884__(/*! ../internals/bind-context */ "./node_modules/core-js/internals/bind-context.js");
+var toObject = __nested_webpack_require_64884__(/*! ../internals/to-object */ "./node_modules/core-js/internals/to-object.js");
+var callWithSafeIterationClosing = __nested_webpack_require_64884__(/*! ../internals/call-with-safe-iteration-closing */ "./node_modules/core-js/internals/call-with-safe-iteration-closing.js");
+var isArrayIteratorMethod = __nested_webpack_require_64884__(/*! ../internals/is-array-iterator-method */ "./node_modules/core-js/internals/is-array-iterator-method.js");
+var toLength = __nested_webpack_require_64884__(/*! ../internals/to-length */ "./node_modules/core-js/internals/to-length.js");
+var createProperty = __nested_webpack_require_64884__(/*! ../internals/create-property */ "./node_modules/core-js/internals/create-property.js");
+var getIteratorMethod = __nested_webpack_require_64884__(/*! ../internals/get-iterator-method */ "./node_modules/core-js/internals/get-iterator-method.js");
+
+// `Array.from` method
+// https://tc39.github.io/ecma262/#sec-array.from
+module.exports = function from(arrayLike /* , mapfn = undefined, thisArg = undefined */) {
+  var O = toObject(arrayLike);
+  var C = typeof this == 'function' ? this : Array;
+  var argumentsLength = arguments.length;
+  var mapfn = argumentsLength > 1 ? arguments[1] : undefined;
+  var mapping = mapfn !== undefined;
+  var index = 0;
+  var iteratorMethod = getIteratorMethod(O);
+  var length, result, step, iterator;
+  if (mapping) mapfn = bind(mapfn, argumentsLength > 2 ? arguments[2] : undefined, 2);
+  // if the target is not iterable or it's an array with the default iterator - use a simple case
+  if (iteratorMethod != undefined && !(C == Array && isArrayIteratorMethod(iteratorMethod))) {
+    iterator = iteratorMethod.call(O);
+    result = new C();
+    for (;!(step = iterator.next()).done; index++) {
+      createProperty(result, index, mapping
+        ? callWithSafeIterationClosing(iterator, mapfn, [step.value, index], true)
+        : step.value
+      );
+    }
+  } else {
+    length = toLength(O.length);
+    result = new C(length);
+    for (;length > index; index++) {
+      createProperty(result, index, mapping ? mapfn(O[index], index) : O[index]);
+    }
+  }
+  result.length = index;
+  return result;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/array-includes.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/core-js/internals/array-includes.js ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_67506__) {
+
+var toIndexedObject = __nested_webpack_require_67506__(/*! ../internals/to-indexed-object */ "./node_modules/core-js/internals/to-indexed-object.js");
+var toLength = __nested_webpack_require_67506__(/*! ../internals/to-length */ "./node_modules/core-js/internals/to-length.js");
+var toAbsoluteIndex = __nested_webpack_require_67506__(/*! ../internals/to-absolute-index */ "./node_modules/core-js/internals/to-absolute-index.js");
+
+// `Array.prototype.{ indexOf, includes }` methods implementation
+// false -> Array#indexOf
+// https://tc39.github.io/ecma262/#sec-array.prototype.indexof
+// true  -> Array#includes
+// https://tc39.github.io/ecma262/#sec-array.prototype.includes
+module.exports = function (IS_INCLUDES) {
+  return function ($this, el, fromIndex) {
+    var O = toIndexedObject($this);
+    var length = toLength(O.length);
+    var index = toAbsoluteIndex(fromIndex, length);
+    var value;
+    // Array#includes uses SameValueZero equality algorithm
+    // eslint-disable-next-line no-self-compare
+    if (IS_INCLUDES && el != el) while (length > index) {
+      value = O[index++];
+      // eslint-disable-next-line no-self-compare
+      if (value != value) return true;
+    // Array#indexOf ignores holes, Array#includes - not
+    } else for (;length > index; index++) if (IS_INCLUDES || index in O) {
+      if (O[index] === el) return IS_INCLUDES || index || 0;
+    } return !IS_INCLUDES && -1;
+  };
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/bind-context.js":
+/*!********************************************************!*\
+  !*** ./node_modules/core-js/internals/bind-context.js ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_69228__) {
+
+var aFunction = __nested_webpack_require_69228__(/*! ../internals/a-function */ "./node_modules/core-js/internals/a-function.js");
+
+// optional / simple context binding
+module.exports = function (fn, that, length) {
+  aFunction(fn);
+  if (that === undefined) return fn;
+  switch (length) {
+    case 0: return function () {
+      return fn.call(that);
+    };
+    case 1: return function (a) {
+      return fn.call(that, a);
+    };
+    case 2: return function (a, b) {
+      return fn.call(that, a, b);
+    };
+    case 3: return function (a, b, c) {
+      return fn.call(that, a, b, c);
+    };
+  }
+  return function (/* ...args */) {
+    return fn.apply(that, arguments);
+  };
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/call-with-safe-iteration-closing.js":
+/*!****************************************************************************!*\
+  !*** ./node_modules/core-js/internals/call-with-safe-iteration-closing.js ***!
+  \****************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_70317__) {
+
+var anObject = __nested_webpack_require_70317__(/*! ../internals/an-object */ "./node_modules/core-js/internals/an-object.js");
+
+// call something on iterator step with safe closing on error
+module.exports = function (iterator, fn, value, ENTRIES) {
+  try {
+    return ENTRIES ? fn(anObject(value)[0], value[1]) : fn(value);
+  // 7.4.6 IteratorClose(iterator, completion)
+  } catch (error) {
+    var returnMethod = iterator['return'];
+    if (returnMethod !== undefined) anObject(returnMethod.call(iterator));
+    throw error;
+  }
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/check-correctness-of-iteration.js":
+/*!**************************************************************************!*\
+  !*** ./node_modules/core-js/internals/check-correctness-of-iteration.js ***!
+  \**************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_71254__) {
+
+var wellKnownSymbol = __nested_webpack_require_71254__(/*! ../internals/well-known-symbol */ "./node_modules/core-js/internals/well-known-symbol.js");
+
+var ITERATOR = wellKnownSymbol('iterator');
+var SAFE_CLOSING = false;
+
+try {
+  var called = 0;
+  var iteratorWithReturn = {
+    next: function () {
+      return { done: !!called++ };
+    },
+    'return': function () {
+      SAFE_CLOSING = true;
+    }
+  };
+  iteratorWithReturn[ITERATOR] = function () {
+    return this;
+  };
+  // eslint-disable-next-line no-throw-literal
+  Array.from(iteratorWithReturn, function () { throw 2; });
+} catch (error) { /* empty */ }
+
+module.exports = function (exec, SKIP_CLOSING) {
+  if (!SKIP_CLOSING && !SAFE_CLOSING) return false;
+  var ITERATION_SUPPORT = false;
+  try {
+    var object = {};
+    object[ITERATOR] = function () {
+      return {
+        next: function () {
+          return { done: ITERATION_SUPPORT = true };
+        }
+      };
+    };
+    exec(object);
+  } catch (error) { /* empty */ }
+  return ITERATION_SUPPORT;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/classof-raw.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/core-js/internals/classof-raw.js ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var toString = {}.toString;
+
+module.exports = function (it) {
+  return toString.call(it).slice(8, -1);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/classof.js":
+/*!***************************************************!*\
+  !*** ./node_modules/core-js/internals/classof.js ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_73012__) {
+
+var classofRaw = __nested_webpack_require_73012__(/*! ../internals/classof-raw */ "./node_modules/core-js/internals/classof-raw.js");
+var wellKnownSymbol = __nested_webpack_require_73012__(/*! ../internals/well-known-symbol */ "./node_modules/core-js/internals/well-known-symbol.js");
+
+var TO_STRING_TAG = wellKnownSymbol('toStringTag');
+// ES3 wrong here
+var CORRECT_ARGUMENTS = classofRaw(function () { return arguments; }()) == 'Arguments';
+
+// fallback for IE11 Script Access Denied error
+var tryGet = function (it, key) {
+  try {
+    return it[key];
+  } catch (error) { /* empty */ }
+};
+
+// getting tag from ES6+ `Object.prototype.toString`
+module.exports = function (it) {
+  var O, tag, result;
+  return it === undefined ? 'Undefined' : it === null ? 'Null'
+    // @@toStringTag case
+    : typeof (tag = tryGet(O = Object(it), TO_STRING_TAG)) == 'string' ? tag
+    // builtinTag case
+    : CORRECT_ARGUMENTS ? classofRaw(O)
+    // ES3 arguments fallback
+    : (result = classofRaw(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : result;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/copy-constructor-properties.js":
+/*!***********************************************************************!*\
+  !*** ./node_modules/core-js/internals/copy-constructor-properties.js ***!
+  \***********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_74453__) {
+
+var has = __nested_webpack_require_74453__(/*! ../internals/has */ "./node_modules/core-js/internals/has.js");
+var ownKeys = __nested_webpack_require_74453__(/*! ../internals/own-keys */ "./node_modules/core-js/internals/own-keys.js");
+var getOwnPropertyDescriptorModule = __nested_webpack_require_74453__(/*! ../internals/object-get-own-property-descriptor */ "./node_modules/core-js/internals/object-get-own-property-descriptor.js");
+var definePropertyModule = __nested_webpack_require_74453__(/*! ../internals/object-define-property */ "./node_modules/core-js/internals/object-define-property.js");
+
+module.exports = function (target, source) {
+  var keys = ownKeys(source);
+  var defineProperty = definePropertyModule.f;
+  var getOwnPropertyDescriptor = getOwnPropertyDescriptorModule.f;
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    if (!has(target, key)) defineProperty(target, key, getOwnPropertyDescriptor(source, key));
+  }
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/correct-prototype-getter.js":
+/*!********************************************************************!*\
+  !*** ./node_modules/core-js/internals/correct-prototype-getter.js ***!
+  \********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_75752__) {
+
+var fails = __nested_webpack_require_75752__(/*! ../internals/fails */ "./node_modules/core-js/internals/fails.js");
+
+module.exports = !fails(function () {
+  function F() { /* empty */ }
+  F.prototype.constructor = null;
+  return Object.getPrototypeOf(new F()) !== F.prototype;
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/create-iterator-constructor.js":
+/*!***********************************************************************!*\
+  !*** ./node_modules/core-js/internals/create-iterator-constructor.js ***!
+  \***********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_76425__) {
+
+"use strict";
+
+var IteratorPrototype = __nested_webpack_require_76425__(/*! ../internals/iterators-core */ "./node_modules/core-js/internals/iterators-core.js").IteratorPrototype;
+var create = __nested_webpack_require_76425__(/*! ../internals/object-create */ "./node_modules/core-js/internals/object-create.js");
+var createPropertyDescriptor = __nested_webpack_require_76425__(/*! ../internals/create-property-descriptor */ "./node_modules/core-js/internals/create-property-descriptor.js");
+var setToStringTag = __nested_webpack_require_76425__(/*! ../internals/set-to-string-tag */ "./node_modules/core-js/internals/set-to-string-tag.js");
+var Iterators = __nested_webpack_require_76425__(/*! ../internals/iterators */ "./node_modules/core-js/internals/iterators.js");
+
+var returnThis = function () { return this; };
+
+module.exports = function (IteratorConstructor, NAME, next) {
+  var TO_STRING_TAG = NAME + ' Iterator';
+  IteratorConstructor.prototype = create(IteratorPrototype, { next: createPropertyDescriptor(1, next) });
+  setToStringTag(IteratorConstructor, TO_STRING_TAG, false, true);
+  Iterators[TO_STRING_TAG] = returnThis;
+  return IteratorConstructor;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/create-property-descriptor.js":
+/*!**********************************************************************!*\
+  !*** ./node_modules/core-js/internals/create-property-descriptor.js ***!
+  \**********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function (bitmap, value) {
+  return {
+    enumerable: !(bitmap & 1),
+    configurable: !(bitmap & 2),
+    writable: !(bitmap & 4),
+    value: value
+  };
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/create-property.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/core-js/internals/create-property.js ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_78439__) {
+
+"use strict";
+
+var toPrimitive = __nested_webpack_require_78439__(/*! ../internals/to-primitive */ "./node_modules/core-js/internals/to-primitive.js");
+var definePropertyModule = __nested_webpack_require_78439__(/*! ../internals/object-define-property */ "./node_modules/core-js/internals/object-define-property.js");
+var createPropertyDescriptor = __nested_webpack_require_78439__(/*! ../internals/create-property-descriptor */ "./node_modules/core-js/internals/create-property-descriptor.js");
+
+module.exports = function (object, key, value) {
+  var propertyKey = toPrimitive(key);
+  if (propertyKey in object) definePropertyModule.f(object, propertyKey, createPropertyDescriptor(0, value));
+  else object[propertyKey] = value;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/define-iterator.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/core-js/internals/define-iterator.js ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_79489__) {
+
+"use strict";
+
+var $ = __nested_webpack_require_79489__(/*! ../internals/export */ "./node_modules/core-js/internals/export.js");
+var createIteratorConstructor = __nested_webpack_require_79489__(/*! ../internals/create-iterator-constructor */ "./node_modules/core-js/internals/create-iterator-constructor.js");
+var getPrototypeOf = __nested_webpack_require_79489__(/*! ../internals/object-get-prototype-of */ "./node_modules/core-js/internals/object-get-prototype-of.js");
+var setPrototypeOf = __nested_webpack_require_79489__(/*! ../internals/object-set-prototype-of */ "./node_modules/core-js/internals/object-set-prototype-of.js");
+var setToStringTag = __nested_webpack_require_79489__(/*! ../internals/set-to-string-tag */ "./node_modules/core-js/internals/set-to-string-tag.js");
+var hide = __nested_webpack_require_79489__(/*! ../internals/hide */ "./node_modules/core-js/internals/hide.js");
+var redefine = __nested_webpack_require_79489__(/*! ../internals/redefine */ "./node_modules/core-js/internals/redefine.js");
+var wellKnownSymbol = __nested_webpack_require_79489__(/*! ../internals/well-known-symbol */ "./node_modules/core-js/internals/well-known-symbol.js");
+var IS_PURE = __nested_webpack_require_79489__(/*! ../internals/is-pure */ "./node_modules/core-js/internals/is-pure.js");
+var Iterators = __nested_webpack_require_79489__(/*! ../internals/iterators */ "./node_modules/core-js/internals/iterators.js");
+var IteratorsCore = __nested_webpack_require_79489__(/*! ../internals/iterators-core */ "./node_modules/core-js/internals/iterators-core.js");
+
+var IteratorPrototype = IteratorsCore.IteratorPrototype;
+var BUGGY_SAFARI_ITERATORS = IteratorsCore.BUGGY_SAFARI_ITERATORS;
+var ITERATOR = wellKnownSymbol('iterator');
+var KEYS = 'keys';
+var VALUES = 'values';
+var ENTRIES = 'entries';
+
+var returnThis = function () { return this; };
+
+module.exports = function (Iterable, NAME, IteratorConstructor, next, DEFAULT, IS_SET, FORCED) {
+  createIteratorConstructor(IteratorConstructor, NAME, next);
+
+  var getIterationMethod = function (KIND) {
+    if (KIND === DEFAULT && defaultIterator) return defaultIterator;
+    if (!BUGGY_SAFARI_ITERATORS && KIND in IterablePrototype) return IterablePrototype[KIND];
+    switch (KIND) {
+      case KEYS: return function keys() { return new IteratorConstructor(this, KIND); };
+      case VALUES: return function values() { return new IteratorConstructor(this, KIND); };
+      case ENTRIES: return function entries() { return new IteratorConstructor(this, KIND); };
+    } return function () { return new IteratorConstructor(this); };
+  };
+
+  var TO_STRING_TAG = NAME + ' Iterator';
+  var INCORRECT_VALUES_NAME = false;
+  var IterablePrototype = Iterable.prototype;
+  var nativeIterator = IterablePrototype[ITERATOR]
+    || IterablePrototype['@@iterator']
+    || DEFAULT && IterablePrototype[DEFAULT];
+  var defaultIterator = !BUGGY_SAFARI_ITERATORS && nativeIterator || getIterationMethod(DEFAULT);
+  var anyNativeIterator = NAME == 'Array' ? IterablePrototype.entries || nativeIterator : nativeIterator;
+  var CurrentIteratorPrototype, methods, KEY;
+
+  // fix native
+  if (anyNativeIterator) {
+    CurrentIteratorPrototype = getPrototypeOf(anyNativeIterator.call(new Iterable()));
+    if (IteratorPrototype !== Object.prototype && CurrentIteratorPrototype.next) {
+      if (!IS_PURE && getPrototypeOf(CurrentIteratorPrototype) !== IteratorPrototype) {
+        if (setPrototypeOf) {
+          setPrototypeOf(CurrentIteratorPrototype, IteratorPrototype);
+        } else if (typeof CurrentIteratorPrototype[ITERATOR] != 'function') {
+          hide(CurrentIteratorPrototype, ITERATOR, returnThis);
+        }
+      }
+      // Set @@toStringTag to native iterators
+      setToStringTag(CurrentIteratorPrototype, TO_STRING_TAG, true, true);
+      if (IS_PURE) Iterators[TO_STRING_TAG] = returnThis;
+    }
+  }
+
+  // fix Array#{values, @@iterator}.name in V8 / FF
+  if (DEFAULT == VALUES && nativeIterator && nativeIterator.name !== VALUES) {
+    INCORRECT_VALUES_NAME = true;
+    defaultIterator = function values() { return nativeIterator.call(this); };
+  }
+
+  // define iterator
+  if ((!IS_PURE || FORCED) && IterablePrototype[ITERATOR] !== defaultIterator) {
+    hide(IterablePrototype, ITERATOR, defaultIterator);
+  }
+  Iterators[NAME] = defaultIterator;
+
+  // export additional methods
+  if (DEFAULT) {
+    methods = {
+      values: getIterationMethod(VALUES),
+      keys: IS_SET ? defaultIterator : getIterationMethod(KEYS),
+      entries: getIterationMethod(ENTRIES)
+    };
+    if (FORCED) for (KEY in methods) {
+      if (BUGGY_SAFARI_ITERATORS || INCORRECT_VALUES_NAME || !(KEY in IterablePrototype)) {
+        redefine(IterablePrototype, KEY, methods[KEY]);
+      }
+    } else $({ target: NAME, proto: true, forced: BUGGY_SAFARI_ITERATORS || INCORRECT_VALUES_NAME }, methods);
+  }
+
+  return methods;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/descriptors.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/core-js/internals/descriptors.js ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_84548__) {
+
+var fails = __nested_webpack_require_84548__(/*! ../internals/fails */ "./node_modules/core-js/internals/fails.js");
+
+// Thank's IE8 for his funny defineProperty
+module.exports = !fails(function () {
+  return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/document-create-element.js":
+/*!*******************************************************************!*\
+  !*** ./node_modules/core-js/internals/document-create-element.js ***!
+  \*******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_85211__) {
+
+var global = __nested_webpack_require_85211__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+var isObject = __nested_webpack_require_85211__(/*! ../internals/is-object */ "./node_modules/core-js/internals/is-object.js");
+
+var document = global.document;
+// typeof document.createElement is 'object' in old IE
+var exist = isObject(document) && isObject(document.createElement);
+
+module.exports = function (it) {
+  return exist ? document.createElement(it) : {};
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/enum-bug-keys.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/core-js/internals/enum-bug-keys.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+// IE8- don't enum bug keys
+module.exports = [
+  'constructor',
+  'hasOwnProperty',
+  'isPrototypeOf',
+  'propertyIsEnumerable',
+  'toLocaleString',
+  'toString',
+  'valueOf'
+];
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/export.js":
+/*!**************************************************!*\
+  !*** ./node_modules/core-js/internals/export.js ***!
+  \**************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_86501__) {
+
+var global = __nested_webpack_require_86501__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+var getOwnPropertyDescriptor = __nested_webpack_require_86501__(/*! ../internals/object-get-own-property-descriptor */ "./node_modules/core-js/internals/object-get-own-property-descriptor.js").f;
+var hide = __nested_webpack_require_86501__(/*! ../internals/hide */ "./node_modules/core-js/internals/hide.js");
+var redefine = __nested_webpack_require_86501__(/*! ../internals/redefine */ "./node_modules/core-js/internals/redefine.js");
+var setGlobal = __nested_webpack_require_86501__(/*! ../internals/set-global */ "./node_modules/core-js/internals/set-global.js");
+var copyConstructorProperties = __nested_webpack_require_86501__(/*! ../internals/copy-constructor-properties */ "./node_modules/core-js/internals/copy-constructor-properties.js");
+var isForced = __nested_webpack_require_86501__(/*! ../internals/is-forced */ "./node_modules/core-js/internals/is-forced.js");
+
+/*
+  options.target      - name of the target object
+  options.global      - target is the global object
+  options.stat        - export as static methods of target
+  options.proto       - export as prototype methods of target
+  options.real        - real prototype method for the `pure` version
+  options.forced      - export even if the native feature is available
+  options.bind        - bind methods to the target, required for the `pure` version
+  options.wrap        - wrap constructors to preventing global pollution, required for the `pure` version
+  options.unsafe      - use the simple assignment of property instead of delete + defineProperty
+  options.sham        - add a flag to not completely full polyfills
+  options.enumerable  - export as enumerable property
+  options.noTargetGet - prevent calling a getter on target
+*/
+module.exports = function (options, source) {
+  var TARGET = options.target;
+  var GLOBAL = options.global;
+  var STATIC = options.stat;
+  var FORCED, target, key, targetProperty, sourceProperty, descriptor;
+  if (GLOBAL) {
+    target = global;
+  } else if (STATIC) {
+    target = global[TARGET] || setGlobal(TARGET, {});
+  } else {
+    target = (global[TARGET] || {}).prototype;
+  }
+  if (target) for (key in source) {
+    sourceProperty = source[key];
+    if (options.noTargetGet) {
+      descriptor = getOwnPropertyDescriptor(target, key);
+      targetProperty = descriptor && descriptor.value;
+    } else targetProperty = target[key];
+    FORCED = isForced(GLOBAL ? key : TARGET + (STATIC ? '.' : '#') + key, options.forced);
+    // contained in target
+    if (!FORCED && targetProperty !== undefined) {
+      if (typeof sourceProperty === typeof targetProperty) continue;
+      copyConstructorProperties(sourceProperty, targetProperty);
+    }
+    // add a flag to not completely full polyfills
+    if (options.sham || (targetProperty && targetProperty.sham)) {
+      hide(sourceProperty, 'sham', true);
+    }
+    // extend global
+    redefine(target, key, sourceProperty, options);
+  }
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/fails.js":
+/*!*************************************************!*\
+  !*** ./node_modules/core-js/internals/fails.js ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function (exec) {
+  try {
+    return !!exec();
+  } catch (error) {
+    return true;
+  }
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/function-to-string.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/core-js/internals/function-to-string.js ***!
+  \**************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_90209__) {
+
+var shared = __nested_webpack_require_90209__(/*! ../internals/shared */ "./node_modules/core-js/internals/shared.js");
+
+module.exports = shared('native-function-to-string', Function.toString);
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/get-iterator-method.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/core-js/internals/get-iterator-method.js ***!
+  \***************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_90762__) {
+
+var classof = __nested_webpack_require_90762__(/*! ../internals/classof */ "./node_modules/core-js/internals/classof.js");
+var Iterators = __nested_webpack_require_90762__(/*! ../internals/iterators */ "./node_modules/core-js/internals/iterators.js");
+var wellKnownSymbol = __nested_webpack_require_90762__(/*! ../internals/well-known-symbol */ "./node_modules/core-js/internals/well-known-symbol.js");
+
+var ITERATOR = wellKnownSymbol('iterator');
+
+module.exports = function (it) {
+  if (it != undefined) return it[ITERATOR]
+    || it['@@iterator']
+    || Iterators[classof(it)];
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/global.js":
+/*!**************************************************!*\
+  !*** ./node_modules/core-js/internals/global.js ***!
+  \**************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_91626__) {
+
+/* WEBPACK VAR INJECTION */(function(global) {var O = 'object';
+var check = function (it) {
+  return it && it.Math == Math && it;
+};
+
+// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
+module.exports =
+  // eslint-disable-next-line no-undef
+  check(typeof globalThis == O && globalThis) ||
+  check(typeof window == O && window) ||
+  check(typeof self == O && self) ||
+  check(typeof global == O && global) ||
+  // eslint-disable-next-line no-new-func
+  Function('return this')();
+
+/* WEBPACK VAR INJECTION */}.call(this, __nested_webpack_require_91626__(/*! ./../../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/has.js":
+/*!***********************************************!*\
+  !*** ./node_modules/core-js/internals/has.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var hasOwnProperty = {}.hasOwnProperty;
+
+module.exports = function (it, key) {
+  return hasOwnProperty.call(it, key);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/hidden-keys.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/core-js/internals/hidden-keys.js ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = {};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/hide.js":
+/*!************************************************!*\
+  !*** ./node_modules/core-js/internals/hide.js ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_93334__) {
+
+var DESCRIPTORS = __nested_webpack_require_93334__(/*! ../internals/descriptors */ "./node_modules/core-js/internals/descriptors.js");
+var definePropertyModule = __nested_webpack_require_93334__(/*! ../internals/object-define-property */ "./node_modules/core-js/internals/object-define-property.js");
+var createPropertyDescriptor = __nested_webpack_require_93334__(/*! ../internals/create-property-descriptor */ "./node_modules/core-js/internals/create-property-descriptor.js");
+
+module.exports = DESCRIPTORS ? function (object, key, value) {
+  return definePropertyModule.f(object, key, createPropertyDescriptor(1, value));
+} : function (object, key, value) {
+  object[key] = value;
+  return object;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/html.js":
+/*!************************************************!*\
+  !*** ./node_modules/core-js/internals/html.js ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_94311__) {
+
+var global = __nested_webpack_require_94311__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+
+var document = global.document;
+
+module.exports = document && document.documentElement;
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/ie8-dom-define.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/core-js/internals/ie8-dom-define.js ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_94859__) {
+
+var DESCRIPTORS = __nested_webpack_require_94859__(/*! ../internals/descriptors */ "./node_modules/core-js/internals/descriptors.js");
+var fails = __nested_webpack_require_94859__(/*! ../internals/fails */ "./node_modules/core-js/internals/fails.js");
+var createElement = __nested_webpack_require_94859__(/*! ../internals/document-create-element */ "./node_modules/core-js/internals/document-create-element.js");
+
+// Thank's IE8 for his funny defineProperty
+module.exports = !DESCRIPTORS && !fails(function () {
+  return Object.defineProperty(createElement('div'), 'a', {
+    get: function () { return 7; }
+  }).a != 7;
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/indexed-object.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/core-js/internals/indexed-object.js ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_95796__) {
+
+// fallback for non-array-like ES3 and non-enumerable old V8 strings
+var fails = __nested_webpack_require_95796__(/*! ../internals/fails */ "./node_modules/core-js/internals/fails.js");
+var classof = __nested_webpack_require_95796__(/*! ../internals/classof-raw */ "./node_modules/core-js/internals/classof-raw.js");
+
+var split = ''.split;
+
+module.exports = fails(function () {
+  // throws an error in rhino, see https://github.com/mozilla/rhino/issues/346
+  // eslint-disable-next-line no-prototype-builtins
+  return !Object('z').propertyIsEnumerable(0);
+}) ? function (it) {
+  return classof(it) == 'String' ? split.call(it, '') : Object(it);
+} : Object;
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/internal-state.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/core-js/internals/internal-state.js ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_96779__) {
+
+var NATIVE_WEAK_MAP = __nested_webpack_require_96779__(/*! ../internals/native-weak-map */ "./node_modules/core-js/internals/native-weak-map.js");
+var global = __nested_webpack_require_96779__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+var isObject = __nested_webpack_require_96779__(/*! ../internals/is-object */ "./node_modules/core-js/internals/is-object.js");
+var hide = __nested_webpack_require_96779__(/*! ../internals/hide */ "./node_modules/core-js/internals/hide.js");
+var objectHas = __nested_webpack_require_96779__(/*! ../internals/has */ "./node_modules/core-js/internals/has.js");
+var sharedKey = __nested_webpack_require_96779__(/*! ../internals/shared-key */ "./node_modules/core-js/internals/shared-key.js");
+var hiddenKeys = __nested_webpack_require_96779__(/*! ../internals/hidden-keys */ "./node_modules/core-js/internals/hidden-keys.js");
+
+var WeakMap = global.WeakMap;
+var set, get, has;
+
+var enforce = function (it) {
+  return has(it) ? get(it) : set(it, {});
+};
+
+var getterFor = function (TYPE) {
+  return function (it) {
+    var state;
+    if (!isObject(it) || (state = get(it)).type !== TYPE) {
+      throw TypeError('Incompatible receiver, ' + TYPE + ' required');
+    } return state;
+  };
+};
+
+if (NATIVE_WEAK_MAP) {
+  var store = new WeakMap();
+  var wmget = store.get;
+  var wmhas = store.has;
+  var wmset = store.set;
+  set = function (it, metadata) {
+    wmset.call(store, it, metadata);
+    return metadata;
+  };
+  get = function (it) {
+    return wmget.call(store, it) || {};
+  };
+  has = function (it) {
+    return wmhas.call(store, it);
+  };
+} else {
+  var STATE = sharedKey('state');
+  hiddenKeys[STATE] = true;
+  set = function (it, metadata) {
+    hide(it, STATE, metadata);
+    return metadata;
+  };
+  get = function (it) {
+    return objectHas(it, STATE) ? it[STATE] : {};
+  };
+  has = function (it) {
+    return objectHas(it, STATE);
+  };
+}
+
+module.exports = {
+  set: set,
+  get: get,
+  has: has,
+  enforce: enforce,
+  getterFor: getterFor
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/is-array-iterator-method.js":
+/*!********************************************************************!*\
+  !*** ./node_modules/core-js/internals/is-array-iterator-method.js ***!
+  \********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_99095__) {
+
+var wellKnownSymbol = __nested_webpack_require_99095__(/*! ../internals/well-known-symbol */ "./node_modules/core-js/internals/well-known-symbol.js");
+var Iterators = __nested_webpack_require_99095__(/*! ../internals/iterators */ "./node_modules/core-js/internals/iterators.js");
+
+var ITERATOR = wellKnownSymbol('iterator');
+var ArrayPrototype = Array.prototype;
+
+// check on default Array iterator
+module.exports = function (it) {
+  return it !== undefined && (Iterators.Array === it || ArrayPrototype[ITERATOR] === it);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/is-forced.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/core-js/internals/is-forced.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_99926__) {
+
+var fails = __nested_webpack_require_99926__(/*! ../internals/fails */ "./node_modules/core-js/internals/fails.js");
+
+var replacement = /#|\.prototype\./;
+
+var isForced = function (feature, detection) {
+  var value = data[normalize(feature)];
+  return value == POLYFILL ? true
+    : value == NATIVE ? false
+    : typeof detection == 'function' ? fails(detection)
+    : !!detection;
+};
+
+var normalize = isForced.normalize = function (string) {
+  return String(string).replace(replacement, '.').toLowerCase();
+};
+
+var data = isForced.data = {};
+var NATIVE = isForced.NATIVE = 'N';
+var POLYFILL = isForced.POLYFILL = 'P';
+
+module.exports = isForced;
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/is-object.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/core-js/internals/is-object.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function (it) {
+  return typeof it === 'object' ? it !== null : typeof it === 'function';
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/is-pure.js":
+/*!***************************************************!*\
+  !*** ./node_modules/core-js/internals/is-pure.js ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = false;
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/iterators-core.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/core-js/internals/iterators-core.js ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_101660__) {
+
+"use strict";
+
+var getPrototypeOf = __nested_webpack_require_101660__(/*! ../internals/object-get-prototype-of */ "./node_modules/core-js/internals/object-get-prototype-of.js");
+var hide = __nested_webpack_require_101660__(/*! ../internals/hide */ "./node_modules/core-js/internals/hide.js");
+var has = __nested_webpack_require_101660__(/*! ../internals/has */ "./node_modules/core-js/internals/has.js");
+var wellKnownSymbol = __nested_webpack_require_101660__(/*! ../internals/well-known-symbol */ "./node_modules/core-js/internals/well-known-symbol.js");
+var IS_PURE = __nested_webpack_require_101660__(/*! ../internals/is-pure */ "./node_modules/core-js/internals/is-pure.js");
+
+var ITERATOR = wellKnownSymbol('iterator');
+var BUGGY_SAFARI_ITERATORS = false;
+
+var returnThis = function () { return this; };
+
+// `%IteratorPrototype%` object
+// https://tc39.github.io/ecma262/#sec-%iteratorprototype%-object
+var IteratorPrototype, PrototypeOfArrayIteratorPrototype, arrayIterator;
+
+if ([].keys) {
+  arrayIterator = [].keys();
+  // Safari 8 has buggy iterators w/o `next`
+  if (!('next' in arrayIterator)) BUGGY_SAFARI_ITERATORS = true;
+  else {
+    PrototypeOfArrayIteratorPrototype = getPrototypeOf(getPrototypeOf(arrayIterator));
+    if (PrototypeOfArrayIteratorPrototype !== Object.prototype) IteratorPrototype = PrototypeOfArrayIteratorPrototype;
+  }
+}
+
+if (IteratorPrototype == undefined) IteratorPrototype = {};
+
+// 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
+if (!IS_PURE && !has(IteratorPrototype, ITERATOR)) hide(IteratorPrototype, ITERATOR, returnThis);
+
+module.exports = {
+  IteratorPrototype: IteratorPrototype,
+  BUGGY_SAFARI_ITERATORS: BUGGY_SAFARI_ITERATORS
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/iterators.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/core-js/internals/iterators.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = {};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/native-symbol.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/core-js/internals/native-symbol.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_103948__) {
+
+var fails = __nested_webpack_require_103948__(/*! ../internals/fails */ "./node_modules/core-js/internals/fails.js");
+
+module.exports = !!Object.getOwnPropertySymbols && !fails(function () {
+  // Chrome 38 Symbol has incorrect toString conversion
+  // eslint-disable-next-line no-undef
+  return !String(Symbol());
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/native-weak-map.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/core-js/internals/native-weak-map.js ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_104608__) {
+
+var global = __nested_webpack_require_104608__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+var nativeFunctionToString = __nested_webpack_require_104608__(/*! ../internals/function-to-string */ "./node_modules/core-js/internals/function-to-string.js");
+
+var WeakMap = global.WeakMap;
+
+module.exports = typeof WeakMap === 'function' && /native code/.test(nativeFunctionToString.call(WeakMap));
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-create.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/core-js/internals/object-create.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_105350__) {
+
+var anObject = __nested_webpack_require_105350__(/*! ../internals/an-object */ "./node_modules/core-js/internals/an-object.js");
+var defineProperties = __nested_webpack_require_105350__(/*! ../internals/object-define-properties */ "./node_modules/core-js/internals/object-define-properties.js");
+var enumBugKeys = __nested_webpack_require_105350__(/*! ../internals/enum-bug-keys */ "./node_modules/core-js/internals/enum-bug-keys.js");
+var hiddenKeys = __nested_webpack_require_105350__(/*! ../internals/hidden-keys */ "./node_modules/core-js/internals/hidden-keys.js");
+var html = __nested_webpack_require_105350__(/*! ../internals/html */ "./node_modules/core-js/internals/html.js");
+var documentCreateElement = __nested_webpack_require_105350__(/*! ../internals/document-create-element */ "./node_modules/core-js/internals/document-create-element.js");
+var sharedKey = __nested_webpack_require_105350__(/*! ../internals/shared-key */ "./node_modules/core-js/internals/shared-key.js");
+var IE_PROTO = sharedKey('IE_PROTO');
+
+var PROTOTYPE = 'prototype';
+var Empty = function () { /* empty */ };
+
+// Create object with fake `null` prototype: use iframe Object with cleared prototype
+var createDict = function () {
+  // Thrash, waste and sodomy: IE GC bug
+  var iframe = documentCreateElement('iframe');
+  var length = enumBugKeys.length;
+  var lt = '<';
+  var script = 'script';
+  var gt = '>';
+  var js = 'java' + script + ':';
+  var iframeDocument;
+  iframe.style.display = 'none';
+  html.appendChild(iframe);
+  iframe.src = String(js);
+  iframeDocument = iframe.contentWindow.document;
+  iframeDocument.open();
+  iframeDocument.write(lt + script + gt + 'document.F=Object' + lt + '/' + script + gt);
+  iframeDocument.close();
+  createDict = iframeDocument.F;
+  while (length--) delete createDict[PROTOTYPE][enumBugKeys[length]];
+  return createDict();
+};
+
+// 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
+module.exports = Object.create || function create(O, Properties) {
+  var result;
+  if (O !== null) {
+    Empty[PROTOTYPE] = anObject(O);
+    result = new Empty();
+    Empty[PROTOTYPE] = null;
+    // add "__proto__" for Object.getPrototypeOf polyfill
+    result[IE_PROTO] = O;
+  } else result = createDict();
+  return Properties === undefined ? result : defineProperties(result, Properties);
+};
+
+hiddenKeys[IE_PROTO] = true;
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-define-properties.js":
+/*!********************************************************************!*\
+  !*** ./node_modules/core-js/internals/object-define-properties.js ***!
+  \********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_107983__) {
+
+var DESCRIPTORS = __nested_webpack_require_107983__(/*! ../internals/descriptors */ "./node_modules/core-js/internals/descriptors.js");
+var definePropertyModule = __nested_webpack_require_107983__(/*! ../internals/object-define-property */ "./node_modules/core-js/internals/object-define-property.js");
+var anObject = __nested_webpack_require_107983__(/*! ../internals/an-object */ "./node_modules/core-js/internals/an-object.js");
+var objectKeys = __nested_webpack_require_107983__(/*! ../internals/object-keys */ "./node_modules/core-js/internals/object-keys.js");
+
+module.exports = DESCRIPTORS ? Object.defineProperties : function defineProperties(O, Properties) {
+  anObject(O);
+  var keys = objectKeys(Properties);
+  var length = keys.length;
+  var i = 0;
+  var key;
+  while (length > i) definePropertyModule.f(O, key = keys[i++], Properties[key]);
+  return O;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-define-property.js":
+/*!******************************************************************!*\
+  !*** ./node_modules/core-js/internals/object-define-property.js ***!
+  \******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_109180__) {
+
+var DESCRIPTORS = __nested_webpack_require_109180__(/*! ../internals/descriptors */ "./node_modules/core-js/internals/descriptors.js");
+var IE8_DOM_DEFINE = __nested_webpack_require_109180__(/*! ../internals/ie8-dom-define */ "./node_modules/core-js/internals/ie8-dom-define.js");
+var anObject = __nested_webpack_require_109180__(/*! ../internals/an-object */ "./node_modules/core-js/internals/an-object.js");
+var toPrimitive = __nested_webpack_require_109180__(/*! ../internals/to-primitive */ "./node_modules/core-js/internals/to-primitive.js");
+
+var nativeDefineProperty = Object.defineProperty;
+
+exports.f = DESCRIPTORS ? nativeDefineProperty : function defineProperty(O, P, Attributes) {
+  anObject(O);
+  P = toPrimitive(P, true);
+  anObject(Attributes);
+  if (IE8_DOM_DEFINE) try {
+    return nativeDefineProperty(O, P, Attributes);
+  } catch (error) { /* empty */ }
+  if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported');
+  if ('value' in Attributes) O[P] = Attributes.value;
+  return O;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-get-own-property-descriptor.js":
+/*!******************************************************************************!*\
+  !*** ./node_modules/core-js/internals/object-get-own-property-descriptor.js ***!
+  \******************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_110592__) {
+
+var DESCRIPTORS = __nested_webpack_require_110592__(/*! ../internals/descriptors */ "./node_modules/core-js/internals/descriptors.js");
+var propertyIsEnumerableModule = __nested_webpack_require_110592__(/*! ../internals/object-property-is-enumerable */ "./node_modules/core-js/internals/object-property-is-enumerable.js");
+var createPropertyDescriptor = __nested_webpack_require_110592__(/*! ../internals/create-property-descriptor */ "./node_modules/core-js/internals/create-property-descriptor.js");
+var toIndexedObject = __nested_webpack_require_110592__(/*! ../internals/to-indexed-object */ "./node_modules/core-js/internals/to-indexed-object.js");
+var toPrimitive = __nested_webpack_require_110592__(/*! ../internals/to-primitive */ "./node_modules/core-js/internals/to-primitive.js");
+var has = __nested_webpack_require_110592__(/*! ../internals/has */ "./node_modules/core-js/internals/has.js");
+var IE8_DOM_DEFINE = __nested_webpack_require_110592__(/*! ../internals/ie8-dom-define */ "./node_modules/core-js/internals/ie8-dom-define.js");
+
+var nativeGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+
+exports.f = DESCRIPTORS ? nativeGetOwnPropertyDescriptor : function getOwnPropertyDescriptor(O, P) {
+  O = toIndexedObject(O);
+  P = toPrimitive(P, true);
+  if (IE8_DOM_DEFINE) try {
+    return nativeGetOwnPropertyDescriptor(O, P);
+  } catch (error) { /* empty */ }
+  if (has(O, P)) return createPropertyDescriptor(!propertyIsEnumerableModule.f.call(O, P), O[P]);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-get-own-property-names.js":
+/*!*************************************************************************!*\
+  !*** ./node_modules/core-js/internals/object-get-own-property-names.js ***!
+  \*************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_112394__) {
+
+// 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
+var internalObjectKeys = __nested_webpack_require_112394__(/*! ../internals/object-keys-internal */ "./node_modules/core-js/internals/object-keys-internal.js");
+var enumBugKeys = __nested_webpack_require_112394__(/*! ../internals/enum-bug-keys */ "./node_modules/core-js/internals/enum-bug-keys.js");
+
+var hiddenKeys = enumBugKeys.concat('length', 'prototype');
+
+exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
+  return internalObjectKeys(O, hiddenKeys);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-get-own-property-symbols.js":
+/*!***************************************************************************!*\
+  !*** ./node_modules/core-js/internals/object-get-own-property-symbols.js ***!
+  \***************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+exports.f = Object.getOwnPropertySymbols;
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-get-prototype-of.js":
+/*!*******************************************************************!*\
+  !*** ./node_modules/core-js/internals/object-get-prototype-of.js ***!
+  \*******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_113734__) {
+
+var has = __nested_webpack_require_113734__(/*! ../internals/has */ "./node_modules/core-js/internals/has.js");
+var toObject = __nested_webpack_require_113734__(/*! ../internals/to-object */ "./node_modules/core-js/internals/to-object.js");
+var sharedKey = __nested_webpack_require_113734__(/*! ../internals/shared-key */ "./node_modules/core-js/internals/shared-key.js");
+var CORRECT_PROTOTYPE_GETTER = __nested_webpack_require_113734__(/*! ../internals/correct-prototype-getter */ "./node_modules/core-js/internals/correct-prototype-getter.js");
+
+var IE_PROTO = sharedKey('IE_PROTO');
+var ObjectPrototype = Object.prototype;
+
+// 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
+module.exports = CORRECT_PROTOTYPE_GETTER ? Object.getPrototypeOf : function (O) {
+  O = toObject(O);
+  if (has(O, IE_PROTO)) return O[IE_PROTO];
+  if (typeof O.constructor == 'function' && O instanceof O.constructor) {
+    return O.constructor.prototype;
+  } return O instanceof Object ? ObjectPrototype : null;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-keys-internal.js":
+/*!****************************************************************!*\
+  !*** ./node_modules/core-js/internals/object-keys-internal.js ***!
+  \****************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_115046__) {
+
+var has = __nested_webpack_require_115046__(/*! ../internals/has */ "./node_modules/core-js/internals/has.js");
+var toIndexedObject = __nested_webpack_require_115046__(/*! ../internals/to-indexed-object */ "./node_modules/core-js/internals/to-indexed-object.js");
+var arrayIncludes = __nested_webpack_require_115046__(/*! ../internals/array-includes */ "./node_modules/core-js/internals/array-includes.js");
+var hiddenKeys = __nested_webpack_require_115046__(/*! ../internals/hidden-keys */ "./node_modules/core-js/internals/hidden-keys.js");
+
+var arrayIndexOf = arrayIncludes(false);
+
+module.exports = function (object, names) {
+  var O = toIndexedObject(object);
+  var i = 0;
+  var result = [];
+  var key;
+  for (key in O) !has(hiddenKeys, key) && has(O, key) && result.push(key);
+  // Don't enum bug & hidden keys
+  while (names.length > i) if (has(O, key = names[i++])) {
+    ~arrayIndexOf(result, key) || result.push(key);
+  }
+  return result;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-keys.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/core-js/internals/object-keys.js ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_116282__) {
+
+var internalObjectKeys = __nested_webpack_require_116282__(/*! ../internals/object-keys-internal */ "./node_modules/core-js/internals/object-keys-internal.js");
+var enumBugKeys = __nested_webpack_require_116282__(/*! ../internals/enum-bug-keys */ "./node_modules/core-js/internals/enum-bug-keys.js");
+
+// 19.1.2.14 / 15.2.3.14 Object.keys(O)
+module.exports = Object.keys || function keys(O) {
+  return internalObjectKeys(O, enumBugKeys);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-property-is-enumerable.js":
+/*!*************************************************************************!*\
+  !*** ./node_modules/core-js/internals/object-property-is-enumerable.js ***!
+  \*************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var nativePropertyIsEnumerable = {}.propertyIsEnumerable;
+var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+
+// Nashorn ~ JDK8 bug
+var NASHORN_BUG = getOwnPropertyDescriptor && !nativePropertyIsEnumerable.call({ 1: 2 }, 1);
+
+exports.f = NASHORN_BUG ? function propertyIsEnumerable(V) {
+  var descriptor = getOwnPropertyDescriptor(this, V);
+  return !!descriptor && descriptor.enumerable;
+} : nativePropertyIsEnumerable;
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-set-prototype-of.js":
+/*!*******************************************************************!*\
+  !*** ./node_modules/core-js/internals/object-set-prototype-of.js ***!
+  \*******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_117944__) {
+
+var validateSetPrototypeOfArguments = __nested_webpack_require_117944__(/*! ../internals/validate-set-prototype-of-arguments */ "./node_modules/core-js/internals/validate-set-prototype-of-arguments.js");
+
+// Works with __proto__ only. Old v8 can't work with null proto objects.
+/* eslint-disable no-proto */
+module.exports = Object.setPrototypeOf || ('__proto__' in {} ? function () {
+  var correctSetter = false;
+  var test = {};
+  var setter;
+  try {
+    setter = Object.getOwnPropertyDescriptor(Object.prototype, '__proto__').set;
+    setter.call(test, []);
+    correctSetter = test instanceof Array;
+  } catch (error) { /* empty */ }
+  return function setPrototypeOf(O, proto) {
+    validateSetPrototypeOfArguments(O, proto);
+    if (correctSetter) setter.call(O, proto);
+    else O.__proto__ = proto;
+    return O;
+  };
+}() : undefined);
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/own-keys.js":
+/*!****************************************************!*\
+  !*** ./node_modules/core-js/internals/own-keys.js ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_119101__) {
+
+var global = __nested_webpack_require_119101__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+var getOwnPropertyNamesModule = __nested_webpack_require_119101__(/*! ../internals/object-get-own-property-names */ "./node_modules/core-js/internals/object-get-own-property-names.js");
+var getOwnPropertySymbolsModule = __nested_webpack_require_119101__(/*! ../internals/object-get-own-property-symbols */ "./node_modules/core-js/internals/object-get-own-property-symbols.js");
+var anObject = __nested_webpack_require_119101__(/*! ../internals/an-object */ "./node_modules/core-js/internals/an-object.js");
+
+var Reflect = global.Reflect;
+
+// all object keys, includes non-enumerable and symbols
+module.exports = Reflect && Reflect.ownKeys || function ownKeys(it) {
+  var keys = getOwnPropertyNamesModule.f(anObject(it));
+  var getOwnPropertySymbols = getOwnPropertySymbolsModule.f;
+  return getOwnPropertySymbols ? keys.concat(getOwnPropertySymbols(it)) : keys;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/path.js":
+/*!************************************************!*\
+  !*** ./node_modules/core-js/internals/path.js ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_120343__) {
+
+module.exports = __nested_webpack_require_120343__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/redefine.js":
+/*!****************************************************!*\
+  !*** ./node_modules/core-js/internals/redefine.js ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_120782__) {
+
+var global = __nested_webpack_require_120782__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+var shared = __nested_webpack_require_120782__(/*! ../internals/shared */ "./node_modules/core-js/internals/shared.js");
+var hide = __nested_webpack_require_120782__(/*! ../internals/hide */ "./node_modules/core-js/internals/hide.js");
+var has = __nested_webpack_require_120782__(/*! ../internals/has */ "./node_modules/core-js/internals/has.js");
+var setGlobal = __nested_webpack_require_120782__(/*! ../internals/set-global */ "./node_modules/core-js/internals/set-global.js");
+var nativeFunctionToString = __nested_webpack_require_120782__(/*! ../internals/function-to-string */ "./node_modules/core-js/internals/function-to-string.js");
+var InternalStateModule = __nested_webpack_require_120782__(/*! ../internals/internal-state */ "./node_modules/core-js/internals/internal-state.js");
+
+var getInternalState = InternalStateModule.get;
+var enforceInternalState = InternalStateModule.enforce;
+var TEMPLATE = String(nativeFunctionToString).split('toString');
+
+shared('inspectSource', function (it) {
+  return nativeFunctionToString.call(it);
+});
+
+(module.exports = function (O, key, value, options) {
+  var unsafe = options ? !!options.unsafe : false;
+  var simple = options ? !!options.enumerable : false;
+  var noTargetGet = options ? !!options.noTargetGet : false;
+  if (typeof value == 'function') {
+    if (typeof key == 'string' && !has(value, 'name')) hide(value, 'name', key);
+    enforceInternalState(value).source = TEMPLATE.join(typeof key == 'string' ? key : '');
+  }
+  if (O === global) {
+    if (simple) O[key] = value;
+    else setGlobal(key, value);
+    return;
+  } else if (!unsafe) {
+    delete O[key];
+  } else if (!noTargetGet && O[key]) {
+    simple = true;
+  }
+  if (simple) O[key] = value;
+  else hide(O, key, value);
+// add fake Function#toString for correct work wrapped methods / constructors with methods like LoDash isNative
+})(Function.prototype, 'toString', function toString() {
+  return typeof this == 'function' && getInternalState(this).source || nativeFunctionToString.call(this);
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/require-object-coercible.js":
+/*!********************************************************************!*\
+  !*** ./node_modules/core-js/internals/require-object-coercible.js ***!
+  \********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+// `RequireObjectCoercible` abstract operation
+// https://tc39.github.io/ecma262/#sec-requireobjectcoercible
+module.exports = function (it) {
+  if (it == undefined) throw TypeError("Can't call method on " + it);
+  return it;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/set-global.js":
+/*!******************************************************!*\
+  !*** ./node_modules/core-js/internals/set-global.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_123762__) {
+
+var global = __nested_webpack_require_123762__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+var hide = __nested_webpack_require_123762__(/*! ../internals/hide */ "./node_modules/core-js/internals/hide.js");
+
+module.exports = function (key, value) {
+  try {
+    hide(global, key, value);
+  } catch (error) {
+    global[key] = value;
+  } return value;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/set-to-string-tag.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/core-js/internals/set-to-string-tag.js ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_124480__) {
+
+var defineProperty = __nested_webpack_require_124480__(/*! ../internals/object-define-property */ "./node_modules/core-js/internals/object-define-property.js").f;
+var has = __nested_webpack_require_124480__(/*! ../internals/has */ "./node_modules/core-js/internals/has.js");
+var wellKnownSymbol = __nested_webpack_require_124480__(/*! ../internals/well-known-symbol */ "./node_modules/core-js/internals/well-known-symbol.js");
+
+var TO_STRING_TAG = wellKnownSymbol('toStringTag');
+
+module.exports = function (it, TAG, STATIC) {
+  if (it && !has(it = STATIC ? it : it.prototype, TO_STRING_TAG)) {
+    defineProperty(it, TO_STRING_TAG, { configurable: true, value: TAG });
+  }
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/shared-key.js":
+/*!******************************************************!*\
+  !*** ./node_modules/core-js/internals/shared-key.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_125451__) {
+
+var shared = __nested_webpack_require_125451__(/*! ../internals/shared */ "./node_modules/core-js/internals/shared.js");
+var uid = __nested_webpack_require_125451__(/*! ../internals/uid */ "./node_modules/core-js/internals/uid.js");
+
+var keys = shared('keys');
+
+module.exports = function (key) {
+  return keys[key] || (keys[key] = uid(key));
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/shared.js":
+/*!**************************************************!*\
+  !*** ./node_modules/core-js/internals/shared.js ***!
+  \**************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_126088__) {
+
+var global = __nested_webpack_require_126088__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+var setGlobal = __nested_webpack_require_126088__(/*! ../internals/set-global */ "./node_modules/core-js/internals/set-global.js");
+var IS_PURE = __nested_webpack_require_126088__(/*! ../internals/is-pure */ "./node_modules/core-js/internals/is-pure.js");
+
+var SHARED = '__core-js_shared__';
+var store = global[SHARED] || setGlobal(SHARED, {});
+
+(module.exports = function (key, value) {
+  return store[key] || (store[key] = value !== undefined ? value : {});
+})('versions', []).push({
+  version: '3.1.3',
+  mode: IS_PURE ? 'pure' : 'global',
+  copyright: '© 2019 Denis Pushkarev (zloirock.ru)'
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/string-at.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/core-js/internals/string-at.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_127098__) {
+
+var toInteger = __nested_webpack_require_127098__(/*! ../internals/to-integer */ "./node_modules/core-js/internals/to-integer.js");
+var requireObjectCoercible = __nested_webpack_require_127098__(/*! ../internals/require-object-coercible */ "./node_modules/core-js/internals/require-object-coercible.js");
+
+// CONVERT_TO_STRING: true  -> String#at
+// CONVERT_TO_STRING: false -> String#codePointAt
+module.exports = function (that, pos, CONVERT_TO_STRING) {
+  var S = String(requireObjectCoercible(that));
+  var position = toInteger(pos);
+  var size = S.length;
+  var first, second;
+  if (position < 0 || position >= size) return CONVERT_TO_STRING ? '' : undefined;
+  first = S.charCodeAt(position);
+  return first < 0xD800 || first > 0xDBFF || position + 1 === size
+    || (second = S.charCodeAt(position + 1)) < 0xDC00 || second > 0xDFFF
+      ? CONVERT_TO_STRING ? S.charAt(position) : first
+      : CONVERT_TO_STRING ? S.slice(position, position + 2) : (first - 0xD800 << 10) + (second - 0xDC00) + 0x10000;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/to-absolute-index.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/core-js/internals/to-absolute-index.js ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_128446__) {
+
+var toInteger = __nested_webpack_require_128446__(/*! ../internals/to-integer */ "./node_modules/core-js/internals/to-integer.js");
+
+var max = Math.max;
+var min = Math.min;
+
+// Helper for a popular repeating case of the spec:
+// Let integer be ? ToInteger(index).
+// If integer < 0, let result be max((length + integer), 0); else let result be min(length, length).
+module.exports = function (index, length) {
+  var integer = toInteger(index);
+  return integer < 0 ? max(integer + length, 0) : min(integer, length);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/to-indexed-object.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/core-js/internals/to-indexed-object.js ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_129314__) {
+
+// toObject with fallback for non-array-like ES3 strings
+var IndexedObject = __nested_webpack_require_129314__(/*! ../internals/indexed-object */ "./node_modules/core-js/internals/indexed-object.js");
+var requireObjectCoercible = __nested_webpack_require_129314__(/*! ../internals/require-object-coercible */ "./node_modules/core-js/internals/require-object-coercible.js");
+
+module.exports = function (it) {
+  return IndexedObject(requireObjectCoercible(it));
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/to-integer.js":
+/*!******************************************************!*\
+  !*** ./node_modules/core-js/internals/to-integer.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var ceil = Math.ceil;
+var floor = Math.floor;
+
+// `ToInteger` abstract operation
+// https://tc39.github.io/ecma262/#sec-tointeger
+module.exports = function (argument) {
+  return isNaN(argument = +argument) ? 0 : (argument > 0 ? floor : ceil)(argument);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/to-length.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/core-js/internals/to-length.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_130652__) {
+
+var toInteger = __nested_webpack_require_130652__(/*! ../internals/to-integer */ "./node_modules/core-js/internals/to-integer.js");
+
+var min = Math.min;
+
+// `ToLength` abstract operation
+// https://tc39.github.io/ecma262/#sec-tolength
+module.exports = function (argument) {
+  return argument > 0 ? min(toInteger(argument), 0x1FFFFFFFFFFFFF) : 0; // 2 ** 53 - 1 == 9007199254740991
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/to-object.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/core-js/internals/to-object.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_131354__) {
+
+var requireObjectCoercible = __nested_webpack_require_131354__(/*! ../internals/require-object-coercible */ "./node_modules/core-js/internals/require-object-coercible.js");
+
+// `ToObject` abstract operation
+// https://tc39.github.io/ecma262/#sec-toobject
+module.exports = function (argument) {
+  return Object(requireObjectCoercible(argument));
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/to-primitive.js":
+/*!********************************************************!*\
+  !*** ./node_modules/core-js/internals/to-primitive.js ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_132032__) {
+
+var isObject = __nested_webpack_require_132032__(/*! ../internals/is-object */ "./node_modules/core-js/internals/is-object.js");
+
+// 7.1.1 ToPrimitive(input [, PreferredType])
+// instead of the ES6 spec version, we didn't implement @@toPrimitive case
+// and the second argument - flag - preferred type is a string
+module.exports = function (it, S) {
+  if (!isObject(it)) return it;
+  var fn, val;
+  if (S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
+  if (typeof (fn = it.valueOf) == 'function' && !isObject(val = fn.call(it))) return val;
+  if (!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
+  throw TypeError("Can't convert object to primitive value");
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/uid.js":
+/*!***********************************************!*\
+  !*** ./node_modules/core-js/internals/uid.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var id = 0;
+var postfix = Math.random();
+
+module.exports = function (key) {
+  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + postfix).toString(36));
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/validate-set-prototype-of-arguments.js":
+/*!*******************************************************************************!*\
+  !*** ./node_modules/core-js/internals/validate-set-prototype-of-arguments.js ***!
+  \*******************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_133659__) {
+
+var isObject = __nested_webpack_require_133659__(/*! ../internals/is-object */ "./node_modules/core-js/internals/is-object.js");
+var anObject = __nested_webpack_require_133659__(/*! ../internals/an-object */ "./node_modules/core-js/internals/an-object.js");
+
+module.exports = function (O, proto) {
+  anObject(O);
+  if (!isObject(proto) && proto !== null) {
+    throw TypeError("Can't set " + String(proto) + ' as a prototype');
+  }
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/well-known-symbol.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/core-js/internals/well-known-symbol.js ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_134430__) {
+
+var global = __nested_webpack_require_134430__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+var shared = __nested_webpack_require_134430__(/*! ../internals/shared */ "./node_modules/core-js/internals/shared.js");
+var uid = __nested_webpack_require_134430__(/*! ../internals/uid */ "./node_modules/core-js/internals/uid.js");
+var NATIVE_SYMBOL = __nested_webpack_require_134430__(/*! ../internals/native-symbol */ "./node_modules/core-js/internals/native-symbol.js");
+
+var Symbol = global.Symbol;
+var store = shared('wks');
+
+module.exports = function (name) {
+  return store[name] || (store[name] = NATIVE_SYMBOL && Symbol[name]
+    || (NATIVE_SYMBOL ? Symbol : uid)('Symbol.' + name));
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/modules/es.array.from.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/core-js/modules/es.array.from.js ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_135432__) {
+
+var $ = __nested_webpack_require_135432__(/*! ../internals/export */ "./node_modules/core-js/internals/export.js");
+var from = __nested_webpack_require_135432__(/*! ../internals/array-from */ "./node_modules/core-js/internals/array-from.js");
+var checkCorrectnessOfIteration = __nested_webpack_require_135432__(/*! ../internals/check-correctness-of-iteration */ "./node_modules/core-js/internals/check-correctness-of-iteration.js");
+
+var INCORRECT_ITERATION = !checkCorrectnessOfIteration(function (iterable) {
+  Array.from(iterable);
+});
+
+// `Array.from` method
+// https://tc39.github.io/ecma262/#sec-array.from
+$({ target: 'Array', stat: true, forced: INCORRECT_ITERATION }, {
+  from: from
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/modules/es.string.iterator.js":
+/*!************************************************************!*\
+  !*** ./node_modules/core-js/modules/es.string.iterator.js ***!
+  \************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_136446__) {
+
+"use strict";
+
+var codePointAt = __nested_webpack_require_136446__(/*! ../internals/string-at */ "./node_modules/core-js/internals/string-at.js");
+var InternalStateModule = __nested_webpack_require_136446__(/*! ../internals/internal-state */ "./node_modules/core-js/internals/internal-state.js");
+var defineIterator = __nested_webpack_require_136446__(/*! ../internals/define-iterator */ "./node_modules/core-js/internals/define-iterator.js");
+
+var STRING_ITERATOR = 'String Iterator';
+var setInternalState = InternalStateModule.set;
+var getInternalState = InternalStateModule.getterFor(STRING_ITERATOR);
+
+// `String.prototype[@@iterator]` method
+// https://tc39.github.io/ecma262/#sec-string.prototype-@@iterator
+defineIterator(String, 'String', function (iterated) {
+  setInternalState(this, {
+    type: STRING_ITERATOR,
+    string: String(iterated),
+    index: 0
+  });
+// `%StringIteratorPrototype%.next` method
+// https://tc39.github.io/ecma262/#sec-%stringiteratorprototype%.next
+}, function next() {
+  var state = getInternalState(this);
+  var string = state.string;
+  var index = state.index;
+  var point;
+  if (index >= string.length) return { value: undefined, done: true };
+  point = codePointAt(string, index, true);
+  state.index += point.length;
+  return { value: point, done: false };
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/webpack/buildin/global.js":
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1, eval)("this");
+} catch (e) {
+	// This works if the window reference is available
+	if (typeof window === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+
+/***/ "./src/default-attrs.json":
+/*!********************************!*\
+  !*** ./src/default-attrs.json ***!
+  \********************************/
+/*! exports provided: xmlns, width, height, viewBox, fill, stroke, stroke-width, stroke-linecap, stroke-linejoin, default */
+/***/ (function(module) {
+
+module.exports = {"xmlns":"http://www.w3.org/2000/svg","width":24,"height":24,"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","stroke-width":2,"stroke-linecap":"round","stroke-linejoin":"round"};
+
+/***/ }),
+
+/***/ "./src/icon.js":
+/*!*********************!*\
+  !*** ./src/icon.js ***!
+  \*********************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_139191__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dedupe = __nested_webpack_require_139191__(/*! classnames/dedupe */ "./node_modules/classnames/dedupe.js");
+
+var _dedupe2 = _interopRequireDefault(_dedupe);
+
+var _defaultAttrs = __nested_webpack_require_139191__(/*! ./default-attrs.json */ "./src/default-attrs.json");
+
+var _defaultAttrs2 = _interopRequireDefault(_defaultAttrs);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Icon = function () {
+  function Icon(name, contents) {
+    var tags = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+
+    _classCallCheck(this, Icon);
+
+    this.name = name;
+    this.contents = contents;
+    this.tags = tags;
+    this.attrs = _extends({}, _defaultAttrs2.default, { class: 'feather feather-' + name });
+  }
+
+  /**
+   * Create an SVG string.
+   * @param {Object} attrs
+   * @returns {string}
+   */
+
+
+  _createClass(Icon, [{
+    key: 'toSvg',
+    value: function toSvg() {
+      var attrs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+      var combinedAttrs = _extends({}, this.attrs, attrs, { class: (0, _dedupe2.default)(this.attrs.class, attrs.class) });
+
+      return '<svg ' + attrsToString(combinedAttrs) + '>' + this.contents + '</svg>';
+    }
+
+    /**
+     * Return string representation of an `Icon`.
+     *
+     * Added for backward compatibility. If old code expects `feather.icons.<name>`
+     * to be a string, `toString()` will get implicitly called.
+     *
+     * @returns {string}
+     */
+
+  }, {
+    key: 'toString',
+    value: function toString() {
+      return this.contents;
+    }
+  }]);
+
+  return Icon;
+}();
 
 /**
- * @summary     DataTables
- * @description Paginate, search and order HTML tables
- * @version     1.10.25
- * @file        jquery.dataTables.js
- * @author      SpryMedia Ltd
- * @contact     www.datatables.net
- * @copyright   Copyright 2008-2021 SpryMedia Ltd.
- *
- * This source file is free software, available under the following license:
- *   MIT license - http://datatables.net/license
- *
- * This source file is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE. See the license files for details.
- *
- * For details please refer to: http://www.datatables.net
+ * Convert attributes object to string of HTML attributes.
+ * @param {Object} attrs
+ * @returns {string}
  */
 
-/*jslint evil: true, undef: true, browser: true */
-/*globals $,require,jQuery,define,_selector_run,_selector_opts,_selector_first,_selector_row_indexes,_ext,_Api,_api_register,_api_registerPlural,_re_new_lines,_re_html,_re_formatted_numeric,_re_escape_regex,_empty,_intVal,_numToDecimal,_isNumber,_isHtml,_htmlNumeric,_pluck,_pluck_order,_range,_stripHtml,_unique,_fnBuildAjax,_fnAjaxUpdate,_fnAjaxParameters,_fnAjaxUpdateDraw,_fnAjaxDataSrc,_fnAddColumn,_fnColumnOptions,_fnAdjustColumnSizing,_fnVisibleToColumnIndex,_fnColumnIndexToVisible,_fnVisbleColumns,_fnGetColumns,_fnColumnTypes,_fnApplyColumnDefs,_fnHungarianMap,_fnCamelToHungarian,_fnLanguageCompat,_fnBrowserDetect,_fnAddData,_fnAddTr,_fnNodeToDataIndex,_fnNodeToColumnIndex,_fnGetCellData,_fnSetCellData,_fnSplitObjNotation,_fnGetObjectDataFn,_fnSetObjectDataFn,_fnGetDataMaster,_fnClearTable,_fnDeleteIndex,_fnInvalidate,_fnGetRowElements,_fnCreateTr,_fnBuildHead,_fnDrawHead,_fnDraw,_fnReDraw,_fnAddOptionsHtml,_fnDetectHeader,_fnGetUniqueThs,_fnFeatureHtmlFilter,_fnFilterComplete,_fnFilterCustom,_fnFilterColumn,_fnFilter,_fnFilterCreateSearch,_fnEscapeRegex,_fnFilterData,_fnFeatureHtmlInfo,_fnUpdateInfo,_fnInfoMacros,_fnInitialise,_fnInitComplete,_fnLengthChange,_fnFeatureHtmlLength,_fnFeatureHtmlPaginate,_fnPageChange,_fnFeatureHtmlProcessing,_fnProcessingDisplay,_fnFeatureHtmlTable,_fnScrollDraw,_fnApplyToChildren,_fnCalculateColumnWidths,_fnThrottle,_fnConvertToWidth,_fnGetWidestNode,_fnGetMaxLenString,_fnStringToCss,_fnSortFlatten,_fnSort,_fnSortAria,_fnSortListener,_fnSortAttachListener,_fnSortingClasses,_fnSortData,_fnSaveState,_fnLoadState,_fnSettingsFromNode,_fnLog,_fnMap,_fnBindAction,_fnCallbackReg,_fnCallbackFire,_fnLengthOverflow,_fnRenderer,_fnDataSource,_fnRowAttributes*/
 
-(function( factory ) {
-	"use strict";
-
-	if ( true ) {
-		// AMD
-		!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js")], __WEBPACK_AMD_DEFINE_RESULT__ = (function ( $ ) {
-			return factory( $, window, document );
-		}).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
-		__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}
-	else {}
+function attrsToString(attrs) {
+  return Object.keys(attrs).map(function (key) {
+    return key + '="' + attrs[key] + '"';
+  }).join(' ');
 }
-(function( $, window, document, undefined ) {
-	"use strict";
 
-	/**
-	 * DataTables is a plug-in for the jQuery Javascript library. It is a highly
-	 * flexible tool, based upon the foundations of progressive enhancement,
-	 * which will add advanced interaction controls to any HTML table. For a
-	 * full list of features please refer to
-	 * [DataTables.net](href="http://datatables.net).
-	 *
-	 * Note that the `DataTable` object is not a global variable but is aliased
-	 * to `jQuery.fn.DataTable` and `jQuery.fn.dataTable` through which it may
-	 * be  accessed.
-	 *
-	 *  @class
-	 *  @param {object} [init={}] Configuration object for DataTables. Options
-	 *    are defined by {@link DataTable.defaults}
-	 *  @requires jQuery 1.7+
-	 *
-	 *  @example
-	 *    // Basic initialisation
-	 *    $(document).ready( function {
-	 *      $('#example').dataTable();
-	 *    } );
-	 *
-	 *  @example
-	 *    // Initialisation with configuration options - in this case, disable
-	 *    // pagination and sorting.
-	 *    $(document).ready( function {
-	 *      $('#example').dataTable( {
-	 *        "paginate": false,
-	 *        "sort": false
-	 *      } );
-	 *    } );
-	 */
-	var DataTable = function ( options )
-	{
-		/**
-		 * Perform a jQuery selector action on the table's TR elements (from the tbody) and
-		 * return the resulting jQuery object.
-		 *  @param {string|node|jQuery} sSelector jQuery selector or node collection to act on
-		 *  @param {object} [oOpts] Optional parameters for modifying the rows to be included
-		 *  @param {string} [oOpts.filter=none] Select TR elements that meet the current filter
-		 *    criterion ("applied") or all TR elements (i.e. no filter).
-		 *  @param {string} [oOpts.order=current] Order of the TR elements in the processed array.
-		 *    Can be either 'current', whereby the current sorting of the table is used, or
-		 *    'original' whereby the original order the data was read into the table is used.
-		 *  @param {string} [oOpts.page=all] Limit the selection to the currently displayed page
-		 *    ("current") or not ("all"). If 'current' is given, then order is assumed to be
-		 *    'current' and filter is 'applied', regardless of what they might be given as.
-		 *  @returns {object} jQuery object, filtered by the given selector.
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Highlight every second row
-		 *      oTable.$('tr:odd').css('backgroundColor', 'blue');
-		 *    } );
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Filter to rows with 'Webkit' in them, add a background colour and then
-		 *      // remove the filter, thus highlighting the 'Webkit' rows only.
-		 *      oTable.fnFilter('Webkit');
-		 *      oTable.$('tr', {"search": "applied"}).css('backgroundColor', 'blue');
-		 *      oTable.fnFilter('');
-		 *    } );
-		 */
-		this.$ = function ( sSelector, oOpts )
-		{
-			return this.api(true).$( sSelector, oOpts );
-		};
-		
-		
-		/**
-		 * Almost identical to $ in operation, but in this case returns the data for the matched
-		 * rows - as such, the jQuery selector used should match TR row nodes or TD/TH cell nodes
-		 * rather than any descendants, so the data can be obtained for the row/cell. If matching
-		 * rows are found, the data returned is the original data array/object that was used to
-		 * create the row (or a generated array if from a DOM source).
-		 *
-		 * This method is often useful in-combination with $ where both functions are given the
-		 * same parameters and the array indexes will match identically.
-		 *  @param {string|node|jQuery} sSelector jQuery selector or node collection to act on
-		 *  @param {object} [oOpts] Optional parameters for modifying the rows to be included
-		 *  @param {string} [oOpts.filter=none] Select elements that meet the current filter
-		 *    criterion ("applied") or all elements (i.e. no filter).
-		 *  @param {string} [oOpts.order=current] Order of the data in the processed array.
-		 *    Can be either 'current', whereby the current sorting of the table is used, or
-		 *    'original' whereby the original order the data was read into the table is used.
-		 *  @param {string} [oOpts.page=all] Limit the selection to the currently displayed page
-		 *    ("current") or not ("all"). If 'current' is given, then order is assumed to be
-		 *    'current' and filter is 'applied', regardless of what they might be given as.
-		 *  @returns {array} Data for the matched elements. If any elements, as a result of the
-		 *    selector, were not TR, TD or TH elements in the DataTable, they will have a null
-		 *    entry in the array.
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Get the data from the first row in the table
-		 *      var data = oTable._('tr:first');
-		 *
-		 *      // Do something useful with the data
-		 *      alert( "First cell is: "+data[0] );
-		 *    } );
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Filter to 'Webkit' and get all data for
-		 *      oTable.fnFilter('Webkit');
-		 *      var data = oTable._('tr', {"search": "applied"});
-		 *
-		 *      // Do something with the data
-		 *      alert( data.length+" rows matched the search" );
-		 *    } );
-		 */
-		this._ = function ( sSelector, oOpts )
-		{
-			return this.api(true).rows( sSelector, oOpts ).data();
-		};
-		
-		
-		/**
-		 * Create a DataTables Api instance, with the currently selected tables for
-		 * the Api's context.
-		 * @param {boolean} [traditional=false] Set the API instance's context to be
-		 *   only the table referred to by the `DataTable.ext.iApiIndex` option, as was
-		 *   used in the API presented by DataTables 1.9- (i.e. the traditional mode),
-		 *   or if all tables captured in the jQuery object should be used.
-		 * @return {DataTables.Api}
-		 */
-		this.api = function ( traditional )
-		{
-			return traditional ?
-				new _Api(
-					_fnSettingsFromNode( this[ _ext.iApiIndex ] )
-				) :
-				new _Api( this );
-		};
-		
-		
-		/**
-		 * Add a single new row or multiple rows of data to the table. Please note
-		 * that this is suitable for client-side processing only - if you are using
-		 * server-side processing (i.e. "bServerSide": true), then to add data, you
-		 * must add it to the data source, i.e. the server-side, through an Ajax call.
-		 *  @param {array|object} data The data to be added to the table. This can be:
-		 *    <ul>
-		 *      <li>1D array of data - add a single row with the data provided</li>
-		 *      <li>2D array of arrays - add multiple rows in a single call</li>
-		 *      <li>object - data object when using <i>mData</i></li>
-		 *      <li>array of objects - multiple data objects when using <i>mData</i></li>
-		 *    </ul>
-		 *  @param {bool} [redraw=true] redraw the table or not
-		 *  @returns {array} An array of integers, representing the list of indexes in
-		 *    <i>aoData</i> ({@link DataTable.models.oSettings}) that have been added to
-		 *    the table.
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    // Global var for counter
-		 *    var giCount = 2;
-		 *
-		 *    $(document).ready(function() {
-		 *      $('#example').dataTable();
-		 *    } );
-		 *
-		 *    function fnClickAddRow() {
-		 *      $('#example').dataTable().fnAddData( [
-		 *        giCount+".1",
-		 *        giCount+".2",
-		 *        giCount+".3",
-		 *        giCount+".4" ]
-		 *      );
-		 *
-		 *      giCount++;
-		 *    }
-		 */
-		this.fnAddData = function( data, redraw )
-		{
-			var api = this.api( true );
-		
-			/* Check if we want to add multiple rows or not */
-			var rows = Array.isArray(data) && ( Array.isArray(data[0]) || $.isPlainObject(data[0]) ) ?
-				api.rows.add( data ) :
-				api.row.add( data );
-		
-			if ( redraw === undefined || redraw ) {
-				api.draw();
-			}
-		
-			return rows.flatten().toArray();
-		};
-		
-		
-		/**
-		 * This function will make DataTables recalculate the column sizes, based on the data
-		 * contained in the table and the sizes applied to the columns (in the DOM, CSS or
-		 * through the sWidth parameter). This can be useful when the width of the table's
-		 * parent element changes (for example a window resize).
-		 *  @param {boolean} [bRedraw=true] Redraw the table or not, you will typically want to
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable( {
-		 *        "sScrollY": "200px",
-		 *        "bPaginate": false
-		 *      } );
-		 *
-		 *      $(window).on('resize', function () {
-		 *        oTable.fnAdjustColumnSizing();
-		 *      } );
-		 *    } );
-		 */
-		this.fnAdjustColumnSizing = function ( bRedraw )
-		{
-			var api = this.api( true ).columns.adjust();
-			var settings = api.settings()[0];
-			var scroll = settings.oScroll;
-		
-			if ( bRedraw === undefined || bRedraw ) {
-				api.draw( false );
-			}
-			else if ( scroll.sX !== "" || scroll.sY !== "" ) {
-				/* If not redrawing, but scrolling, we want to apply the new column sizes anyway */
-				_fnScrollDraw( settings );
-			}
-		};
-		
-		
-		/**
-		 * Quickly and simply clear a table
-		 *  @param {bool} [bRedraw=true] redraw the table or not
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Immediately 'nuke' the current rows (perhaps waiting for an Ajax callback...)
-		 *      oTable.fnClearTable();
-		 *    } );
-		 */
-		this.fnClearTable = function( bRedraw )
-		{
-			var api = this.api( true ).clear();
-		
-			if ( bRedraw === undefined || bRedraw ) {
-				api.draw();
-			}
-		};
-		
-		
-		/**
-		 * The exact opposite of 'opening' a row, this function will close any rows which
-		 * are currently 'open'.
-		 *  @param {node} nTr the table row to 'close'
-		 *  @returns {int} 0 on success, or 1 if failed (can't find the row)
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable;
-		 *
-		 *      // 'open' an information row when a row is clicked on
-		 *      $('#example tbody tr').click( function () {
-		 *        if ( oTable.fnIsOpen(this) ) {
-		 *          oTable.fnClose( this );
-		 *        } else {
-		 *          oTable.fnOpen( this, "Temporary row opened", "info_row" );
-		 *        }
-		 *      } );
-		 *
-		 *      oTable = $('#example').dataTable();
-		 *    } );
-		 */
-		this.fnClose = function( nTr )
-		{
-			this.api( true ).row( nTr ).child.hide();
-		};
-		
-		
-		/**
-		 * Remove a row for the table
-		 *  @param {mixed} target The index of the row from aoData to be deleted, or
-		 *    the TR element you want to delete
-		 *  @param {function|null} [callBack] Callback function
-		 *  @param {bool} [redraw=true] Redraw the table or not
-		 *  @returns {array} The row that was deleted
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Immediately remove the first row
-		 *      oTable.fnDeleteRow( 0 );
-		 *    } );
-		 */
-		this.fnDeleteRow = function( target, callback, redraw )
-		{
-			var api = this.api( true );
-			var rows = api.rows( target );
-			var settings = rows.settings()[0];
-			var data = settings.aoData[ rows[0][0] ];
-		
-			rows.remove();
-		
-			if ( callback ) {
-				callback.call( this, settings, data );
-			}
-		
-			if ( redraw === undefined || redraw ) {
-				api.draw();
-			}
-		
-			return data;
-		};
-		
-		
-		/**
-		 * Restore the table to it's original state in the DOM by removing all of DataTables
-		 * enhancements, alterations to the DOM structure of the table and event listeners.
-		 *  @param {boolean} [remove=false] Completely remove the table from the DOM
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      // This example is fairly pointless in reality, but shows how fnDestroy can be used
-		 *      var oTable = $('#example').dataTable();
-		 *      oTable.fnDestroy();
-		 *    } );
-		 */
-		this.fnDestroy = function ( remove )
-		{
-			this.api( true ).destroy( remove );
-		};
-		
-		
-		/**
-		 * Redraw the table
-		 *  @param {bool} [complete=true] Re-filter and resort (if enabled) the table before the draw.
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Re-draw the table - you wouldn't want to do it here, but it's an example :-)
-		 *      oTable.fnDraw();
-		 *    } );
-		 */
-		this.fnDraw = function( complete )
-		{
-			// Note that this isn't an exact match to the old call to _fnDraw - it takes
-			// into account the new data, but can hold position.
-			this.api( true ).draw( complete );
-		};
-		
-		
-		/**
-		 * Filter the input based on data
-		 *  @param {string} sInput String to filter the table on
-		 *  @param {int|null} [iColumn] Column to limit filtering to
-		 *  @param {bool} [bRegex=false] Treat as regular expression or not
-		 *  @param {bool} [bSmart=true] Perform smart filtering or not
-		 *  @param {bool} [bShowGlobal=true] Show the input global filter in it's input box(es)
-		 *  @param {bool} [bCaseInsensitive=true] Do case-insensitive matching (true) or not (false)
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Sometime later - filter...
-		 *      oTable.fnFilter( 'test string' );
-		 *    } );
-		 */
-		this.fnFilter = function( sInput, iColumn, bRegex, bSmart, bShowGlobal, bCaseInsensitive )
-		{
-			var api = this.api( true );
-		
-			if ( iColumn === null || iColumn === undefined ) {
-				api.search( sInput, bRegex, bSmart, bCaseInsensitive );
-			}
-			else {
-				api.column( iColumn ).search( sInput, bRegex, bSmart, bCaseInsensitive );
-			}
-		
-			api.draw();
-		};
-		
-		
-		/**
-		 * Get the data for the whole table, an individual row or an individual cell based on the
-		 * provided parameters.
-		 *  @param {int|node} [src] A TR row node, TD/TH cell node or an integer. If given as
-		 *    a TR node then the data source for the whole row will be returned. If given as a
-		 *    TD/TH cell node then iCol will be automatically calculated and the data for the
-		 *    cell returned. If given as an integer, then this is treated as the aoData internal
-		 *    data index for the row (see fnGetPosition) and the data for that row used.
-		 *  @param {int} [col] Optional column index that you want the data of.
-		 *  @returns {array|object|string} If mRow is undefined, then the data for all rows is
-		 *    returned. If mRow is defined, just data for that row, and is iCol is
-		 *    defined, only data for the designated cell is returned.
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    // Row data
-		 *    $(document).ready(function() {
-		 *      oTable = $('#example').dataTable();
-		 *
-		 *      oTable.$('tr').click( function () {
-		 *        var data = oTable.fnGetData( this );
-		 *        // ... do something with the array / object of data for the row
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Individual cell data
-		 *    $(document).ready(function() {
-		 *      oTable = $('#example').dataTable();
-		 *
-		 *      oTable.$('td').click( function () {
-		 *        var sData = oTable.fnGetData( this );
-		 *        alert( 'The cell clicked on had the value of '+sData );
-		 *      } );
-		 *    } );
-		 */
-		this.fnGetData = function( src, col )
-		{
-			var api = this.api( true );
-		
-			if ( src !== undefined ) {
-				var type = src.nodeName ? src.nodeName.toLowerCase() : '';
-		
-				return col !== undefined || type == 'td' || type == 'th' ?
-					api.cell( src, col ).data() :
-					api.row( src ).data() || null;
-			}
-		
-			return api.data().toArray();
-		};
-		
-		
-		/**
-		 * Get an array of the TR nodes that are used in the table's body. Note that you will
-		 * typically want to use the '$' API method in preference to this as it is more
-		 * flexible.
-		 *  @param {int} [iRow] Optional row index for the TR element you want
-		 *  @returns {array|node} If iRow is undefined, returns an array of all TR elements
-		 *    in the table's body, or iRow is defined, just the TR element requested.
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Get the nodes from the table
-		 *      var nNodes = oTable.fnGetNodes( );
-		 *    } );
-		 */
-		this.fnGetNodes = function( iRow )
-		{
-			var api = this.api( true );
-		
-			return iRow !== undefined ?
-				api.row( iRow ).node() :
-				api.rows().nodes().flatten().toArray();
-		};
-		
-		
-		/**
-		 * Get the array indexes of a particular cell from it's DOM element
-		 * and column index including hidden columns
-		 *  @param {node} node this can either be a TR, TD or TH in the table's body
-		 *  @returns {int} If nNode is given as a TR, then a single index is returned, or
-		 *    if given as a cell, an array of [row index, column index (visible),
-		 *    column index (all)] is given.
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      $('#example tbody td').click( function () {
-		 *        // Get the position of the current data from the node
-		 *        var aPos = oTable.fnGetPosition( this );
-		 *
-		 *        // Get the data array for this row
-		 *        var aData = oTable.fnGetData( aPos[0] );
-		 *
-		 *        // Update the data array and return the value
-		 *        aData[ aPos[1] ] = 'clicked';
-		 *        this.innerHTML = 'clicked';
-		 *      } );
-		 *
-		 *      // Init DataTables
-		 *      oTable = $('#example').dataTable();
-		 *    } );
-		 */
-		this.fnGetPosition = function( node )
-		{
-			var api = this.api( true );
-			var nodeName = node.nodeName.toUpperCase();
-		
-			if ( nodeName == 'TR' ) {
-				return api.row( node ).index();
-			}
-			else if ( nodeName == 'TD' || nodeName == 'TH' ) {
-				var cell = api.cell( node ).index();
-		
-				return [
-					cell.row,
-					cell.columnVisible,
-					cell.column
-				];
-			}
-			return null;
-		};
-		
-		
-		/**
-		 * Check to see if a row is 'open' or not.
-		 *  @param {node} nTr the table row to check
-		 *  @returns {boolean} true if the row is currently open, false otherwise
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable;
-		 *
-		 *      // 'open' an information row when a row is clicked on
-		 *      $('#example tbody tr').click( function () {
-		 *        if ( oTable.fnIsOpen(this) ) {
-		 *          oTable.fnClose( this );
-		 *        } else {
-		 *          oTable.fnOpen( this, "Temporary row opened", "info_row" );
-		 *        }
-		 *      } );
-		 *
-		 *      oTable = $('#example').dataTable();
-		 *    } );
-		 */
-		this.fnIsOpen = function( nTr )
-		{
-			return this.api( true ).row( nTr ).child.isShown();
-		};
-		
-		
-		/**
-		 * This function will place a new row directly after a row which is currently
-		 * on display on the page, with the HTML contents that is passed into the
-		 * function. This can be used, for example, to ask for confirmation that a
-		 * particular record should be deleted.
-		 *  @param {node} nTr The table row to 'open'
-		 *  @param {string|node|jQuery} mHtml The HTML to put into the row
-		 *  @param {string} sClass Class to give the new TD cell
-		 *  @returns {node} The row opened. Note that if the table row passed in as the
-		 *    first parameter, is not found in the table, this method will silently
-		 *    return.
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable;
-		 *
-		 *      // 'open' an information row when a row is clicked on
-		 *      $('#example tbody tr').click( function () {
-		 *        if ( oTable.fnIsOpen(this) ) {
-		 *          oTable.fnClose( this );
-		 *        } else {
-		 *          oTable.fnOpen( this, "Temporary row opened", "info_row" );
-		 *        }
-		 *      } );
-		 *
-		 *      oTable = $('#example').dataTable();
-		 *    } );
-		 */
-		this.fnOpen = function( nTr, mHtml, sClass )
-		{
-			return this.api( true )
-				.row( nTr )
-				.child( mHtml, sClass )
-				.show()
-				.child()[0];
-		};
-		
-		
-		/**
-		 * Change the pagination - provides the internal logic for pagination in a simple API
-		 * function. With this function you can have a DataTables table go to the next,
-		 * previous, first or last pages.
-		 *  @param {string|int} mAction Paging action to take: "first", "previous", "next" or "last"
-		 *    or page number to jump to (integer), note that page 0 is the first page.
-		 *  @param {bool} [bRedraw=true] Redraw the table or not
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *      oTable.fnPageChange( 'next' );
-		 *    } );
-		 */
-		this.fnPageChange = function ( mAction, bRedraw )
-		{
-			var api = this.api( true ).page( mAction );
-		
-			if ( bRedraw === undefined || bRedraw ) {
-				api.draw(false);
-			}
-		};
-		
-		
-		/**
-		 * Show a particular column
-		 *  @param {int} iCol The column whose display should be changed
-		 *  @param {bool} bShow Show (true) or hide (false) the column
-		 *  @param {bool} [bRedraw=true] Redraw the table or not
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Hide the second column after initialisation
-		 *      oTable.fnSetColumnVis( 1, false );
-		 *    } );
-		 */
-		this.fnSetColumnVis = function ( iCol, bShow, bRedraw )
-		{
-			var api = this.api( true ).column( iCol ).visible( bShow );
-		
-			if ( bRedraw === undefined || bRedraw ) {
-				api.columns.adjust().draw();
-			}
-		};
-		
-		
-		/**
-		 * Get the settings for a particular table for external manipulation
-		 *  @returns {object} DataTables settings object. See
-		 *    {@link DataTable.models.oSettings}
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *      var oSettings = oTable.fnSettings();
-		 *
-		 *      // Show an example parameter from the settings
-		 *      alert( oSettings._iDisplayStart );
-		 *    } );
-		 */
-		this.fnSettings = function()
-		{
-			return _fnSettingsFromNode( this[_ext.iApiIndex] );
-		};
-		
-		
-		/**
-		 * Sort the table by a particular column
-		 *  @param {int} iCol the data index to sort on. Note that this will not match the
-		 *    'display index' if you have hidden data entries
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Sort immediately with columns 0 and 1
-		 *      oTable.fnSort( [ [0,'asc'], [1,'asc'] ] );
-		 *    } );
-		 */
-		this.fnSort = function( aaSort )
-		{
-			this.api( true ).order( aaSort ).draw();
-		};
-		
-		
-		/**
-		 * Attach a sort listener to an element for a given column
-		 *  @param {node} nNode the element to attach the sort listener to
-		 *  @param {int} iColumn the column that a click on this node will sort on
-		 *  @param {function} [fnCallback] callback function when sort is run
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Sort on column 1, when 'sorter' is clicked on
-		 *      oTable.fnSortListener( document.getElementById('sorter'), 1 );
-		 *    } );
-		 */
-		this.fnSortListener = function( nNode, iColumn, fnCallback )
-		{
-			this.api( true ).order.listener( nNode, iColumn, fnCallback );
-		};
-		
-		
-		/**
-		 * Update a table cell or row - this method will accept either a single value to
-		 * update the cell with, an array of values with one element for each column or
-		 * an object in the same format as the original data source. The function is
-		 * self-referencing in order to make the multi column updates easier.
-		 *  @param {object|array|string} mData Data to update the cell/row with
-		 *  @param {node|int} mRow TR element you want to update or the aoData index
-		 *  @param {int} [iColumn] The column to update, give as null or undefined to
-		 *    update a whole row.
-		 *  @param {bool} [bRedraw=true] Redraw the table or not
-		 *  @param {bool} [bAction=true] Perform pre-draw actions or not
-		 *  @returns {int} 0 on success, 1 on error
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *      oTable.fnUpdate( 'Example update', 0, 0 ); // Single cell
-		 *      oTable.fnUpdate( ['a', 'b', 'c', 'd', 'e'], $('tbody tr')[0] ); // Row
-		 *    } );
-		 */
-		this.fnUpdate = function( mData, mRow, iColumn, bRedraw, bAction )
-		{
-			var api = this.api( true );
-		
-			if ( iColumn === undefined || iColumn === null ) {
-				api.row( mRow ).data( mData );
-			}
-			else {
-				api.cell( mRow, iColumn ).data( mData );
-			}
-		
-			if ( bAction === undefined || bAction ) {
-				api.columns.adjust();
-			}
-		
-			if ( bRedraw === undefined || bRedraw ) {
-				api.draw();
-			}
-			return 0;
-		};
-		
-		
-		/**
-		 * Provide a common method for plug-ins to check the version of DataTables being used, in order
-		 * to ensure compatibility.
-		 *  @param {string} sVersion Version string to check for, in the format "X.Y.Z". Note that the
-		 *    formats "X" and "X.Y" are also acceptable.
-		 *  @returns {boolean} true if this version of DataTables is greater or equal to the required
-		 *    version, or false if this version of DataTales is not suitable
-		 *  @method
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *      alert( oTable.fnVersionCheck( '1.9.0' ) );
-		 *    } );
-		 */
-		this.fnVersionCheck = _ext.fnVersionCheck;
-		
+exports.default = Icon;
 
-		var _that = this;
-		var emptyInit = options === undefined;
-		var len = this.length;
+/***/ }),
 
-		if ( emptyInit ) {
-			options = {};
-		}
+/***/ "./src/icons.js":
+/*!**********************!*\
+  !*** ./src/icons.js ***!
+  \**********************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_142349__) {
 
-		this.oApi = this.internal = _ext.internal;
-
-		// Extend with old style plug-in API methods
-		for ( var fn in DataTable.ext.internal ) {
-			if ( fn ) {
-				this[fn] = _fnExternApiFunc(fn);
-			}
-		}
-
-		this.each(function() {
-			// For each initialisation we want to give it a clean initialisation
-			// object that can be bashed around
-			var o = {};
-			var oInit = len > 1 ? // optimisation for single table case
-				_fnExtend( o, options, true ) :
-				options;
-
-			/*global oInit,_that,emptyInit*/
-			var i=0, iLen, j, jLen, k, kLen;
-			var sId = this.getAttribute( 'id' );
-			var bInitHandedOff = false;
-			var defaults = DataTable.defaults;
-			var $this = $(this);
-			
-			
-			/* Sanity check */
-			if ( this.nodeName.toLowerCase() != 'table' )
-			{
-				_fnLog( null, 0, 'Non-table node initialisation ('+this.nodeName+')', 2 );
-				return;
-			}
-			
-			/* Backwards compatibility for the defaults */
-			_fnCompatOpts( defaults );
-			_fnCompatCols( defaults.column );
-			
-			/* Convert the camel-case defaults to Hungarian */
-			_fnCamelToHungarian( defaults, defaults, true );
-			_fnCamelToHungarian( defaults.column, defaults.column, true );
-			
-			/* Setting up the initialisation object */
-			_fnCamelToHungarian( defaults, $.extend( oInit, $this.data() ), true );
-			
-			
-			
-			/* Check to see if we are re-initialising a table */
-			var allSettings = DataTable.settings;
-			for ( i=0, iLen=allSettings.length ; i<iLen ; i++ )
-			{
-				var s = allSettings[i];
-			
-				/* Base check on table node */
-				if (
-					s.nTable == this ||
-					(s.nTHead && s.nTHead.parentNode == this) ||
-					(s.nTFoot && s.nTFoot.parentNode == this)
-				) {
-					var bRetrieve = oInit.bRetrieve !== undefined ? oInit.bRetrieve : defaults.bRetrieve;
-					var bDestroy = oInit.bDestroy !== undefined ? oInit.bDestroy : defaults.bDestroy;
-			
-					if ( emptyInit || bRetrieve )
-					{
-						return s.oInstance;
-					}
-					else if ( bDestroy )
-					{
-						s.oInstance.fnDestroy();
-						break;
-					}
-					else
-					{
-						_fnLog( s, 0, 'Cannot reinitialise DataTable', 3 );
-						return;
-					}
-				}
-			
-				/* If the element we are initialising has the same ID as a table which was previously
-				 * initialised, but the table nodes don't match (from before) then we destroy the old
-				 * instance by simply deleting it. This is under the assumption that the table has been
-				 * destroyed by other methods. Anyone using non-id selectors will need to do this manually
-				 */
-				if ( s.sTableId == this.id )
-				{
-					allSettings.splice( i, 1 );
-					break;
-				}
-			}
-			
-			/* Ensure the table has an ID - required for accessibility */
-			if ( sId === null || sId === "" )
-			{
-				sId = "DataTables_Table_"+(DataTable.ext._unique++);
-				this.id = sId;
-			}
-			
-			/* Create the settings object for this table and set some of the default parameters */
-			var oSettings = $.extend( true, {}, DataTable.models.oSettings, {
-				"sDestroyWidth": $this[0].style.width,
-				"sInstance":     sId,
-				"sTableId":      sId
-			} );
-			oSettings.nTable = this;
-			oSettings.oApi   = _that.internal;
-			oSettings.oInit  = oInit;
-			
-			allSettings.push( oSettings );
-			
-			// Need to add the instance after the instance after the settings object has been added
-			// to the settings array, so we can self reference the table instance if more than one
-			oSettings.oInstance = (_that.length===1) ? _that : $this.dataTable();
-			
-			// Backwards compatibility, before we apply all the defaults
-			_fnCompatOpts( oInit );
-			_fnLanguageCompat( oInit.oLanguage );
-			
-			// If the length menu is given, but the init display length is not, use the length menu
-			if ( oInit.aLengthMenu && ! oInit.iDisplayLength )
-			{
-				oInit.iDisplayLength = Array.isArray( oInit.aLengthMenu[0] ) ?
-					oInit.aLengthMenu[0][0] : oInit.aLengthMenu[0];
-			}
-			
-			// Apply the defaults and init options to make a single init object will all
-			// options defined from defaults and instance options.
-			oInit = _fnExtend( $.extend( true, {}, defaults ), oInit );
-			
-			
-			// Map the initialisation options onto the settings object
-			_fnMap( oSettings.oFeatures, oInit, [
-				"bPaginate",
-				"bLengthChange",
-				"bFilter",
-				"bSort",
-				"bSortMulti",
-				"bInfo",
-				"bProcessing",
-				"bAutoWidth",
-				"bSortClasses",
-				"bServerSide",
-				"bDeferRender"
-			] );
-			_fnMap( oSettings, oInit, [
-				"asStripeClasses",
-				"ajax",
-				"fnServerData",
-				"fnFormatNumber",
-				"sServerMethod",
-				"aaSorting",
-				"aaSortingFixed",
-				"aLengthMenu",
-				"sPaginationType",
-				"sAjaxSource",
-				"sAjaxDataProp",
-				"iStateDuration",
-				"sDom",
-				"bSortCellsTop",
-				"iTabIndex",
-				"fnStateLoadCallback",
-				"fnStateSaveCallback",
-				"renderer",
-				"searchDelay",
-				"rowId",
-				[ "iCookieDuration", "iStateDuration" ], // backwards compat
-				[ "oSearch", "oPreviousSearch" ],
-				[ "aoSearchCols", "aoPreSearchCols" ],
-				[ "iDisplayLength", "_iDisplayLength" ]
-			] );
-			_fnMap( oSettings.oScroll, oInit, [
-				[ "sScrollX", "sX" ],
-				[ "sScrollXInner", "sXInner" ],
-				[ "sScrollY", "sY" ],
-				[ "bScrollCollapse", "bCollapse" ]
-			] );
-			_fnMap( oSettings.oLanguage, oInit, "fnInfoCallback" );
-			
-			/* Callback functions which are array driven */
-			_fnCallbackReg( oSettings, 'aoDrawCallback',       oInit.fnDrawCallback,      'user' );
-			_fnCallbackReg( oSettings, 'aoServerParams',       oInit.fnServerParams,      'user' );
-			_fnCallbackReg( oSettings, 'aoStateSaveParams',    oInit.fnStateSaveParams,   'user' );
-			_fnCallbackReg( oSettings, 'aoStateLoadParams',    oInit.fnStateLoadParams,   'user' );
-			_fnCallbackReg( oSettings, 'aoStateLoaded',        oInit.fnStateLoaded,       'user' );
-			_fnCallbackReg( oSettings, 'aoRowCallback',        oInit.fnRowCallback,       'user' );
-			_fnCallbackReg( oSettings, 'aoRowCreatedCallback', oInit.fnCreatedRow,        'user' );
-			_fnCallbackReg( oSettings, 'aoHeaderCallback',     oInit.fnHeaderCallback,    'user' );
-			_fnCallbackReg( oSettings, 'aoFooterCallback',     oInit.fnFooterCallback,    'user' );
-			_fnCallbackReg( oSettings, 'aoInitComplete',       oInit.fnInitComplete,      'user' );
-			_fnCallbackReg( oSettings, 'aoPreDrawCallback',    oInit.fnPreDrawCallback,   'user' );
-			
-			oSettings.rowIdFn = _fnGetObjectDataFn( oInit.rowId );
-			
-			/* Browser support detection */
-			_fnBrowserDetect( oSettings );
-			
-			var oClasses = oSettings.oClasses;
-			
-			$.extend( oClasses, DataTable.ext.classes, oInit.oClasses );
-			$this.addClass( oClasses.sTable );
-			
-			
-			if ( oSettings.iInitDisplayStart === undefined )
-			{
-				/* Display start point, taking into account the save saving */
-				oSettings.iInitDisplayStart = oInit.iDisplayStart;
-				oSettings._iDisplayStart = oInit.iDisplayStart;
-			}
-			
-			if ( oInit.iDeferLoading !== null )
-			{
-				oSettings.bDeferLoading = true;
-				var tmp = Array.isArray( oInit.iDeferLoading );
-				oSettings._iRecordsDisplay = tmp ? oInit.iDeferLoading[0] : oInit.iDeferLoading;
-				oSettings._iRecordsTotal = tmp ? oInit.iDeferLoading[1] : oInit.iDeferLoading;
-			}
-			
-			/* Language definitions */
-			var oLanguage = oSettings.oLanguage;
-			$.extend( true, oLanguage, oInit.oLanguage );
-			
-			if ( oLanguage.sUrl )
-			{
-				/* Get the language definitions from a file - because this Ajax call makes the language
-				 * get async to the remainder of this function we use bInitHandedOff to indicate that
-				 * _fnInitialise will be fired by the returned Ajax handler, rather than the constructor
-				 */
-				$.ajax( {
-					dataType: 'json',
-					url: oLanguage.sUrl,
-					success: function ( json ) {
-						_fnLanguageCompat( json );
-						_fnCamelToHungarian( defaults.oLanguage, json );
-						$.extend( true, oLanguage, json );
-			
-						_fnCallbackFire( oSettings, null, 'i18n', [oSettings]);
-						_fnInitialise( oSettings );
-					},
-					error: function () {
-						// Error occurred loading language file, continue on as best we can
-						_fnInitialise( oSettings );
-					}
-				} );
-				bInitHandedOff = true;
-			}
-			else {
-				_fnCallbackFire( oSettings, null, 'i18n', [oSettings]);
-			}
-			
-			/*
-			 * Stripes
-			 */
-			if ( oInit.asStripeClasses === null )
-			{
-				oSettings.asStripeClasses =[
-					oClasses.sStripeOdd,
-					oClasses.sStripeEven
-				];
-			}
-			
-			/* Remove row stripe classes if they are already on the table row */
-			var stripeClasses = oSettings.asStripeClasses;
-			var rowOne = $this.children('tbody').find('tr').eq(0);
-			if ( $.inArray( true, $.map( stripeClasses, function(el, i) {
-				return rowOne.hasClass(el);
-			} ) ) !== -1 ) {
-				$('tbody tr', this).removeClass( stripeClasses.join(' ') );
-				oSettings.asDestroyStripes = stripeClasses.slice();
-			}
-			
-			/*
-			 * Columns
-			 * See if we should load columns automatically or use defined ones
-			 */
-			var anThs = [];
-			var aoColumnsInit;
-			var nThead = this.getElementsByTagName('thead');
-			if ( nThead.length !== 0 )
-			{
-				_fnDetectHeader( oSettings.aoHeader, nThead[0] );
-				anThs = _fnGetUniqueThs( oSettings );
-			}
-			
-			/* If not given a column array, generate one with nulls */
-			if ( oInit.aoColumns === null )
-			{
-				aoColumnsInit = [];
-				for ( i=0, iLen=anThs.length ; i<iLen ; i++ )
-				{
-					aoColumnsInit.push( null );
-				}
-			}
-			else
-			{
-				aoColumnsInit = oInit.aoColumns;
-			}
-			
-			/* Add the columns */
-			for ( i=0, iLen=aoColumnsInit.length ; i<iLen ; i++ )
-			{
-				_fnAddColumn( oSettings, anThs ? anThs[i] : null );
-			}
-			
-			/* Apply the column definitions */
-			_fnApplyColumnDefs( oSettings, oInit.aoColumnDefs, aoColumnsInit, function (iCol, oDef) {
-				_fnColumnOptions( oSettings, iCol, oDef );
-			} );
-			
-			/* HTML5 attribute detection - build an mData object automatically if the
-			 * attributes are found
-			 */
-			if ( rowOne.length ) {
-				var a = function ( cell, name ) {
-					return cell.getAttribute( 'data-'+name ) !== null ? name : null;
-				};
-			
-				$( rowOne[0] ).children('th, td').each( function (i, cell) {
-					var col = oSettings.aoColumns[i];
-			
-					if ( col.mData === i ) {
-						var sort = a( cell, 'sort' ) || a( cell, 'order' );
-						var filter = a( cell, 'filter' ) || a( cell, 'search' );
-			
-						if ( sort !== null || filter !== null ) {
-							col.mData = {
-								_:      i+'.display',
-								sort:   sort !== null   ? i+'.@data-'+sort   : undefined,
-								type:   sort !== null   ? i+'.@data-'+sort   : undefined,
-								filter: filter !== null ? i+'.@data-'+filter : undefined
-							};
-			
-							_fnColumnOptions( oSettings, i );
-						}
-					}
-				} );
-			}
-			
-			var features = oSettings.oFeatures;
-			var loadedInit = function () {
-				/*
-				 * Sorting
-				 * @todo For modularisation (1.11) this needs to do into a sort start up handler
-				 */
-			
-				// If aaSorting is not defined, then we use the first indicator in asSorting
-				// in case that has been altered, so the default sort reflects that option
-				if ( oInit.aaSorting === undefined ) {
-					var sorting = oSettings.aaSorting;
-					for ( i=0, iLen=sorting.length ; i<iLen ; i++ ) {
-						sorting[i][1] = oSettings.aoColumns[ i ].asSorting[0];
-					}
-				}
-			
-				/* Do a first pass on the sorting classes (allows any size changes to be taken into
-				 * account, and also will apply sorting disabled classes if disabled
-				 */
-				_fnSortingClasses( oSettings );
-			
-				if ( features.bSort ) {
-					_fnCallbackReg( oSettings, 'aoDrawCallback', function () {
-						if ( oSettings.bSorted ) {
-							var aSort = _fnSortFlatten( oSettings );
-							var sortedColumns = {};
-			
-							$.each( aSort, function (i, val) {
-								sortedColumns[ val.src ] = val.dir;
-							} );
-			
-							_fnCallbackFire( oSettings, null, 'order', [oSettings, aSort, sortedColumns] );
-							_fnSortAria( oSettings );
-						}
-					} );
-				}
-			
-				_fnCallbackReg( oSettings, 'aoDrawCallback', function () {
-					if ( oSettings.bSorted || _fnDataSource( oSettings ) === 'ssp' || features.bDeferRender ) {
-						_fnSortingClasses( oSettings );
-					}
-				}, 'sc' );
-			
-			
-				/*
-				 * Final init
-				 * Cache the header, body and footer as required, creating them if needed
-				 */
-			
-				// Work around for Webkit bug 83867 - store the caption-side before removing from doc
-				var captions = $this.children('caption').each( function () {
-					this._captionSide = $(this).css('caption-side');
-				} );
-			
-				var thead = $this.children('thead');
-				if ( thead.length === 0 ) {
-					thead = $('<thead/>').appendTo($this);
-				}
-				oSettings.nTHead = thead[0];
-			
-				var tbody = $this.children('tbody');
-				if ( tbody.length === 0 ) {
-					tbody = $('<tbody/>').insertAfter(thead);
-				}
-				oSettings.nTBody = tbody[0];
-			
-				var tfoot = $this.children('tfoot');
-				if ( tfoot.length === 0 && captions.length > 0 && (oSettings.oScroll.sX !== "" || oSettings.oScroll.sY !== "") ) {
-					// If we are a scrolling table, and no footer has been given, then we need to create
-					// a tfoot element for the caption element to be appended to
-					tfoot = $('<tfoot/>').appendTo($this);
-				}
-			
-				if ( tfoot.length === 0 || tfoot.children().length === 0 ) {
-					$this.addClass( oClasses.sNoFooter );
-				}
-				else if ( tfoot.length > 0 ) {
-					oSettings.nTFoot = tfoot[0];
-					_fnDetectHeader( oSettings.aoFooter, oSettings.nTFoot );
-				}
-			
-				/* Check if there is data passing into the constructor */
-				if ( oInit.aaData ) {
-					for ( i=0 ; i<oInit.aaData.length ; i++ ) {
-						_fnAddData( oSettings, oInit.aaData[ i ] );
-					}
-				}
-				else if ( oSettings.bDeferLoading || _fnDataSource( oSettings ) == 'dom' ) {
-					/* Grab the data from the page - only do this when deferred loading or no Ajax
-					 * source since there is no point in reading the DOM data if we are then going
-					 * to replace it with Ajax data
-					 */
-					_fnAddTr( oSettings, $(oSettings.nTBody).children('tr') );
-				}
-			
-				/* Copy the data index array */
-				oSettings.aiDisplay = oSettings.aiDisplayMaster.slice();
-			
-				/* Initialisation complete - table can be drawn */
-				oSettings.bInitialised = true;
-			
-				/* Check if we need to initialise the table (it might not have been handed off to the
-				 * language processor)
-				 */
-				if ( bInitHandedOff === false ) {
-					_fnInitialise( oSettings );
-				}
-			};
-			
-			/* Must be done after everything which can be overridden by the state saving! */
-			if ( oInit.bStateSave )
-			{
-				features.bStateSave = true;
-				_fnCallbackReg( oSettings, 'aoDrawCallback', _fnSaveState, 'state_save' );
-				_fnLoadState( oSettings, oInit, loadedInit );
-			}
-			else {
-				loadedInit();
-			}
-			
-		} );
-		_that = null;
-		return this;
-	};
-
-	
-	/*
-	 * It is useful to have variables which are scoped locally so only the
-	 * DataTables functions can access them and they don't leak into global space.
-	 * At the same time these functions are often useful over multiple files in the
-	 * core and API, so we list, or at least document, all variables which are used
-	 * by DataTables as private variables here. This also ensures that there is no
-	 * clashing of variable names and that they can easily referenced for reuse.
-	 */
-	
-	
-	// Defined else where
-	//  _selector_run
-	//  _selector_opts
-	//  _selector_first
-	//  _selector_row_indexes
-	
-	var _ext; // DataTable.ext
-	var _Api; // DataTable.Api
-	var _api_register; // DataTable.Api.register
-	var _api_registerPlural; // DataTable.Api.registerPlural
-	
-	var _re_dic = {};
-	var _re_new_lines = /[\r\n\u2028]/g;
-	var _re_html = /<.*?>/g;
-	
-	// This is not strict ISO8601 - Date.parse() is quite lax, although
-	// implementations differ between browsers.
-	var _re_date = /^\d{2,4}[\.\/\-]\d{1,2}[\.\/\-]\d{1,2}([T ]{1}\d{1,2}[:\.]\d{2}([\.:]\d{2})?)?$/;
-	
-	// Escape regular expression special characters
-	var _re_escape_regex = new RegExp( '(\\' + [ '/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\', '$', '^', '-' ].join('|\\') + ')', 'g' );
-	
-	// http://en.wikipedia.org/wiki/Foreign_exchange_market
-	// - \u20BD - Russian ruble.
-	// - \u20a9 - South Korean Won
-	// - \u20BA - Turkish Lira
-	// - \u20B9 - Indian Rupee
-	// - R - Brazil (R$) and South Africa
-	// - fr - Swiss Franc
-	// - kr - Swedish krona, Norwegian krone and Danish krone
-	// - \u2009 is thin space and \u202F is narrow no-break space, both used in many
-	// - Ƀ - Bitcoin
-	// - Ξ - Ethereum
-	//   standards as thousands separators.
-	var _re_formatted_numeric = /['\u00A0,$£€¥%\u2009\u202F\u20BD\u20a9\u20BArfkɃΞ]/gi;
-	
-	
-	var _empty = function ( d ) {
-		return !d || d === true || d === '-' ? true : false;
-	};
-	
-	
-	var _intVal = function ( s ) {
-		var integer = parseInt( s, 10 );
-		return !isNaN(integer) && isFinite(s) ? integer : null;
-	};
-	
-	// Convert from a formatted number with characters other than `.` as the
-	// decimal place, to a Javascript number
-	var _numToDecimal = function ( num, decimalPoint ) {
-		// Cache created regular expressions for speed as this function is called often
-		if ( ! _re_dic[ decimalPoint ] ) {
-			_re_dic[ decimalPoint ] = new RegExp( _fnEscapeRegex( decimalPoint ), 'g' );
-		}
-		return typeof num === 'string' && decimalPoint !== '.' ?
-			num.replace( /\./g, '' ).replace( _re_dic[ decimalPoint ], '.' ) :
-			num;
-	};
-	
-	
-	var _isNumber = function ( d, decimalPoint, formatted ) {
-		var strType = typeof d === 'string';
-	
-		// If empty return immediately so there must be a number if it is a
-		// formatted string (this stops the string "k", or "kr", etc being detected
-		// as a formatted number for currency
-		if ( _empty( d ) ) {
-			return true;
-		}
-	
-		if ( decimalPoint && strType ) {
-			d = _numToDecimal( d, decimalPoint );
-		}
-	
-		if ( formatted && strType ) {
-			d = d.replace( _re_formatted_numeric, '' );
-		}
-	
-		return !isNaN( parseFloat(d) ) && isFinite( d );
-	};
-	
-	
-	// A string without HTML in it can be considered to be HTML still
-	var _isHtml = function ( d ) {
-		return _empty( d ) || typeof d === 'string';
-	};
-	
-	
-	var _htmlNumeric = function ( d, decimalPoint, formatted ) {
-		if ( _empty( d ) ) {
-			return true;
-		}
-	
-		var html = _isHtml( d );
-		return ! html ?
-			null :
-			_isNumber( _stripHtml( d ), decimalPoint, formatted ) ?
-				true :
-				null;
-	};
-	
-	
-	var _pluck = function ( a, prop, prop2 ) {
-		var out = [];
-		var i=0, ien=a.length;
-	
-		// Could have the test in the loop for slightly smaller code, but speed
-		// is essential here
-		if ( prop2 !== undefined ) {
-			for ( ; i<ien ; i++ ) {
-				if ( a[i] && a[i][ prop ] ) {
-					out.push( a[i][ prop ][ prop2 ] );
-				}
-			}
-		}
-		else {
-			for ( ; i<ien ; i++ ) {
-				if ( a[i] ) {
-					out.push( a[i][ prop ] );
-				}
-			}
-		}
-	
-		return out;
-	};
-	
-	
-	// Basically the same as _pluck, but rather than looping over `a` we use `order`
-	// as the indexes to pick from `a`
-	var _pluck_order = function ( a, order, prop, prop2 )
-	{
-		var out = [];
-		var i=0, ien=order.length;
-	
-		// Could have the test in the loop for slightly smaller code, but speed
-		// is essential here
-		if ( prop2 !== undefined ) {
-			for ( ; i<ien ; i++ ) {
-				if ( a[ order[i] ][ prop ] ) {
-					out.push( a[ order[i] ][ prop ][ prop2 ] );
-				}
-			}
-		}
-		else {
-			for ( ; i<ien ; i++ ) {
-				out.push( a[ order[i] ][ prop ] );
-			}
-		}
-	
-		return out;
-	};
-	
-	
-	var _range = function ( len, start )
-	{
-		var out = [];
-		var end;
-	
-		if ( start === undefined ) {
-			start = 0;
-			end = len;
-		}
-		else {
-			end = start;
-			start = len;
-		}
-	
-		for ( var i=start ; i<end ; i++ ) {
-			out.push( i );
-		}
-	
-		return out;
-	};
-	
-	
-	var _removeEmpty = function ( a )
-	{
-		var out = [];
-	
-		for ( var i=0, ien=a.length ; i<ien ; i++ ) {
-			if ( a[i] ) { // careful - will remove all falsy values!
-				out.push( a[i] );
-			}
-		}
-	
-		return out;
-	};
-	
-	
-	var _stripHtml = function ( d ) {
-		return d.replace( _re_html, '' );
-	};
-	
-	
-	/**
-	 * Determine if all values in the array are unique. This means we can short
-	 * cut the _unique method at the cost of a single loop. A sorted array is used
-	 * to easily check the values.
-	 *
-	 * @param  {array} src Source array
-	 * @return {boolean} true if all unique, false otherwise
-	 * @ignore
-	 */
-	var _areAllUnique = function ( src ) {
-		if ( src.length < 2 ) {
-			return true;
-		}
-	
-		var sorted = src.slice().sort();
-		var last = sorted[0];
-	
-		for ( var i=1, ien=sorted.length ; i<ien ; i++ ) {
-			if ( sorted[i] === last ) {
-				return false;
-			}
-	
-			last = sorted[i];
-		}
-	
-		return true;
-	};
-	
-	
-	/**
-	 * Find the unique elements in a source array.
-	 *
-	 * @param  {array} src Source array
-	 * @return {array} Array of unique items
-	 * @ignore
-	 */
-	var _unique = function ( src )
-	{
-		if ( _areAllUnique( src ) ) {
-			return src.slice();
-		}
-	
-		// A faster unique method is to use object keys to identify used values,
-		// but this doesn't work with arrays or objects, which we must also
-		// consider. See jsperf.com/compare-array-unique-versions/4 for more
-		// information.
-		var
-			out = [],
-			val,
-			i, ien=src.length,
-			j, k=0;
-	
-		again: for ( i=0 ; i<ien ; i++ ) {
-			val = src[i];
-	
-			for ( j=0 ; j<k ; j++ ) {
-				if ( out[j] === val ) {
-					continue again;
-				}
-			}
-	
-			out.push( val );
-			k++;
-		}
-	
-		return out;
-	};
-	
-	// Surprisingly this is faster than [].concat.apply
-	// https://jsperf.com/flatten-an-array-loop-vs-reduce/2
-	var _flatten = function (out, val) {
-		if (Array.isArray(val)) {
-			for (var i=0 ; i<val.length ; i++) {
-				_flatten(out, val[i]);
-			}
-		}
-		else {
-			out.push(val);
-		}
-	  
-		return out;
-	}
-	
-	// Array.isArray polyfill.
-	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray
-	if (! Array.isArray) {
-	    Array.isArray = function(arg) {
-	        return Object.prototype.toString.call(arg) === '[object Array]';
-	    };
-	}
-	
-	// .trim() polyfill
-	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/trim
-	if (!String.prototype.trim) {
-	  String.prototype.trim = function () {
-	    return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
-	  };
-	}
-	
-	/**
-	 * DataTables utility methods
-	 * 
-	 * This namespace provides helper methods that DataTables uses internally to
-	 * create a DataTable, but which are not exclusively used only for DataTables.
-	 * These methods can be used by extension authors to save the duplication of
-	 * code.
-	 *
-	 *  @namespace
-	 */
-	DataTable.util = {
-		/**
-		 * Throttle the calls to a function. Arguments and context are maintained
-		 * for the throttled function.
-		 *
-		 * @param {function} fn Function to be called
-		 * @param {integer} freq Call frequency in mS
-		 * @return {function} Wrapped function
-		 */
-		throttle: function ( fn, freq ) {
-			var
-				frequency = freq !== undefined ? freq : 200,
-				last,
-				timer;
-	
-			return function () {
-				var
-					that = this,
-					now  = +new Date(),
-					args = arguments;
-	
-				if ( last && now < last + frequency ) {
-					clearTimeout( timer );
-	
-					timer = setTimeout( function () {
-						last = undefined;
-						fn.apply( that, args );
-					}, frequency );
-				}
-				else {
-					last = now;
-					fn.apply( that, args );
-				}
-			};
-		},
-	
-	
-		/**
-		 * Escape a string such that it can be used in a regular expression
-		 *
-		 *  @param {string} val string to escape
-		 *  @returns {string} escaped string
-		 */
-		escapeRegex: function ( val ) {
-			return val.replace( _re_escape_regex, '\\$1' );
-		}
-	};
-	
-	
-	
-	/**
-	 * Create a mapping object that allows camel case parameters to be looked up
-	 * for their Hungarian counterparts. The mapping is stored in a private
-	 * parameter called `_hungarianMap` which can be accessed on the source object.
-	 *  @param {object} o
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnHungarianMap ( o )
-	{
-		var
-			hungarian = 'a aa ai ao as b fn i m o s ',
-			match,
-			newKey,
-			map = {};
-	
-		$.each( o, function (key, val) {
-			match = key.match(/^([^A-Z]+?)([A-Z])/);
-	
-			if ( match && hungarian.indexOf(match[1]+' ') !== -1 )
-			{
-				newKey = key.replace( match[0], match[2].toLowerCase() );
-				map[ newKey ] = key;
-	
-				if ( match[1] === 'o' )
-				{
-					_fnHungarianMap( o[key] );
-				}
-			}
-		} );
-	
-		o._hungarianMap = map;
-	}
-	
-	
-	/**
-	 * Convert from camel case parameters to Hungarian, based on a Hungarian map
-	 * created by _fnHungarianMap.
-	 *  @param {object} src The model object which holds all parameters that can be
-	 *    mapped.
-	 *  @param {object} user The object to convert from camel case to Hungarian.
-	 *  @param {boolean} force When set to `true`, properties which already have a
-	 *    Hungarian value in the `user` object will be overwritten. Otherwise they
-	 *    won't be.
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnCamelToHungarian ( src, user, force )
-	{
-		if ( ! src._hungarianMap ) {
-			_fnHungarianMap( src );
-		}
-	
-		var hungarianKey;
-	
-		$.each( user, function (key, val) {
-			hungarianKey = src._hungarianMap[ key ];
-	
-			if ( hungarianKey !== undefined && (force || user[hungarianKey] === undefined) )
-			{
-				// For objects, we need to buzz down into the object to copy parameters
-				if ( hungarianKey.charAt(0) === 'o' )
-				{
-					// Copy the camelCase options over to the hungarian
-					if ( ! user[ hungarianKey ] ) {
-						user[ hungarianKey ] = {};
-					}
-					$.extend( true, user[hungarianKey], user[key] );
-	
-					_fnCamelToHungarian( src[hungarianKey], user[hungarianKey], force );
-				}
-				else {
-					user[hungarianKey] = user[ key ];
-				}
-			}
-		} );
-	}
-	
-	
-	/**
-	 * Language compatibility - when certain options are given, and others aren't, we
-	 * need to duplicate the values over, in order to provide backwards compatibility
-	 * with older language files.
-	 *  @param {object} oSettings dataTables settings object
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnLanguageCompat( lang )
-	{
-		// Note the use of the Hungarian notation for the parameters in this method as
-		// this is called after the mapping of camelCase to Hungarian
-		var defaults = DataTable.defaults.oLanguage;
-	
-		// Default mapping
-		var defaultDecimal = defaults.sDecimal;
-		if ( defaultDecimal ) {
-			_addNumericSort( defaultDecimal );
-		}
-	
-		if ( lang ) {
-			var zeroRecords = lang.sZeroRecords;
-	
-			// Backwards compatibility - if there is no sEmptyTable given, then use the same as
-			// sZeroRecords - assuming that is given.
-			if ( ! lang.sEmptyTable && zeroRecords &&
-				defaults.sEmptyTable === "No data available in table" )
-			{
-				_fnMap( lang, lang, 'sZeroRecords', 'sEmptyTable' );
-			}
-	
-			// Likewise with loading records
-			if ( ! lang.sLoadingRecords && zeroRecords &&
-				defaults.sLoadingRecords === "Loading..." )
-			{
-				_fnMap( lang, lang, 'sZeroRecords', 'sLoadingRecords' );
-			}
-	
-			// Old parameter name of the thousands separator mapped onto the new
-			if ( lang.sInfoThousands ) {
-				lang.sThousands = lang.sInfoThousands;
-			}
-	
-			var decimal = lang.sDecimal;
-			if ( decimal && defaultDecimal !== decimal ) {
-				_addNumericSort( decimal );
-			}
-		}
-	}
-	
-	
-	/**
-	 * Map one parameter onto another
-	 *  @param {object} o Object to map
-	 *  @param {*} knew The new parameter name
-	 *  @param {*} old The old parameter name
-	 */
-	var _fnCompatMap = function ( o, knew, old ) {
-		if ( o[ knew ] !== undefined ) {
-			o[ old ] = o[ knew ];
-		}
-	};
-	
-	
-	/**
-	 * Provide backwards compatibility for the main DT options. Note that the new
-	 * options are mapped onto the old parameters, so this is an external interface
-	 * change only.
-	 *  @param {object} init Object to map
-	 */
-	function _fnCompatOpts ( init )
-	{
-		_fnCompatMap( init, 'ordering',      'bSort' );
-		_fnCompatMap( init, 'orderMulti',    'bSortMulti' );
-		_fnCompatMap( init, 'orderClasses',  'bSortClasses' );
-		_fnCompatMap( init, 'orderCellsTop', 'bSortCellsTop' );
-		_fnCompatMap( init, 'order',         'aaSorting' );
-		_fnCompatMap( init, 'orderFixed',    'aaSortingFixed' );
-		_fnCompatMap( init, 'paging',        'bPaginate' );
-		_fnCompatMap( init, 'pagingType',    'sPaginationType' );
-		_fnCompatMap( init, 'pageLength',    'iDisplayLength' );
-		_fnCompatMap( init, 'searching',     'bFilter' );
-	
-		// Boolean initialisation of x-scrolling
-		if ( typeof init.sScrollX === 'boolean' ) {
-			init.sScrollX = init.sScrollX ? '100%' : '';
-		}
-		if ( typeof init.scrollX === 'boolean' ) {
-			init.scrollX = init.scrollX ? '100%' : '';
-		}
-	
-		// Column search objects are in an array, so it needs to be converted
-		// element by element
-		var searchCols = init.aoSearchCols;
-	
-		if ( searchCols ) {
-			for ( var i=0, ien=searchCols.length ; i<ien ; i++ ) {
-				if ( searchCols[i] ) {
-					_fnCamelToHungarian( DataTable.models.oSearch, searchCols[i] );
-				}
-			}
-		}
-	}
-	
-	
-	/**
-	 * Provide backwards compatibility for column options. Note that the new options
-	 * are mapped onto the old parameters, so this is an external interface change
-	 * only.
-	 *  @param {object} init Object to map
-	 */
-	function _fnCompatCols ( init )
-	{
-		_fnCompatMap( init, 'orderable',     'bSortable' );
-		_fnCompatMap( init, 'orderData',     'aDataSort' );
-		_fnCompatMap( init, 'orderSequence', 'asSorting' );
-		_fnCompatMap( init, 'orderDataType', 'sortDataType' );
-	
-		// orderData can be given as an integer
-		var dataSort = init.aDataSort;
-		if ( typeof dataSort === 'number' && ! Array.isArray( dataSort ) ) {
-			init.aDataSort = [ dataSort ];
-		}
-	}
-	
-	
-	/**
-	 * Browser feature detection for capabilities, quirks
-	 *  @param {object} settings dataTables settings object
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnBrowserDetect( settings )
-	{
-		// We don't need to do this every time DataTables is constructed, the values
-		// calculated are specific to the browser and OS configuration which we
-		// don't expect to change between initialisations
-		if ( ! DataTable.__browser ) {
-			var browser = {};
-			DataTable.__browser = browser;
-	
-			// Scrolling feature / quirks detection
-			var n = $('<div/>')
-				.css( {
-					position: 'fixed',
-					top: 0,
-					left: $(window).scrollLeft()*-1, // allow for scrolling
-					height: 1,
-					width: 1,
-					overflow: 'hidden'
-				} )
-				.append(
-					$('<div/>')
-						.css( {
-							position: 'absolute',
-							top: 1,
-							left: 1,
-							width: 100,
-							overflow: 'scroll'
-						} )
-						.append(
-							$('<div/>')
-								.css( {
-									width: '100%',
-									height: 10
-								} )
-						)
-				)
-				.appendTo( 'body' );
-	
-			var outer = n.children();
-			var inner = outer.children();
-	
-			// Numbers below, in order, are:
-			// inner.offsetWidth, inner.clientWidth, outer.offsetWidth, outer.clientWidth
-			//
-			// IE6 XP:                           100 100 100  83
-			// IE7 Vista:                        100 100 100  83
-			// IE 8+ Windows:                     83  83 100  83
-			// Evergreen Windows:                 83  83 100  83
-			// Evergreen Mac with scrollbars:     85  85 100  85
-			// Evergreen Mac without scrollbars: 100 100 100 100
-	
-			// Get scrollbar width
-			browser.barWidth = outer[0].offsetWidth - outer[0].clientWidth;
-	
-			// IE6/7 will oversize a width 100% element inside a scrolling element, to
-			// include the width of the scrollbar, while other browsers ensure the inner
-			// element is contained without forcing scrolling
-			browser.bScrollOversize = inner[0].offsetWidth === 100 && outer[0].clientWidth !== 100;
-	
-			// In rtl text layout, some browsers (most, but not all) will place the
-			// scrollbar on the left, rather than the right.
-			browser.bScrollbarLeft = Math.round( inner.offset().left ) !== 1;
-	
-			// IE8- don't provide height and width for getBoundingClientRect
-			browser.bBounding = n[0].getBoundingClientRect().width ? true : false;
-	
-			n.remove();
-		}
-	
-		$.extend( settings.oBrowser, DataTable.__browser );
-		settings.oScroll.iBarWidth = DataTable.__browser.barWidth;
-	}
-	
-	
-	/**
-	 * Array.prototype reduce[Right] method, used for browsers which don't support
-	 * JS 1.6. Done this way to reduce code size, since we iterate either way
-	 *  @param {object} settings dataTables settings object
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnReduce ( that, fn, init, start, end, inc )
-	{
-		var
-			i = start,
-			value,
-			isSet = false;
-	
-		if ( init !== undefined ) {
-			value = init;
-			isSet = true;
-		}
-	
-		while ( i !== end ) {
-			if ( ! that.hasOwnProperty(i) ) {
-				continue;
-			}
-	
-			value = isSet ?
-				fn( value, that[i], i, that ) :
-				that[i];
-	
-			isSet = true;
-			i += inc;
-		}
-	
-		return value;
-	}
-	
-	/**
-	 * Add a column to the list used for the table with default values
-	 *  @param {object} oSettings dataTables settings object
-	 *  @param {node} nTh The th element for this column
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnAddColumn( oSettings, nTh )
-	{
-		// Add column to aoColumns array
-		var oDefaults = DataTable.defaults.column;
-		var iCol = oSettings.aoColumns.length;
-		var oCol = $.extend( {}, DataTable.models.oColumn, oDefaults, {
-			"nTh": nTh ? nTh : document.createElement('th'),
-			"sTitle":    oDefaults.sTitle    ? oDefaults.sTitle    : nTh ? nTh.innerHTML : '',
-			"aDataSort": oDefaults.aDataSort ? oDefaults.aDataSort : [iCol],
-			"mData": oDefaults.mData ? oDefaults.mData : iCol,
-			idx: iCol
-		} );
-		oSettings.aoColumns.push( oCol );
-	
-		// Add search object for column specific search. Note that the `searchCols[ iCol ]`
-		// passed into extend can be undefined. This allows the user to give a default
-		// with only some of the parameters defined, and also not give a default
-		var searchCols = oSettings.aoPreSearchCols;
-		searchCols[ iCol ] = $.extend( {}, DataTable.models.oSearch, searchCols[ iCol ] );
-	
-		// Use the default column options function to initialise classes etc
-		_fnColumnOptions( oSettings, iCol, $(nTh).data() );
-	}
-	
-	
-	/**
-	 * Apply options for a column
-	 *  @param {object} oSettings dataTables settings object
-	 *  @param {int} iCol column index to consider
-	 *  @param {object} oOptions object with sType, bVisible and bSearchable etc
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnColumnOptions( oSettings, iCol, oOptions )
-	{
-		var oCol = oSettings.aoColumns[ iCol ];
-		var oClasses = oSettings.oClasses;
-		var th = $(oCol.nTh);
-	
-		// Try to get width information from the DOM. We can't get it from CSS
-		// as we'd need to parse the CSS stylesheet. `width` option can override
-		if ( ! oCol.sWidthOrig ) {
-			// Width attribute
-			oCol.sWidthOrig = th.attr('width') || null;
-	
-			// Style attribute
-			var t = (th.attr('style') || '').match(/width:\s*(\d+[pxem%]+)/);
-			if ( t ) {
-				oCol.sWidthOrig = t[1];
-			}
-		}
-	
-		/* User specified column options */
-		if ( oOptions !== undefined && oOptions !== null )
-		{
-			// Backwards compatibility
-			_fnCompatCols( oOptions );
-	
-			// Map camel case parameters to their Hungarian counterparts
-			_fnCamelToHungarian( DataTable.defaults.column, oOptions, true );
-	
-			/* Backwards compatibility for mDataProp */
-			if ( oOptions.mDataProp !== undefined && !oOptions.mData )
-			{
-				oOptions.mData = oOptions.mDataProp;
-			}
-	
-			if ( oOptions.sType )
-			{
-				oCol._sManualType = oOptions.sType;
-			}
-	
-			// `class` is a reserved word in Javascript, so we need to provide
-			// the ability to use a valid name for the camel case input
-			if ( oOptions.className && ! oOptions.sClass )
-			{
-				oOptions.sClass = oOptions.className;
-			}
-			if ( oOptions.sClass ) {
-				th.addClass( oOptions.sClass );
-			}
-	
-			$.extend( oCol, oOptions );
-			_fnMap( oCol, oOptions, "sWidth", "sWidthOrig" );
-	
-			/* iDataSort to be applied (backwards compatibility), but aDataSort will take
-			 * priority if defined
-			 */
-			if ( oOptions.iDataSort !== undefined )
-			{
-				oCol.aDataSort = [ oOptions.iDataSort ];
-			}
-			_fnMap( oCol, oOptions, "aDataSort" );
-		}
-	
-		/* Cache the data get and set functions for speed */
-		var mDataSrc = oCol.mData;
-		var mData = _fnGetObjectDataFn( mDataSrc );
-		var mRender = oCol.mRender ? _fnGetObjectDataFn( oCol.mRender ) : null;
-	
-		var attrTest = function( src ) {
-			return typeof src === 'string' && src.indexOf('@') !== -1;
-		};
-		oCol._bAttrSrc = $.isPlainObject( mDataSrc ) && (
-			attrTest(mDataSrc.sort) || attrTest(mDataSrc.type) || attrTest(mDataSrc.filter)
-		);
-		oCol._setter = null;
-	
-		oCol.fnGetData = function (rowData, type, meta) {
-			var innerData = mData( rowData, type, undefined, meta );
-	
-			return mRender && type ?
-				mRender( innerData, type, rowData, meta ) :
-				innerData;
-		};
-		oCol.fnSetData = function ( rowData, val, meta ) {
-			return _fnSetObjectDataFn( mDataSrc )( rowData, val, meta );
-		};
-	
-		// Indicate if DataTables should read DOM data as an object or array
-		// Used in _fnGetRowElements
-		if ( typeof mDataSrc !== 'number' ) {
-			oSettings._rowReadObject = true;
-		}
-	
-		/* Feature sorting overrides column specific when off */
-		if ( !oSettings.oFeatures.bSort )
-		{
-			oCol.bSortable = false;
-			th.addClass( oClasses.sSortableNone ); // Have to add class here as order event isn't called
-		}
-	
-		/* Check that the class assignment is correct for sorting */
-		var bAsc = $.inArray('asc', oCol.asSorting) !== -1;
-		var bDesc = $.inArray('desc', oCol.asSorting) !== -1;
-		if ( !oCol.bSortable || (!bAsc && !bDesc) )
-		{
-			oCol.sSortingClass = oClasses.sSortableNone;
-			oCol.sSortingClassJUI = "";
-		}
-		else if ( bAsc && !bDesc )
-		{
-			oCol.sSortingClass = oClasses.sSortableAsc;
-			oCol.sSortingClassJUI = oClasses.sSortJUIAscAllowed;
-		}
-		else if ( !bAsc && bDesc )
-		{
-			oCol.sSortingClass = oClasses.sSortableDesc;
-			oCol.sSortingClassJUI = oClasses.sSortJUIDescAllowed;
-		}
-		else
-		{
-			oCol.sSortingClass = oClasses.sSortable;
-			oCol.sSortingClassJUI = oClasses.sSortJUI;
-		}
-	}
-	
-	
-	/**
-	 * Adjust the table column widths for new data. Note: you would probably want to
-	 * do a redraw after calling this function!
-	 *  @param {object} settings dataTables settings object
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnAdjustColumnSizing ( settings )
-	{
-		/* Not interested in doing column width calculation if auto-width is disabled */
-		if ( settings.oFeatures.bAutoWidth !== false )
-		{
-			var columns = settings.aoColumns;
-	
-			_fnCalculateColumnWidths( settings );
-			for ( var i=0 , iLen=columns.length ; i<iLen ; i++ )
-			{
-				columns[i].nTh.style.width = columns[i].sWidth;
-			}
-		}
-	
-		var scroll = settings.oScroll;
-		if ( scroll.sY !== '' || scroll.sX !== '')
-		{
-			_fnScrollDraw( settings );
-		}
-	
-		_fnCallbackFire( settings, null, 'column-sizing', [settings] );
-	}
-	
-	
-	/**
-	 * Covert the index of a visible column to the index in the data array (take account
-	 * of hidden columns)
-	 *  @param {object} oSettings dataTables settings object
-	 *  @param {int} iMatch Visible column index to lookup
-	 *  @returns {int} i the data index
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnVisibleToColumnIndex( oSettings, iMatch )
-	{
-		var aiVis = _fnGetColumns( oSettings, 'bVisible' );
-	
-		return typeof aiVis[iMatch] === 'number' ?
-			aiVis[iMatch] :
-			null;
-	}
-	
-	
-	/**
-	 * Covert the index of an index in the data array and convert it to the visible
-	 *   column index (take account of hidden columns)
-	 *  @param {int} iMatch Column index to lookup
-	 *  @param {object} oSettings dataTables settings object
-	 *  @returns {int} i the data index
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnColumnIndexToVisible( oSettings, iMatch )
-	{
-		var aiVis = _fnGetColumns( oSettings, 'bVisible' );
-		var iPos = $.inArray( iMatch, aiVis );
-	
-		return iPos !== -1 ? iPos : null;
-	}
-	
-	
-	/**
-	 * Get the number of visible columns
-	 *  @param {object} oSettings dataTables settings object
-	 *  @returns {int} i the number of visible columns
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnVisbleColumns( oSettings )
-	{
-		var vis = 0;
-	
-		// No reduce in IE8, use a loop for now
-		$.each( oSettings.aoColumns, function ( i, col ) {
-			if ( col.bVisible && $(col.nTh).css('display') !== 'none' ) {
-				vis++;
-			}
-		} );
-	
-		return vis;
-	}
-	
-	
-	/**
-	 * Get an array of column indexes that match a given property
-	 *  @param {object} oSettings dataTables settings object
-	 *  @param {string} sParam Parameter in aoColumns to look for - typically
-	 *    bVisible or bSearchable
-	 *  @returns {array} Array of indexes with matched properties
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnGetColumns( oSettings, sParam )
-	{
-		var a = [];
-	
-		$.map( oSettings.aoColumns, function(val, i) {
-			if ( val[sParam] ) {
-				a.push( i );
-			}
-		} );
-	
-		return a;
-	}
-	
-	
-	/**
-	 * Calculate the 'type' of a column
-	 *  @param {object} settings dataTables settings object
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnColumnTypes ( settings )
-	{
-		var columns = settings.aoColumns;
-		var data = settings.aoData;
-		var types = DataTable.ext.type.detect;
-		var i, ien, j, jen, k, ken;
-		var col, cell, detectedType, cache;
-	
-		// For each column, spin over the 
-		for ( i=0, ien=columns.length ; i<ien ; i++ ) {
-			col = columns[i];
-			cache = [];
-	
-			if ( ! col.sType && col._sManualType ) {
-				col.sType = col._sManualType;
-			}
-			else if ( ! col.sType ) {
-				for ( j=0, jen=types.length ; j<jen ; j++ ) {
-					for ( k=0, ken=data.length ; k<ken ; k++ ) {
-						// Use a cache array so we only need to get the type data
-						// from the formatter once (when using multiple detectors)
-						if ( cache[k] === undefined ) {
-							cache[k] = _fnGetCellData( settings, k, i, 'type' );
-						}
-	
-						detectedType = types[j]( cache[k], settings );
-	
-						// If null, then this type can't apply to this column, so
-						// rather than testing all cells, break out. There is an
-						// exception for the last type which is `html`. We need to
-						// scan all rows since it is possible to mix string and HTML
-						// types
-						if ( ! detectedType && j !== types.length-1 ) {
-							break;
-						}
-	
-						// Only a single match is needed for html type since it is
-						// bottom of the pile and very similar to string - but it
-						// must not be empty
-						if ( detectedType === 'html' && ! _empty(cache[k]) ) {
-							break;
-						}
-					}
-	
-					// Type is valid for all data points in the column - use this
-					// type
-					if ( detectedType ) {
-						col.sType = detectedType;
-						break;
-					}
-				}
-	
-				// Fall back - if no type was detected, always use string
-				if ( ! col.sType ) {
-					col.sType = 'string';
-				}
-			}
-		}
-	}
-	
-	
-	/**
-	 * Take the column definitions and static columns arrays and calculate how
-	 * they relate to column indexes. The callback function will then apply the
-	 * definition found for a column to a suitable configuration object.
-	 *  @param {object} oSettings dataTables settings object
-	 *  @param {array} aoColDefs The aoColumnDefs array that is to be applied
-	 *  @param {array} aoCols The aoColumns array that defines columns individually
-	 *  @param {function} fn Callback function - takes two parameters, the calculated
-	 *    column index and the definition for that column.
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnApplyColumnDefs( oSettings, aoColDefs, aoCols, fn )
-	{
-		var i, iLen, j, jLen, k, kLen, def;
-		var columns = oSettings.aoColumns;
-	
-		// Column definitions with aTargets
-		if ( aoColDefs )
-		{
-			/* Loop over the definitions array - loop in reverse so first instance has priority */
-			for ( i=aoColDefs.length-1 ; i>=0 ; i-- )
-			{
-				def = aoColDefs[i];
-	
-				/* Each definition can target multiple columns, as it is an array */
-				var aTargets = def.targets !== undefined ?
-					def.targets :
-					def.aTargets;
-	
-				if ( ! Array.isArray( aTargets ) )
-				{
-					aTargets = [ aTargets ];
-				}
-	
-				for ( j=0, jLen=aTargets.length ; j<jLen ; j++ )
-				{
-					if ( typeof aTargets[j] === 'number' && aTargets[j] >= 0 )
-					{
-						/* Add columns that we don't yet know about */
-						while( columns.length <= aTargets[j] )
-						{
-							_fnAddColumn( oSettings );
-						}
-	
-						/* Integer, basic index */
-						fn( aTargets[j], def );
-					}
-					else if ( typeof aTargets[j] === 'number' && aTargets[j] < 0 )
-					{
-						/* Negative integer, right to left column counting */
-						fn( columns.length+aTargets[j], def );
-					}
-					else if ( typeof aTargets[j] === 'string' )
-					{
-						/* Class name matching on TH element */
-						for ( k=0, kLen=columns.length ; k<kLen ; k++ )
-						{
-							if ( aTargets[j] == "_all" ||
-							     $(columns[k].nTh).hasClass( aTargets[j] ) )
-							{
-								fn( k, def );
-							}
-						}
-					}
-				}
-			}
-		}
-	
-		// Statically defined columns array
-		if ( aoCols )
-		{
-			for ( i=0, iLen=aoCols.length ; i<iLen ; i++ )
-			{
-				fn( i, aoCols[i] );
-			}
-		}
-	}
-	
-	/**
-	 * Add a data array to the table, creating DOM node etc. This is the parallel to
-	 * _fnGatherData, but for adding rows from a Javascript source, rather than a
-	 * DOM source.
-	 *  @param {object} oSettings dataTables settings object
-	 *  @param {array} aData data array to be added
-	 *  @param {node} [nTr] TR element to add to the table - optional. If not given,
-	 *    DataTables will create a row automatically
-	 *  @param {array} [anTds] Array of TD|TH elements for the row - must be given
-	 *    if nTr is.
-	 *  @returns {int} >=0 if successful (index of new aoData entry), -1 if failed
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnAddData ( oSettings, aDataIn, nTr, anTds )
-	{
-		/* Create the object for storing information about this new row */
-		var iRow = oSettings.aoData.length;
-		var oData = $.extend( true, {}, DataTable.models.oRow, {
-			src: nTr ? 'dom' : 'data',
-			idx: iRow
-		} );
-	
-		oData._aData = aDataIn;
-		oSettings.aoData.push( oData );
-	
-		/* Create the cells */
-		var nTd, sThisType;
-		var columns = oSettings.aoColumns;
-	
-		// Invalidate the column types as the new data needs to be revalidated
-		for ( var i=0, iLen=columns.length ; i<iLen ; i++ )
-		{
-			columns[i].sType = null;
-		}
-	
-		/* Add to the display array */
-		oSettings.aiDisplayMaster.push( iRow );
-	
-		var id = oSettings.rowIdFn( aDataIn );
-		if ( id !== undefined ) {
-			oSettings.aIds[ id ] = oData;
-		}
-	
-		/* Create the DOM information, or register it if already present */
-		if ( nTr || ! oSettings.oFeatures.bDeferRender )
-		{
-			_fnCreateTr( oSettings, iRow, nTr, anTds );
-		}
-	
-		return iRow;
-	}
-	
-	
-	/**
-	 * Add one or more TR elements to the table. Generally we'd expect to
-	 * use this for reading data from a DOM sourced table, but it could be
-	 * used for an TR element. Note that if a TR is given, it is used (i.e.
-	 * it is not cloned).
-	 *  @param {object} settings dataTables settings object
-	 *  @param {array|node|jQuery} trs The TR element(s) to add to the table
-	 *  @returns {array} Array of indexes for the added rows
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnAddTr( settings, trs )
-	{
-		var row;
-	
-		// Allow an individual node to be passed in
-		if ( ! (trs instanceof $) ) {
-			trs = $(trs);
-		}
-	
-		return trs.map( function (i, el) {
-			row = _fnGetRowElements( settings, el );
-			return _fnAddData( settings, row.data, el, row.cells );
-		} );
-	}
-	
-	
-	/**
-	 * Take a TR element and convert it to an index in aoData
-	 *  @param {object} oSettings dataTables settings object
-	 *  @param {node} n the TR element to find
-	 *  @returns {int} index if the node is found, null if not
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnNodeToDataIndex( oSettings, n )
-	{
-		return (n._DT_RowIndex!==undefined) ? n._DT_RowIndex : null;
-	}
-	
-	
-	/**
-	 * Take a TD element and convert it into a column data index (not the visible index)
-	 *  @param {object} oSettings dataTables settings object
-	 *  @param {int} iRow The row number the TD/TH can be found in
-	 *  @param {node} n The TD/TH element to find
-	 *  @returns {int} index if the node is found, -1 if not
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnNodeToColumnIndex( oSettings, iRow, n )
-	{
-		return $.inArray( n, oSettings.aoData[ iRow ].anCells );
-	}
-	
-	
-	/**
-	 * Get the data for a given cell from the internal cache, taking into account data mapping
-	 *  @param {object} settings dataTables settings object
-	 *  @param {int} rowIdx aoData row id
-	 *  @param {int} colIdx Column index
-	 *  @param {string} type data get type ('display', 'type' 'filter' 'sort')
-	 *  @returns {*} Cell data
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnGetCellData( settings, rowIdx, colIdx, type )
-	{
-		var draw           = settings.iDraw;
-		var col            = settings.aoColumns[colIdx];
-		var rowData        = settings.aoData[rowIdx]._aData;
-		var defaultContent = col.sDefaultContent;
-		var cellData       = col.fnGetData( rowData, type, {
-			settings: settings,
-			row:      rowIdx,
-			col:      colIdx
-		} );
-	
-		if ( cellData === undefined ) {
-			if ( settings.iDrawError != draw && defaultContent === null ) {
-				_fnLog( settings, 0, "Requested unknown parameter "+
-					(typeof col.mData=='function' ? '{function}' : "'"+col.mData+"'")+
-					" for row "+rowIdx+", column "+colIdx, 4 );
-				settings.iDrawError = draw;
-			}
-			return defaultContent;
-		}
-	
-		// When the data source is null and a specific data type is requested (i.e.
-		// not the original data), we can use default column data
-		if ( (cellData === rowData || cellData === null) && defaultContent !== null && type !== undefined ) {
-			cellData = defaultContent;
-		}
-		else if ( typeof cellData === 'function' ) {
-			// If the data source is a function, then we run it and use the return,
-			// executing in the scope of the data object (for instances)
-			return cellData.call( rowData );
-		}
-	
-		if ( cellData === null && type == 'display' ) {
-			return '';
-		}
-		return cellData;
-	}
-	
-	
-	/**
-	 * Set the value for a specific cell, into the internal data cache
-	 *  @param {object} settings dataTables settings object
-	 *  @param {int} rowIdx aoData row id
-	 *  @param {int} colIdx Column index
-	 *  @param {*} val Value to set
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnSetCellData( settings, rowIdx, colIdx, val )
-	{
-		var col     = settings.aoColumns[colIdx];
-		var rowData = settings.aoData[rowIdx]._aData;
-	
-		col.fnSetData( rowData, val, {
-			settings: settings,
-			row:      rowIdx,
-			col:      colIdx
-		}  );
-	}
-	
-	
-	// Private variable that is used to match action syntax in the data property object
-	var __reArray = /\[.*?\]$/;
-	var __reFn = /\(\)$/;
-	
-	/**
-	 * Split string on periods, taking into account escaped periods
-	 * @param  {string} str String to split
-	 * @return {array} Split string
-	 */
-	function _fnSplitObjNotation( str )
-	{
-		return $.map( str.match(/(\\.|[^\.])+/g) || [''], function ( s ) {
-			return s.replace(/\\\./g, '.');
-		} );
-	}
-	
-	
-	/**
-	 * Return a function that can be used to get data from a source object, taking
-	 * into account the ability to use nested objects as a source
-	 *  @param {string|int|function} mSource The data source for the object
-	 *  @returns {function} Data get function
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnGetObjectDataFn( mSource )
-	{
-		if ( $.isPlainObject( mSource ) )
-		{
-			/* Build an object of get functions, and wrap them in a single call */
-			var o = {};
-			$.each( mSource, function (key, val) {
-				if ( val ) {
-					o[key] = _fnGetObjectDataFn( val );
-				}
-			} );
-	
-			return function (data, type, row, meta) {
-				var t = o[type] || o._;
-				return t !== undefined ?
-					t(data, type, row, meta) :
-					data;
-			};
-		}
-		else if ( mSource === null )
-		{
-			/* Give an empty string for rendering / sorting etc */
-			return function (data) { // type, row and meta also passed, but not used
-				return data;
-			};
-		}
-		else if ( typeof mSource === 'function' )
-		{
-			return function (data, type, row, meta) {
-				return mSource( data, type, row, meta );
-			};
-		}
-		else if ( typeof mSource === 'string' && (mSource.indexOf('.') !== -1 ||
-			      mSource.indexOf('[') !== -1 || mSource.indexOf('(') !== -1) )
-		{
-			/* If there is a . in the source string then the data source is in a
-			 * nested object so we loop over the data for each level to get the next
-			 * level down. On each loop we test for undefined, and if found immediately
-			 * return. This allows entire objects to be missing and sDefaultContent to
-			 * be used if defined, rather than throwing an error
-			 */
-			var fetchData = function (data, type, src) {
-				var arrayNotation, funcNotation, out, innerSrc;
-	
-				if ( src !== "" )
-				{
-					var a = _fnSplitObjNotation( src );
-	
-					for ( var i=0, iLen=a.length ; i<iLen ; i++ )
-					{
-						// Check if we are dealing with special notation
-						arrayNotation = a[i].match(__reArray);
-						funcNotation = a[i].match(__reFn);
-	
-						if ( arrayNotation )
-						{
-							// Array notation
-							a[i] = a[i].replace(__reArray, '');
-	
-							// Condition allows simply [] to be passed in
-							if ( a[i] !== "" ) {
-								data = data[ a[i] ];
-							}
-							out = [];
-	
-							// Get the remainder of the nested object to get
-							a.splice( 0, i+1 );
-							innerSrc = a.join('.');
-	
-							// Traverse each entry in the array getting the properties requested
-							if ( Array.isArray( data ) ) {
-								for ( var j=0, jLen=data.length ; j<jLen ; j++ ) {
-									out.push( fetchData( data[j], type, innerSrc ) );
-								}
-							}
-	
-							// If a string is given in between the array notation indicators, that
-							// is used to join the strings together, otherwise an array is returned
-							var join = arrayNotation[0].substring(1, arrayNotation[0].length-1);
-							data = (join==="") ? out : out.join(join);
-	
-							// The inner call to fetchData has already traversed through the remainder
-							// of the source requested, so we exit from the loop
-							break;
-						}
-						else if ( funcNotation )
-						{
-							// Function call
-							a[i] = a[i].replace(__reFn, '');
-							data = data[ a[i] ]();
-							continue;
-						}
-	
-						if ( data === null || data[ a[i] ] === undefined )
-						{
-							return undefined;
-						}
-						data = data[ a[i] ];
-					}
-				}
-	
-				return data;
-			};
-	
-			return function (data, type) { // row and meta also passed, but not used
-				return fetchData( data, type, mSource );
-			};
-		}
-		else
-		{
-			/* Array or flat object mapping */
-			return function (data, type) { // row and meta also passed, but not used
-				return data[mSource];
-			};
-		}
-	}
-	
-	
-	/**
-	 * Return a function that can be used to set data from a source object, taking
-	 * into account the ability to use nested objects as a source
-	 *  @param {string|int|function} mSource The data source for the object
-	 *  @returns {function} Data set function
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnSetObjectDataFn( mSource )
-	{
-		if ( $.isPlainObject( mSource ) )
-		{
-			/* Unlike get, only the underscore (global) option is used for for
-			 * setting data since we don't know the type here. This is why an object
-			 * option is not documented for `mData` (which is read/write), but it is
-			 * for `mRender` which is read only.
-			 */
-			return _fnSetObjectDataFn( mSource._ );
-		}
-		else if ( mSource === null )
-		{
-			/* Nothing to do when the data source is null */
-			return function () {};
-		}
-		else if ( typeof mSource === 'function' )
-		{
-			return function (data, val, meta) {
-				mSource( data, 'set', val, meta );
-			};
-		}
-		else if ( typeof mSource === 'string' && (mSource.indexOf('.') !== -1 ||
-			      mSource.indexOf('[') !== -1 || mSource.indexOf('(') !== -1) )
-		{
-			/* Like the get, we need to get data from a nested object */
-			var setData = function (data, val, src) {
-				var a = _fnSplitObjNotation( src ), b;
-				var aLast = a[a.length-1];
-				var arrayNotation, funcNotation, o, innerSrc;
-	
-				for ( var i=0, iLen=a.length-1 ; i<iLen ; i++ )
-				{
-					// Protect against prototype pollution
-					if (a[i] === '__proto__' || a[i] === 'constructor') {
-						throw new Error('Cannot set prototype values');
-					}
-	
-					// Check if we are dealing with an array notation request
-					arrayNotation = a[i].match(__reArray);
-					funcNotation = a[i].match(__reFn);
-	
-					if ( arrayNotation )
-					{
-						a[i] = a[i].replace(__reArray, '');
-						data[ a[i] ] = [];
-	
-						// Get the remainder of the nested object to set so we can recurse
-						b = a.slice();
-						b.splice( 0, i+1 );
-						innerSrc = b.join('.');
-	
-						// Traverse each entry in the array setting the properties requested
-						if ( Array.isArray( val ) )
-						{
-							for ( var j=0, jLen=val.length ; j<jLen ; j++ )
-							{
-								o = {};
-								setData( o, val[j], innerSrc );
-								data[ a[i] ].push( o );
-							}
-						}
-						else
-						{
-							// We've been asked to save data to an array, but it
-							// isn't array data to be saved. Best that can be done
-							// is to just save the value.
-							data[ a[i] ] = val;
-						}
-	
-						// The inner call to setData has already traversed through the remainder
-						// of the source and has set the data, thus we can exit here
-						return;
-					}
-					else if ( funcNotation )
-					{
-						// Function call
-						a[i] = a[i].replace(__reFn, '');
-						data = data[ a[i] ]( val );
-					}
-	
-					// If the nested object doesn't currently exist - since we are
-					// trying to set the value - create it
-					if ( data[ a[i] ] === null || data[ a[i] ] === undefined )
-					{
-						data[ a[i] ] = {};
-					}
-					data = data[ a[i] ];
-				}
-	
-				// Last item in the input - i.e, the actual set
-				if ( aLast.match(__reFn ) )
-				{
-					// Function call
-					data = data[ aLast.replace(__reFn, '') ]( val );
-				}
-				else
-				{
-					// If array notation is used, we just want to strip it and use the property name
-					// and assign the value. If it isn't used, then we get the result we want anyway
-					data[ aLast.replace(__reArray, '') ] = val;
-				}
-			};
-	
-			return function (data, val) { // meta is also passed in, but not used
-				return setData( data, val, mSource );
-			};
-		}
-		else
-		{
-			/* Array or flat object mapping */
-			return function (data, val) { // meta is also passed in, but not used
-				data[mSource] = val;
-			};
-		}
-	}
-	
-	
-	/**
-	 * Return an array with the full table data
-	 *  @param {object} oSettings dataTables settings object
-	 *  @returns array {array} aData Master data array
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnGetDataMaster ( settings )
-	{
-		return _pluck( settings.aoData, '_aData' );
-	}
-	
-	
-	/**
-	 * Nuke the table
-	 *  @param {object} oSettings dataTables settings object
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnClearTable( settings )
-	{
-		settings.aoData.length = 0;
-		settings.aiDisplayMaster.length = 0;
-		settings.aiDisplay.length = 0;
-		settings.aIds = {};
-	}
-	
-	
-	 /**
-	 * Take an array of integers (index array) and remove a target integer (value - not
-	 * the key!)
-	 *  @param {array} a Index array to target
-	 *  @param {int} iTarget value to find
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnDeleteIndex( a, iTarget, splice )
-	{
-		var iTargetIndex = -1;
-	
-		for ( var i=0, iLen=a.length ; i<iLen ; i++ )
-		{
-			if ( a[i] == iTarget )
-			{
-				iTargetIndex = i;
-			}
-			else if ( a[i] > iTarget )
-			{
-				a[i]--;
-			}
-		}
-	
-		if ( iTargetIndex != -1 && splice === undefined )
-		{
-			a.splice( iTargetIndex, 1 );
-		}
-	}
-	
-	
-	/**
-	 * Mark cached data as invalid such that a re-read of the data will occur when
-	 * the cached data is next requested. Also update from the data source object.
-	 *
-	 * @param {object} settings DataTables settings object
-	 * @param {int}    rowIdx   Row index to invalidate
-	 * @param {string} [src]    Source to invalidate from: undefined, 'auto', 'dom'
-	 *     or 'data'
-	 * @param {int}    [colIdx] Column index to invalidate. If undefined the whole
-	 *     row will be invalidated
-	 * @memberof DataTable#oApi
-	 *
-	 * @todo For the modularisation of v1.11 this will need to become a callback, so
-	 *   the sort and filter methods can subscribe to it. That will required
-	 *   initialisation options for sorting, which is why it is not already baked in
-	 */
-	function _fnInvalidate( settings, rowIdx, src, colIdx )
-	{
-		var row = settings.aoData[ rowIdx ];
-		var i, ien;
-		var cellWrite = function ( cell, col ) {
-			// This is very frustrating, but in IE if you just write directly
-			// to innerHTML, and elements that are overwritten are GC'ed,
-			// even if there is a reference to them elsewhere
-			while ( cell.childNodes.length ) {
-				cell.removeChild( cell.firstChild );
-			}
-	
-			cell.innerHTML = _fnGetCellData( settings, rowIdx, col, 'display' );
-		};
-	
-		// Are we reading last data from DOM or the data object?
-		if ( src === 'dom' || ((! src || src === 'auto') && row.src === 'dom') ) {
-			// Read the data from the DOM
-			row._aData = _fnGetRowElements(
-					settings, row, colIdx, colIdx === undefined ? undefined : row._aData
-				)
-				.data;
-		}
-		else {
-			// Reading from data object, update the DOM
-			var cells = row.anCells;
-	
-			if ( cells ) {
-				if ( colIdx !== undefined ) {
-					cellWrite( cells[colIdx], colIdx );
-				}
-				else {
-					for ( i=0, ien=cells.length ; i<ien ; i++ ) {
-						cellWrite( cells[i], i );
-					}
-				}
-			}
-		}
-	
-		// For both row and cell invalidation, the cached data for sorting and
-		// filtering is nulled out
-		row._aSortData = null;
-		row._aFilterData = null;
-	
-		// Invalidate the type for a specific column (if given) or all columns since
-		// the data might have changed
-		var cols = settings.aoColumns;
-		if ( colIdx !== undefined ) {
-			cols[ colIdx ].sType = null;
-		}
-		else {
-			for ( i=0, ien=cols.length ; i<ien ; i++ ) {
-				cols[i].sType = null;
-			}
-	
-			// Update DataTables special `DT_*` attributes for the row
-			_fnRowAttributes( settings, row );
-		}
-	}
-	
-	
-	/**
-	 * Build a data source object from an HTML row, reading the contents of the
-	 * cells that are in the row.
-	 *
-	 * @param {object} settings DataTables settings object
-	 * @param {node|object} TR element from which to read data or existing row
-	 *   object from which to re-read the data from the cells
-	 * @param {int} [colIdx] Optional column index
-	 * @param {array|object} [d] Data source object. If `colIdx` is given then this
-	 *   parameter should also be given and will be used to write the data into.
-	 *   Only the column in question will be written
-	 * @returns {object} Object with two parameters: `data` the data read, in
-	 *   document order, and `cells` and array of nodes (they can be useful to the
-	 *   caller, so rather than needing a second traversal to get them, just return
-	 *   them from here).
-	 * @memberof DataTable#oApi
-	 */
-	function _fnGetRowElements( settings, row, colIdx, d )
-	{
-		var
-			tds = [],
-			td = row.firstChild,
-			name, col, o, i=0, contents,
-			columns = settings.aoColumns,
-			objectRead = settings._rowReadObject;
-	
-		// Allow the data object to be passed in, or construct
-		d = d !== undefined ?
-			d :
-			objectRead ?
-				{} :
-				[];
-	
-		var attr = function ( str, td  ) {
-			if ( typeof str === 'string' ) {
-				var idx = str.indexOf('@');
-	
-				if ( idx !== -1 ) {
-					var attr = str.substring( idx+1 );
-					var setter = _fnSetObjectDataFn( str );
-					setter( d, td.getAttribute( attr ) );
-				}
-			}
-		};
-	
-		// Read data from a cell and store into the data object
-		var cellProcess = function ( cell ) {
-			if ( colIdx === undefined || colIdx === i ) {
-				col = columns[i];
-				contents = (cell.innerHTML).trim();
-	
-				if ( col && col._bAttrSrc ) {
-					var setter = _fnSetObjectDataFn( col.mData._ );
-					setter( d, contents );
-	
-					attr( col.mData.sort, cell );
-					attr( col.mData.type, cell );
-					attr( col.mData.filter, cell );
-				}
-				else {
-					// Depending on the `data` option for the columns the data can
-					// be read to either an object or an array.
-					if ( objectRead ) {
-						if ( ! col._setter ) {
-							// Cache the setter function
-							col._setter = _fnSetObjectDataFn( col.mData );
-						}
-						col._setter( d, contents );
-					}
-					else {
-						d[i] = contents;
-					}
-				}
-			}
-	
-			i++;
-		};
-	
-		if ( td ) {
-			// `tr` element was passed in
-			while ( td ) {
-				name = td.nodeName.toUpperCase();
-	
-				if ( name == "TD" || name == "TH" ) {
-					cellProcess( td );
-					tds.push( td );
-				}
-	
-				td = td.nextSibling;
-			}
-		}
-		else {
-			// Existing row object passed in
-			tds = row.anCells;
-	
-			for ( var j=0, jen=tds.length ; j<jen ; j++ ) {
-				cellProcess( tds[j] );
-			}
-		}
-	
-		// Read the ID from the DOM if present
-		var rowNode = row.firstChild ? row : row.nTr;
-	
-		if ( rowNode ) {
-			var id = rowNode.getAttribute( 'id' );
-	
-			if ( id ) {
-				_fnSetObjectDataFn( settings.rowId )( d, id );
-			}
-		}
-	
-		return {
-			data: d,
-			cells: tds
-		};
-	}
-	/**
-	 * Create a new TR element (and it's TD children) for a row
-	 *  @param {object} oSettings dataTables settings object
-	 *  @param {int} iRow Row to consider
-	 *  @param {node} [nTrIn] TR element to add to the table - optional. If not given,
-	 *    DataTables will create a row automatically
-	 *  @param {array} [anTds] Array of TD|TH elements for the row - must be given
-	 *    if nTr is.
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnCreateTr ( oSettings, iRow, nTrIn, anTds )
-	{
-		var
-			row = oSettings.aoData[iRow],
-			rowData = row._aData,
-			cells = [],
-			nTr, nTd, oCol,
-			i, iLen, create;
-	
-		if ( row.nTr === null )
-		{
-			nTr = nTrIn || document.createElement('tr');
-	
-			row.nTr = nTr;
-			row.anCells = cells;
-	
-			/* Use a private property on the node to allow reserve mapping from the node
-			 * to the aoData array for fast look up
-			 */
-			nTr._DT_RowIndex = iRow;
-	
-			/* Special parameters can be given by the data source to be used on the row */
-			_fnRowAttributes( oSettings, row );
-	
-			/* Process each column */
-			for ( i=0, iLen=oSettings.aoColumns.length ; i<iLen ; i++ )
-			{
-				oCol = oSettings.aoColumns[i];
-				create = nTrIn ? false : true;
-	
-				nTd = create ? document.createElement( oCol.sCellType ) : anTds[i];
-				nTd._DT_CellIndex = {
-					row: iRow,
-					column: i
-				};
-				
-				cells.push( nTd );
-	
-				// Need to create the HTML if new, or if a rendering function is defined
-				if ( create || ((oCol.mRender || oCol.mData !== i) &&
-					 (!$.isPlainObject(oCol.mData) || oCol.mData._ !== i+'.display')
-				)) {
-					nTd.innerHTML = _fnGetCellData( oSettings, iRow, i, 'display' );
-				}
-	
-				/* Add user defined class */
-				if ( oCol.sClass )
-				{
-					nTd.className += ' '+oCol.sClass;
-				}
-	
-				// Visibility - add or remove as required
-				if ( oCol.bVisible && ! nTrIn )
-				{
-					nTr.appendChild( nTd );
-				}
-				else if ( ! oCol.bVisible && nTrIn )
-				{
-					nTd.parentNode.removeChild( nTd );
-				}
-	
-				if ( oCol.fnCreatedCell )
-				{
-					oCol.fnCreatedCell.call( oSettings.oInstance,
-						nTd, _fnGetCellData( oSettings, iRow, i ), rowData, iRow, i
-					);
-				}
-			}
-	
-			_fnCallbackFire( oSettings, 'aoRowCreatedCallback', null, [nTr, rowData, iRow, cells] );
-		}
-	}
-	
-	
-	/**
-	 * Add attributes to a row based on the special `DT_*` parameters in a data
-	 * source object.
-	 *  @param {object} settings DataTables settings object
-	 *  @param {object} DataTables row object for the row to be modified
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnRowAttributes( settings, row )
-	{
-		var tr = row.nTr;
-		var data = row._aData;
-	
-		if ( tr ) {
-			var id = settings.rowIdFn( data );
-	
-			if ( id ) {
-				tr.id = id;
-			}
-	
-			if ( data.DT_RowClass ) {
-				// Remove any classes added by DT_RowClass before
-				var a = data.DT_RowClass.split(' ');
-				row.__rowc = row.__rowc ?
-					_unique( row.__rowc.concat( a ) ) :
-					a;
-	
-				$(tr)
-					.removeClass( row.__rowc.join(' ') )
-					.addClass( data.DT_RowClass );
-			}
-	
-			if ( data.DT_RowAttr ) {
-				$(tr).attr( data.DT_RowAttr );
-			}
-	
-			if ( data.DT_RowData ) {
-				$(tr).data( data.DT_RowData );
-			}
-		}
-	}
-	
-	
-	/**
-	 * Create the HTML header for the table
-	 *  @param {object} oSettings dataTables settings object
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnBuildHead( oSettings )
-	{
-		var i, ien, cell, row, column;
-		var thead = oSettings.nTHead;
-		var tfoot = oSettings.nTFoot;
-		var createHeader = $('th, td', thead).length === 0;
-		var classes = oSettings.oClasses;
-		var columns = oSettings.aoColumns;
-	
-		if ( createHeader ) {
-			row = $('<tr/>').appendTo( thead );
-		}
-	
-		for ( i=0, ien=columns.length ; i<ien ; i++ ) {
-			column = columns[i];
-			cell = $( column.nTh ).addClass( column.sClass );
-	
-			if ( createHeader ) {
-				cell.appendTo( row );
-			}
-	
-			// 1.11 move into sorting
-			if ( oSettings.oFeatures.bSort ) {
-				cell.addClass( column.sSortingClass );
-	
-				if ( column.bSortable !== false ) {
-					cell
-						.attr( 'tabindex', oSettings.iTabIndex )
-						.attr( 'aria-controls', oSettings.sTableId );
-	
-					_fnSortAttachListener( oSettings, column.nTh, i );
-				}
-			}
-	
-			if ( column.sTitle != cell[0].innerHTML ) {
-				cell.html( column.sTitle );
-			}
-	
-			_fnRenderer( oSettings, 'header' )(
-				oSettings, cell, column, classes
-			);
-		}
-	
-		if ( createHeader ) {
-			_fnDetectHeader( oSettings.aoHeader, thead );
-		}
-		
-		/* ARIA role for the rows */
-		$(thead).children('tr').attr('role', 'row');
-	
-		/* Deal with the footer - add classes if required */
-		$(thead).children('tr').children('th, td').addClass( classes.sHeaderTH );
-		$(tfoot).children('tr').children('th, td').addClass( classes.sFooterTH );
-	
-		// Cache the footer cells. Note that we only take the cells from the first
-		// row in the footer. If there is more than one row the user wants to
-		// interact with, they need to use the table().foot() method. Note also this
-		// allows cells to be used for multiple columns using colspan
-		if ( tfoot !== null ) {
-			var cells = oSettings.aoFooter[0];
-	
-			for ( i=0, ien=cells.length ; i<ien ; i++ ) {
-				column = columns[i];
-				column.nTf = cells[i].cell;
-	
-				if ( column.sClass ) {
-					$(column.nTf).addClass( column.sClass );
-				}
-			}
-		}
-	}
-	
-	
-	/**
-	 * Draw the header (or footer) element based on the column visibility states. The
-	 * methodology here is to use the layout array from _fnDetectHeader, modified for
-	 * the instantaneous column visibility, to construct the new layout. The grid is
-	 * traversed over cell at a time in a rows x columns grid fashion, although each
-	 * cell insert can cover multiple elements in the grid - which is tracks using the
-	 * aApplied array. Cell inserts in the grid will only occur where there isn't
-	 * already a cell in that position.
-	 *  @param {object} oSettings dataTables settings object
-	 *  @param array {objects} aoSource Layout array from _fnDetectHeader
-	 *  @param {boolean} [bIncludeHidden=false] If true then include the hidden columns in the calc,
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnDrawHead( oSettings, aoSource, bIncludeHidden )
-	{
-		var i, iLen, j, jLen, k, kLen, n, nLocalTr;
-		var aoLocal = [];
-		var aApplied = [];
-		var iColumns = oSettings.aoColumns.length;
-		var iRowspan, iColspan;
-	
-		if ( ! aoSource )
-		{
-			return;
-		}
-	
-		if (  bIncludeHidden === undefined )
-		{
-			bIncludeHidden = false;
-		}
-	
-		/* Make a copy of the master layout array, but without the visible columns in it */
-		for ( i=0, iLen=aoSource.length ; i<iLen ; i++ )
-		{
-			aoLocal[i] = aoSource[i].slice();
-			aoLocal[i].nTr = aoSource[i].nTr;
-	
-			/* Remove any columns which are currently hidden */
-			for ( j=iColumns-1 ; j>=0 ; j-- )
-			{
-				if ( !oSettings.aoColumns[j].bVisible && !bIncludeHidden )
-				{
-					aoLocal[i].splice( j, 1 );
-				}
-			}
-	
-			/* Prep the applied array - it needs an element for each row */
-			aApplied.push( [] );
-		}
-	
-		for ( i=0, iLen=aoLocal.length ; i<iLen ; i++ )
-		{
-			nLocalTr = aoLocal[i].nTr;
-	
-			/* All cells are going to be replaced, so empty out the row */
-			if ( nLocalTr )
-			{
-				while( (n = nLocalTr.firstChild) )
-				{
-					nLocalTr.removeChild( n );
-				}
-			}
-	
-			for ( j=0, jLen=aoLocal[i].length ; j<jLen ; j++ )
-			{
-				iRowspan = 1;
-				iColspan = 1;
-	
-				/* Check to see if there is already a cell (row/colspan) covering our target
-				 * insert point. If there is, then there is nothing to do.
-				 */
-				if ( aApplied[i][j] === undefined )
-				{
-					nLocalTr.appendChild( aoLocal[i][j].cell );
-					aApplied[i][j] = 1;
-	
-					/* Expand the cell to cover as many rows as needed */
-					while ( aoLocal[i+iRowspan] !== undefined &&
-					        aoLocal[i][j].cell == aoLocal[i+iRowspan][j].cell )
-					{
-						aApplied[i+iRowspan][j] = 1;
-						iRowspan++;
-					}
-	
-					/* Expand the cell to cover as many columns as needed */
-					while ( aoLocal[i][j+iColspan] !== undefined &&
-					        aoLocal[i][j].cell == aoLocal[i][j+iColspan].cell )
-					{
-						/* Must update the applied array over the rows for the columns */
-						for ( k=0 ; k<iRowspan ; k++ )
-						{
-							aApplied[i+k][j+iColspan] = 1;
-						}
-						iColspan++;
-					}
-	
-					/* Do the actual expansion in the DOM */
-					$(aoLocal[i][j].cell)
-						.attr('rowspan', iRowspan)
-						.attr('colspan', iColspan);
-				}
-			}
-		}
-	}
-	
-	
-	/**
-	 * Insert the required TR nodes into the table for display
-	 *  @param {object} oSettings dataTables settings object
-	 *  @param ajaxComplete true after ajax call to complete rendering
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnDraw( oSettings, ajaxComplete )
-	{
-		/* Provide a pre-callback function which can be used to cancel the draw is false is returned */
-		var aPreDraw = _fnCallbackFire( oSettings, 'aoPreDrawCallback', 'preDraw', [oSettings] );
-		if ( $.inArray( false, aPreDraw ) !== -1 )
-		{
-			_fnProcessingDisplay( oSettings, false );
-			return;
-		}
-	
-		var i, iLen, n;
-		var anRows = [];
-		var iRowCount = 0;
-		var asStripeClasses = oSettings.asStripeClasses;
-		var iStripes = asStripeClasses.length;
-		var iOpenRows = oSettings.aoOpenRows.length;
-		var oLang = oSettings.oLanguage;
-		var iInitDisplayStart = oSettings.iInitDisplayStart;
-		var bServerSide = _fnDataSource( oSettings ) == 'ssp';
-		var aiDisplay = oSettings.aiDisplay;
-	
-		oSettings.bDrawing = true;
-	
-		/* Check and see if we have an initial draw position from state saving */
-		if ( iInitDisplayStart !== undefined && iInitDisplayStart !== -1 )
-		{
-			oSettings._iDisplayStart = bServerSide ?
-				iInitDisplayStart :
-				iInitDisplayStart >= oSettings.fnRecordsDisplay() ?
-					0 :
-					iInitDisplayStart;
-	
-			oSettings.iInitDisplayStart = -1;
-		}
-	
-		var iDisplayStart = oSettings._iDisplayStart;
-		var iDisplayEnd = oSettings.fnDisplayEnd();
-	
-		/* Server-side processing draw intercept */
-		if ( oSettings.bDeferLoading )
-		{
-			oSettings.bDeferLoading = false;
-			oSettings.iDraw++;
-			_fnProcessingDisplay( oSettings, false );
-		}
-		else if ( !bServerSide )
-		{
-			oSettings.iDraw++;
-		}
-		else if ( !oSettings.bDestroying && !ajaxComplete)
-		{
-			_fnAjaxUpdate( oSettings );
-			return;
-		}
-	
-		if ( aiDisplay.length !== 0 )
-		{
-			var iStart = bServerSide ? 0 : iDisplayStart;
-			var iEnd = bServerSide ? oSettings.aoData.length : iDisplayEnd;
-	
-			for ( var j=iStart ; j<iEnd ; j++ )
-			{
-				var iDataIndex = aiDisplay[j];
-				var aoData = oSettings.aoData[ iDataIndex ];
-				if ( aoData.nTr === null )
-				{
-					_fnCreateTr( oSettings, iDataIndex );
-				}
-	
-				var nRow = aoData.nTr;
-	
-				/* Remove the old striping classes and then add the new one */
-				if ( iStripes !== 0 )
-				{
-					var sStripe = asStripeClasses[ iRowCount % iStripes ];
-					if ( aoData._sRowStripe != sStripe )
-					{
-						$(nRow).removeClass( aoData._sRowStripe ).addClass( sStripe );
-						aoData._sRowStripe = sStripe;
-					}
-				}
-	
-				// Row callback functions - might want to manipulate the row
-				// iRowCount and j are not currently documented. Are they at all
-				// useful?
-				_fnCallbackFire( oSettings, 'aoRowCallback', null,
-					[nRow, aoData._aData, iRowCount, j, iDataIndex] );
-	
-				anRows.push( nRow );
-				iRowCount++;
-			}
-		}
-		else
-		{
-			/* Table is empty - create a row with an empty message in it */
-			var sZero = oLang.sZeroRecords;
-			if ( oSettings.iDraw == 1 &&  _fnDataSource( oSettings ) == 'ajax' )
-			{
-				sZero = oLang.sLoadingRecords;
-			}
-			else if ( oLang.sEmptyTable && oSettings.fnRecordsTotal() === 0 )
-			{
-				sZero = oLang.sEmptyTable;
-			}
-	
-			anRows[ 0 ] = $( '<tr/>', { 'class': iStripes ? asStripeClasses[0] : '' } )
-				.append( $('<td />', {
-					'valign':  'top',
-					'colSpan': _fnVisbleColumns( oSettings ),
-					'class':   oSettings.oClasses.sRowEmpty
-				} ).html( sZero ) )[0];
-		}
-	
-		/* Header and footer callbacks */
-		_fnCallbackFire( oSettings, 'aoHeaderCallback', 'header', [ $(oSettings.nTHead).children('tr')[0],
-			_fnGetDataMaster( oSettings ), iDisplayStart, iDisplayEnd, aiDisplay ] );
-	
-		_fnCallbackFire( oSettings, 'aoFooterCallback', 'footer', [ $(oSettings.nTFoot).children('tr')[0],
-			_fnGetDataMaster( oSettings ), iDisplayStart, iDisplayEnd, aiDisplay ] );
-	
-		var body = $(oSettings.nTBody);
-	
-		body.children().detach();
-		body.append( $(anRows) );
-	
-		/* Call all required callback functions for the end of a draw */
-		_fnCallbackFire( oSettings, 'aoDrawCallback', 'draw', [oSettings] );
-	
-		/* Draw is complete, sorting and filtering must be as well */
-		oSettings.bSorted = false;
-		oSettings.bFiltered = false;
-		oSettings.bDrawing = false;
-	}
-	
-	
-	/**
-	 * Redraw the table - taking account of the various features which are enabled
-	 *  @param {object} oSettings dataTables settings object
-	 *  @param {boolean} [holdPosition] Keep the current paging position. By default
-	 *    the paging is reset to the first page
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnReDraw( settings, holdPosition )
-	{
-		var
-			features = settings.oFeatures,
-			sort     = features.bSort,
-			filter   = features.bFilter;
-	
-		if ( sort ) {
-			_fnSort( settings );
-		}
-	
-		if ( filter ) {
-			_fnFilterComplete( settings, settings.oPreviousSearch );
-		}
-		else {
-			// No filtering, so we want to just use the display master
-			settings.aiDisplay = settings.aiDisplayMaster.slice();
-		}
-	
-		if ( holdPosition !== true ) {
-			settings._iDisplayStart = 0;
-		}
-	
-		// Let any modules know about the draw hold position state (used by
-		// scrolling internally)
-		settings._drawHold = holdPosition;
-	
-		_fnDraw( settings );
-	
-		settings._drawHold = false;
-	}
-	
-	
-	/**
-	 * Add the options to the page HTML for the table
-	 *  @param {object} oSettings dataTables settings object
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnAddOptionsHtml ( oSettings )
-	{
-		var classes = oSettings.oClasses;
-		var table = $(oSettings.nTable);
-		var holding = $('<div/>').insertBefore( table ); // Holding element for speed
-		var features = oSettings.oFeatures;
-	
-		// All DataTables are wrapped in a div
-		var insert = $('<div/>', {
-			id:      oSettings.sTableId+'_wrapper',
-			'class': classes.sWrapper + (oSettings.nTFoot ? '' : ' '+classes.sNoFooter)
-		} );
-	
-		oSettings.nHolding = holding[0];
-		oSettings.nTableWrapper = insert[0];
-		oSettings.nTableReinsertBefore = oSettings.nTable.nextSibling;
-	
-		/* Loop over the user set positioning and place the elements as needed */
-		var aDom = oSettings.sDom.split('');
-		var featureNode, cOption, nNewNode, cNext, sAttr, j;
-		for ( var i=0 ; i<aDom.length ; i++ )
-		{
-			featureNode = null;
-			cOption = aDom[i];
-	
-			if ( cOption == '<' )
-			{
-				/* New container div */
-				nNewNode = $('<div/>')[0];
-	
-				/* Check to see if we should append an id and/or a class name to the container */
-				cNext = aDom[i+1];
-				if ( cNext == "'" || cNext == '"' )
-				{
-					sAttr = "";
-					j = 2;
-					while ( aDom[i+j] != cNext )
-					{
-						sAttr += aDom[i+j];
-						j++;
-					}
-	
-					/* Replace jQuery UI constants @todo depreciated */
-					if ( sAttr == "H" )
-					{
-						sAttr = classes.sJUIHeader;
-					}
-					else if ( sAttr == "F" )
-					{
-						sAttr = classes.sJUIFooter;
-					}
-	
-					/* The attribute can be in the format of "#id.class", "#id" or "class" This logic
-					 * breaks the string into parts and applies them as needed
-					 */
-					if ( sAttr.indexOf('.') != -1 )
-					{
-						var aSplit = sAttr.split('.');
-						nNewNode.id = aSplit[0].substr(1, aSplit[0].length-1);
-						nNewNode.className = aSplit[1];
-					}
-					else if ( sAttr.charAt(0) == "#" )
-					{
-						nNewNode.id = sAttr.substr(1, sAttr.length-1);
-					}
-					else
-					{
-						nNewNode.className = sAttr;
-					}
-	
-					i += j; /* Move along the position array */
-				}
-	
-				insert.append( nNewNode );
-				insert = $(nNewNode);
-			}
-			else if ( cOption == '>' )
-			{
-				/* End container div */
-				insert = insert.parent();
-			}
-			// @todo Move options into their own plugins?
-			else if ( cOption == 'l' && features.bPaginate && features.bLengthChange )
-			{
-				/* Length */
-				featureNode = _fnFeatureHtmlLength( oSettings );
-			}
-			else if ( cOption == 'f' && features.bFilter )
-			{
-				/* Filter */
-				featureNode = _fnFeatureHtmlFilter( oSettings );
-			}
-			else if ( cOption == 'r' && features.bProcessing )
-			{
-				/* pRocessing */
-				featureNode = _fnFeatureHtmlProcessing( oSettings );
-			}
-			else if ( cOption == 't' )
-			{
-				/* Table */
-				featureNode = _fnFeatureHtmlTable( oSettings );
-			}
-			else if ( cOption ==  'i' && features.bInfo )
-			{
-				/* Info */
-				featureNode = _fnFeatureHtmlInfo( oSettings );
-			}
-			else if ( cOption == 'p' && features.bPaginate )
-			{
-				/* Pagination */
-				featureNode = _fnFeatureHtmlPaginate( oSettings );
-			}
-			else if ( DataTable.ext.feature.length !== 0 )
-			{
-				/* Plug-in features */
-				var aoFeatures = DataTable.ext.feature;
-				for ( var k=0, kLen=aoFeatures.length ; k<kLen ; k++ )
-				{
-					if ( cOption == aoFeatures[k].cFeature )
-					{
-						featureNode = aoFeatures[k].fnInit( oSettings );
-						break;
-					}
-				}
-			}
-	
-			/* Add to the 2D features array */
-			if ( featureNode )
-			{
-				var aanFeatures = oSettings.aanFeatures;
-	
-				if ( ! aanFeatures[cOption] )
-				{
-					aanFeatures[cOption] = [];
-				}
-	
-				aanFeatures[cOption].push( featureNode );
-				insert.append( featureNode );
-			}
-		}
-	
-		/* Built our DOM structure - replace the holding div with what we want */
-		holding.replaceWith( insert );
-		oSettings.nHolding = null;
-	}
-	
-	
-	/**
-	 * Use the DOM source to create up an array of header cells. The idea here is to
-	 * create a layout grid (array) of rows x columns, which contains a reference
-	 * to the cell that that point in the grid (regardless of col/rowspan), such that
-	 * any column / row could be removed and the new grid constructed
-	 *  @param array {object} aLayout Array to store the calculated layout in
-	 *  @param {node} nThead The header/footer element for the table
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnDetectHeader ( aLayout, nThead )
-	{
-		var nTrs = $(nThead).children('tr');
-		var nTr, nCell;
-		var i, k, l, iLen, jLen, iColShifted, iColumn, iColspan, iRowspan;
-		var bUnique;
-		var fnShiftCol = function ( a, i, j ) {
-			var k = a[i];
-	                while ( k[j] ) {
-				j++;
-			}
-			return j;
-		};
-	
-		aLayout.splice( 0, aLayout.length );
-	
-		/* We know how many rows there are in the layout - so prep it */
-		for ( i=0, iLen=nTrs.length ; i<iLen ; i++ )
-		{
-			aLayout.push( [] );
-		}
-	
-		/* Calculate a layout array */
-		for ( i=0, iLen=nTrs.length ; i<iLen ; i++ )
-		{
-			nTr = nTrs[i];
-			iColumn = 0;
-	
-			/* For every cell in the row... */
-			nCell = nTr.firstChild;
-			while ( nCell ) {
-				if ( nCell.nodeName.toUpperCase() == "TD" ||
-				     nCell.nodeName.toUpperCase() == "TH" )
-				{
-					/* Get the col and rowspan attributes from the DOM and sanitise them */
-					iColspan = nCell.getAttribute('colspan') * 1;
-					iRowspan = nCell.getAttribute('rowspan') * 1;
-					iColspan = (!iColspan || iColspan===0 || iColspan===1) ? 1 : iColspan;
-					iRowspan = (!iRowspan || iRowspan===0 || iRowspan===1) ? 1 : iRowspan;
-	
-					/* There might be colspan cells already in this row, so shift our target
-					 * accordingly
-					 */
-					iColShifted = fnShiftCol( aLayout, i, iColumn );
-	
-					/* Cache calculation for unique columns */
-					bUnique = iColspan === 1 ? true : false;
-	
-					/* If there is col / rowspan, copy the information into the layout grid */
-					for ( l=0 ; l<iColspan ; l++ )
-					{
-						for ( k=0 ; k<iRowspan ; k++ )
-						{
-							aLayout[i+k][iColShifted+l] = {
-								"cell": nCell,
-								"unique": bUnique
-							};
-							aLayout[i+k].nTr = nTr;
-						}
-					}
-				}
-				nCell = nCell.nextSibling;
-			}
-		}
-	}
-	
-	
-	/**
-	 * Get an array of unique th elements, one for each column
-	 *  @param {object} oSettings dataTables settings object
-	 *  @param {node} nHeader automatically detect the layout from this node - optional
-	 *  @param {array} aLayout thead/tfoot layout from _fnDetectHeader - optional
-	 *  @returns array {node} aReturn list of unique th's
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnGetUniqueThs ( oSettings, nHeader, aLayout )
-	{
-		var aReturn = [];
-		if ( !aLayout )
-		{
-			aLayout = oSettings.aoHeader;
-			if ( nHeader )
-			{
-				aLayout = [];
-				_fnDetectHeader( aLayout, nHeader );
-			}
-		}
-	
-		for ( var i=0, iLen=aLayout.length ; i<iLen ; i++ )
-		{
-			for ( var j=0, jLen=aLayout[i].length ; j<jLen ; j++ )
-			{
-				if ( aLayout[i][j].unique &&
-					 (!aReturn[j] || !oSettings.bSortCellsTop) )
-				{
-					aReturn[j] = aLayout[i][j].cell;
-				}
-			}
-		}
-	
-		return aReturn;
-	}
-	
-	/**
-	 * Create an Ajax call based on the table's settings, taking into account that
-	 * parameters can have multiple forms, and backwards compatibility.
-	 *
-	 * @param {object} oSettings dataTables settings object
-	 * @param {array} data Data to send to the server, required by
-	 *     DataTables - may be augmented by developer callbacks
-	 * @param {function} fn Callback function to run when data is obtained
-	 */
-	function _fnBuildAjax( oSettings, data, fn )
-	{
-		// Compatibility with 1.9-, allow fnServerData and event to manipulate
-		_fnCallbackFire( oSettings, 'aoServerParams', 'serverParams', [data] );
-	
-		// Convert to object based for 1.10+ if using the old array scheme which can
-		// come from server-side processing or serverParams
-		if ( data && Array.isArray(data) ) {
-			var tmp = {};
-			var rbracket = /(.*?)\[\]$/;
-	
-			$.each( data, function (key, val) {
-				var match = val.name.match(rbracket);
-	
-				if ( match ) {
-					// Support for arrays
-					var name = match[0];
-	
-					if ( ! tmp[ name ] ) {
-						tmp[ name ] = [];
-					}
-					tmp[ name ].push( val.value );
-				}
-				else {
-					tmp[val.name] = val.value;
-				}
-			} );
-			data = tmp;
-		}
-	
-		var ajaxData;
-		var ajax = oSettings.ajax;
-		var instance = oSettings.oInstance;
-		var callback = function ( json ) {
-			_fnCallbackFire( oSettings, null, 'xhr', [oSettings, json, oSettings.jqXHR] );
-			fn( json );
-		};
-	
-		if ( $.isPlainObject( ajax ) && ajax.data )
-		{
-			ajaxData = ajax.data;
-	
-			var newData = typeof ajaxData === 'function' ?
-				ajaxData( data, oSettings ) :  // fn can manipulate data or return
-				ajaxData;                      // an object object or array to merge
-	
-			// If the function returned something, use that alone
-			data = typeof ajaxData === 'function' && newData ?
-				newData :
-				$.extend( true, data, newData );
-	
-			// Remove the data property as we've resolved it already and don't want
-			// jQuery to do it again (it is restored at the end of the function)
-			delete ajax.data;
-		}
-	
-		var baseAjax = {
-			"data": data,
-			"success": function (json) {
-				var error = json.error || json.sError;
-				if ( error ) {
-					_fnLog( oSettings, 0, error );
-				}
-	
-				oSettings.json = json;
-				callback( json );
-			},
-			"dataType": "json",
-			"cache": false,
-			"type": oSettings.sServerMethod,
-			"error": function (xhr, error, thrown) {
-				var ret = _fnCallbackFire( oSettings, null, 'xhr', [oSettings, null, oSettings.jqXHR] );
-	
-				if ( $.inArray( true, ret ) === -1 ) {
-					if ( error == "parsererror" ) {
-						_fnLog( oSettings, 0, 'Invalid JSON response', 1 );
-					}
-					else if ( xhr.readyState === 4 ) {
-						_fnLog( oSettings, 0, 'Ajax error', 7 );
-					}
-				}
-	
-				_fnProcessingDisplay( oSettings, false );
-			}
-		};
-	
-		// Store the data submitted for the API
-		oSettings.oAjaxData = data;
-	
-		// Allow plug-ins and external processes to modify the data
-		_fnCallbackFire( oSettings, null, 'preXhr', [oSettings, data] );
-	
-		if ( oSettings.fnServerData )
-		{
-			// DataTables 1.9- compatibility
-			oSettings.fnServerData.call( instance,
-				oSettings.sAjaxSource,
-				$.map( data, function (val, key) { // Need to convert back to 1.9 trad format
-					return { name: key, value: val };
-				} ),
-				callback,
-				oSettings
-			);
-		}
-		else if ( oSettings.sAjaxSource || typeof ajax === 'string' )
-		{
-			// DataTables 1.9- compatibility
-			oSettings.jqXHR = $.ajax( $.extend( baseAjax, {
-				url: ajax || oSettings.sAjaxSource
-			} ) );
-		}
-		else if ( typeof ajax === 'function' )
-		{
-			// Is a function - let the caller define what needs to be done
-			oSettings.jqXHR = ajax.call( instance, data, callback, oSettings );
-		}
-		else
-		{
-			// Object to extend the base settings
-			oSettings.jqXHR = $.ajax( $.extend( baseAjax, ajax ) );
-	
-			// Restore for next time around
-			ajax.data = ajaxData;
-		}
-	}
-	
-	
-	/**
-	 * Update the table using an Ajax call
-	 *  @param {object} settings dataTables settings object
-	 *  @returns {boolean} Block the table drawing or not
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnAjaxUpdate( settings )
-	{
-		settings.iDraw++;
-		_fnProcessingDisplay( settings, true );
-	
-		_fnBuildAjax(
-			settings,
-			_fnAjaxParameters( settings ),
-			function(json) {
-				_fnAjaxUpdateDraw( settings, json );
-			}
-		);
-	}
-	
-	
-	/**
-	 * Build up the parameters in an object needed for a server-side processing
-	 * request. Note that this is basically done twice, is different ways - a modern
-	 * method which is used by default in DataTables 1.10 which uses objects and
-	 * arrays, or the 1.9- method with is name / value pairs. 1.9 method is used if
-	 * the sAjaxSource option is used in the initialisation, or the legacyAjax
-	 * option is set.
-	 *  @param {object} oSettings dataTables settings object
-	 *  @returns {bool} block the table drawing or not
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnAjaxParameters( settings )
-	{
-		var
-			columns = settings.aoColumns,
-			columnCount = columns.length,
-			features = settings.oFeatures,
-			preSearch = settings.oPreviousSearch,
-			preColSearch = settings.aoPreSearchCols,
-			i, data = [], dataProp, column, columnSearch,
-			sort = _fnSortFlatten( settings ),
-			displayStart = settings._iDisplayStart,
-			displayLength = features.bPaginate !== false ?
-				settings._iDisplayLength :
-				-1;
-	
-		var param = function ( name, value ) {
-			data.push( { 'name': name, 'value': value } );
-		};
-	
-		// DataTables 1.9- compatible method
-		param( 'sEcho',          settings.iDraw );
-		param( 'iColumns',       columnCount );
-		param( 'sColumns',       _pluck( columns, 'sName' ).join(',') );
-		param( 'iDisplayStart',  displayStart );
-		param( 'iDisplayLength', displayLength );
-	
-		// DataTables 1.10+ method
-		var d = {
-			draw:    settings.iDraw,
-			columns: [],
-			order:   [],
-			start:   displayStart,
-			length:  displayLength,
-			search:  {
-				value: preSearch.sSearch,
-				regex: preSearch.bRegex
-			}
-		};
-	
-		for ( i=0 ; i<columnCount ; i++ ) {
-			column = columns[i];
-			columnSearch = preColSearch[i];
-			dataProp = typeof column.mData=="function" ? 'function' : column.mData ;
-	
-			d.columns.push( {
-				data:       dataProp,
-				name:       column.sName,
-				searchable: column.bSearchable,
-				orderable:  column.bSortable,
-				search:     {
-					value: columnSearch.sSearch,
-					regex: columnSearch.bRegex
-				}
-			} );
-	
-			param( "mDataProp_"+i, dataProp );
-	
-			if ( features.bFilter ) {
-				param( 'sSearch_'+i,     columnSearch.sSearch );
-				param( 'bRegex_'+i,      columnSearch.bRegex );
-				param( 'bSearchable_'+i, column.bSearchable );
-			}
-	
-			if ( features.bSort ) {
-				param( 'bSortable_'+i, column.bSortable );
-			}
-		}
-	
-		if ( features.bFilter ) {
-			param( 'sSearch', preSearch.sSearch );
-			param( 'bRegex', preSearch.bRegex );
-		}
-	
-		if ( features.bSort ) {
-			$.each( sort, function ( i, val ) {
-				d.order.push( { column: val.col, dir: val.dir } );
-	
-				param( 'iSortCol_'+i, val.col );
-				param( 'sSortDir_'+i, val.dir );
-			} );
-	
-			param( 'iSortingCols', sort.length );
-		}
-	
-		// If the legacy.ajax parameter is null, then we automatically decide which
-		// form to use, based on sAjaxSource
-		var legacy = DataTable.ext.legacy.ajax;
-		if ( legacy === null ) {
-			return settings.sAjaxSource ? data : d;
-		}
-	
-		// Otherwise, if legacy has been specified then we use that to decide on the
-		// form
-		return legacy ? data : d;
-	}
-	
-	
-	/**
-	 * Data the data from the server (nuking the old) and redraw the table
-	 *  @param {object} oSettings dataTables settings object
-	 *  @param {object} json json data return from the server.
-	 *  @param {string} json.sEcho Tracking flag for DataTables to match requests
-	 *  @param {int} json.iTotalRecords Number of records in the data set, not accounting for filtering
-	 *  @param {int} json.iTotalDisplayRecords Number of records in the data set, accounting for filtering
-	 *  @param {array} json.aaData The data to display on this page
-	 *  @param {string} [json.sColumns] Column ordering (sName, comma separated)
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnAjaxUpdateDraw ( settings, json )
-	{
-		// v1.10 uses camelCase variables, while 1.9 uses Hungarian notation.
-		// Support both
-		var compat = function ( old, modern ) {
-			return json[old] !== undefined ? json[old] : json[modern];
-		};
-	
-		var data = _fnAjaxDataSrc( settings, json );
-		var draw            = compat( 'sEcho',                'draw' );
-		var recordsTotal    = compat( 'iTotalRecords',        'recordsTotal' );
-		var recordsFiltered = compat( 'iTotalDisplayRecords', 'recordsFiltered' );
-	
-		if ( draw !== undefined ) {
-			// Protect against out of sequence returns
-			if ( draw*1 < settings.iDraw ) {
-				return;
-			}
-			settings.iDraw = draw * 1;
-		}
-	
-		_fnClearTable( settings );
-		settings._iRecordsTotal   = parseInt(recordsTotal, 10);
-		settings._iRecordsDisplay = parseInt(recordsFiltered, 10);
-	
-		for ( var i=0, ien=data.length ; i<ien ; i++ ) {
-			_fnAddData( settings, data[i] );
-		}
-		settings.aiDisplay = settings.aiDisplayMaster.slice();
-	
-		_fnDraw( settings, true );
-	
-		if ( ! settings._bInitComplete ) {
-			_fnInitComplete( settings, json );
-		}
-	
-		_fnProcessingDisplay( settings, false );
-	}
-	
-	
-	/**
-	 * Get the data from the JSON data source to use for drawing a table. Using
-	 * `_fnGetObjectDataFn` allows the data to be sourced from a property of the
-	 * source object, or from a processing function.
-	 *  @param {object} oSettings dataTables settings object
-	 *  @param  {object} json Data source object / array from the server
-	 *  @return {array} Array of data to use
-	 */
-	function _fnAjaxDataSrc ( oSettings, json )
-	{
-		var dataSrc = $.isPlainObject( oSettings.ajax ) && oSettings.ajax.dataSrc !== undefined ?
-			oSettings.ajax.dataSrc :
-			oSettings.sAjaxDataProp; // Compatibility with 1.9-.
-	
-		// Compatibility with 1.9-. In order to read from aaData, check if the
-		// default has been changed, if not, check for aaData
-		if ( dataSrc === 'data' ) {
-			return json.aaData || json[dataSrc];
-		}
-	
-		return dataSrc !== "" ?
-			_fnGetObjectDataFn( dataSrc )( json ) :
-			json;
-	}
-	
-	/**
-	 * Generate the node required for filtering text
-	 *  @returns {node} Filter control element
-	 *  @param {object} oSettings dataTables settings object
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnFeatureHtmlFilter ( settings )
-	{
-		var classes = settings.oClasses;
-		var tableId = settings.sTableId;
-		var language = settings.oLanguage;
-		var previousSearch = settings.oPreviousSearch;
-		var features = settings.aanFeatures;
-		var input = '<input type="search" class="'+classes.sFilterInput+'"/>';
-	
-		var str = language.sSearch;
-		str = str.match(/_INPUT_/) ?
-			str.replace('_INPUT_', input) :
-			str+input;
-	
-		var filter = $('<div/>', {
-				'id': ! features.f ? tableId+'_filter' : null,
-				'class': classes.sFilter
-			} )
-			.append( $('<label/>' ).append( str ) );
-	
-		var searchFn = function() {
-			/* Update all other filter input elements for the new display */
-			var n = features.f;
-			var val = !this.value ? "" : this.value; // mental IE8 fix :-(
-	
-			/* Now do the filter */
-			if ( val != previousSearch.sSearch ) {
-				_fnFilterComplete( settings, {
-					"sSearch": val,
-					"bRegex": previousSearch.bRegex,
-					"bSmart": previousSearch.bSmart ,
-					"bCaseInsensitive": previousSearch.bCaseInsensitive
-				} );
-	
-				// Need to redraw, without resorting
-				settings._iDisplayStart = 0;
-				_fnDraw( settings );
-			}
-		};
-	
-		var searchDelay = settings.searchDelay !== null ?
-			settings.searchDelay :
-			_fnDataSource( settings ) === 'ssp' ?
-				400 :
-				0;
-	
-		var jqFilter = $('input', filter)
-			.val( previousSearch.sSearch )
-			.attr( 'placeholder', language.sSearchPlaceholder )
-			.on(
-				'keyup.DT search.DT input.DT paste.DT cut.DT',
-				searchDelay ?
-					_fnThrottle( searchFn, searchDelay ) :
-					searchFn
-			)
-			.on( 'mouseup', function(e) {
-				// Edge fix! Edge 17 does not trigger anything other than mouse events when clicking
-				// on the clear icon (Edge bug 17584515). This is safe in other browsers as `searchFn`
-				// checks the value to see if it has changed. In other browsers it won't have.
-				setTimeout( function () {
-					searchFn.call(jqFilter[0]);
-				}, 10);
-			} )
-			.on( 'keypress.DT', function(e) {
-				/* Prevent form submission */
-				if ( e.keyCode == 13 ) {
-					return false;
-				}
-			} )
-			.attr('aria-controls', tableId);
-	
-		// Update the input elements whenever the table is filtered
-		$(settings.nTable).on( 'search.dt.DT', function ( ev, s ) {
-			if ( settings === s ) {
-				// IE9 throws an 'unknown error' if document.activeElement is used
-				// inside an iframe or frame...
-				try {
-					if ( jqFilter[0] !== document.activeElement ) {
-						jqFilter.val( previousSearch.sSearch );
-					}
-				}
-				catch ( e ) {}
-			}
-		} );
-	
-		return filter[0];
-	}
-	
-	
-	/**
-	 * Filter the table using both the global filter and column based filtering
-	 *  @param {object} oSettings dataTables settings object
-	 *  @param {object} oSearch search information
-	 *  @param {int} [iForce] force a research of the master array (1) or not (undefined or 0)
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnFilterComplete ( oSettings, oInput, iForce )
-	{
-		var oPrevSearch = oSettings.oPreviousSearch;
-		var aoPrevSearch = oSettings.aoPreSearchCols;
-		var fnSaveFilter = function ( oFilter ) {
-			/* Save the filtering values */
-			oPrevSearch.sSearch = oFilter.sSearch;
-			oPrevSearch.bRegex = oFilter.bRegex;
-			oPrevSearch.bSmart = oFilter.bSmart;
-			oPrevSearch.bCaseInsensitive = oFilter.bCaseInsensitive;
-		};
-		var fnRegex = function ( o ) {
-			// Backwards compatibility with the bEscapeRegex option
-			return o.bEscapeRegex !== undefined ? !o.bEscapeRegex : o.bRegex;
-		};
-	
-		// Resolve any column types that are unknown due to addition or invalidation
-		// @todo As per sort - can this be moved into an event handler?
-		_fnColumnTypes( oSettings );
-	
-		/* In server-side processing all filtering is done by the server, so no point hanging around here */
-		if ( _fnDataSource( oSettings ) != 'ssp' )
-		{
-			/* Global filter */
-			_fnFilter( oSettings, oInput.sSearch, iForce, fnRegex(oInput), oInput.bSmart, oInput.bCaseInsensitive );
-			fnSaveFilter( oInput );
-	
-			/* Now do the individual column filter */
-			for ( var i=0 ; i<aoPrevSearch.length ; i++ )
-			{
-				_fnFilterColumn( oSettings, aoPrevSearch[i].sSearch, i, fnRegex(aoPrevSearch[i]),
-					aoPrevSearch[i].bSmart, aoPrevSearch[i].bCaseInsensitive );
-			}
-	
-			/* Custom filtering */
-			_fnFilterCustom( oSettings );
-		}
-		else
-		{
-			fnSaveFilter( oInput );
-		}
-	
-		/* Tell the draw function we have been filtering */
-		oSettings.bFiltered = true;
-		_fnCallbackFire( oSettings, null, 'search', [oSettings] );
-	}
-	
-	
-	/**
-	 * Apply custom filtering functions
-	 *  @param {object} oSettings dataTables settings object
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnFilterCustom( settings )
-	{
-		var filters = DataTable.ext.search;
-		var displayRows = settings.aiDisplay;
-		var row, rowIdx;
-	
-		for ( var i=0, ien=filters.length ; i<ien ; i++ ) {
-			var rows = [];
-	
-			// Loop over each row and see if it should be included
-			for ( var j=0, jen=displayRows.length ; j<jen ; j++ ) {
-				rowIdx = displayRows[ j ];
-				row = settings.aoData[ rowIdx ];
-	
-				if ( filters[i]( settings, row._aFilterData, rowIdx, row._aData, j ) ) {
-					rows.push( rowIdx );
-				}
-			}
-	
-			// So the array reference doesn't break set the results into the
-			// existing array
-			displayRows.length = 0;
-			$.merge( displayRows, rows );
-		}
-	}
-	
-	
-	/**
-	 * Filter the table on a per-column basis
-	 *  @param {object} oSettings dataTables settings object
-	 *  @param {string} sInput string to filter on
-	 *  @param {int} iColumn column to filter
-	 *  @param {bool} bRegex treat search string as a regular expression or not
-	 *  @param {bool} bSmart use smart filtering or not
-	 *  @param {bool} bCaseInsensitive Do case insenstive matching or not
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnFilterColumn ( settings, searchStr, colIdx, regex, smart, caseInsensitive )
-	{
-		if ( searchStr === '' ) {
-			return;
-		}
-	
-		var data;
-		var out = [];
-		var display = settings.aiDisplay;
-		var rpSearch = _fnFilterCreateSearch( searchStr, regex, smart, caseInsensitive );
-	
-		for ( var i=0 ; i<display.length ; i++ ) {
-			data = settings.aoData[ display[i] ]._aFilterData[ colIdx ];
-	
-			if ( rpSearch.test( data ) ) {
-				out.push( display[i] );
-			}
-		}
-	
-		settings.aiDisplay = out;
-	}
-	
-	
-	/**
-	 * Filter the data table based on user input and draw the table
-	 *  @param {object} settings dataTables settings object
-	 *  @param {string} input string to filter on
-	 *  @param {int} force optional - force a research of the master array (1) or not (undefined or 0)
-	 *  @param {bool} regex treat as a regular expression or not
-	 *  @param {bool} smart perform smart filtering or not
-	 *  @param {bool} caseInsensitive Do case insenstive matching or not
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnFilter( settings, input, force, regex, smart, caseInsensitive )
-	{
-		var rpSearch = _fnFilterCreateSearch( input, regex, smart, caseInsensitive );
-		var prevSearch = settings.oPreviousSearch.sSearch;
-		var displayMaster = settings.aiDisplayMaster;
-		var display, invalidated, i;
-		var filtered = [];
-	
-		// Need to take account of custom filtering functions - always filter
-		if ( DataTable.ext.search.length !== 0 ) {
-			force = true;
-		}
-	
-		// Check if any of the rows were invalidated
-		invalidated = _fnFilterData( settings );
-	
-		// If the input is blank - we just want the full data set
-		if ( input.length <= 0 ) {
-			settings.aiDisplay = displayMaster.slice();
-		}
-		else {
-			// New search - start from the master array
-			if ( invalidated ||
-				 force ||
-				 regex ||
-				 prevSearch.length > input.length ||
-				 input.indexOf(prevSearch) !== 0 ||
-				 settings.bSorted // On resort, the display master needs to be
-				                  // re-filtered since indexes will have changed
-			) {
-				settings.aiDisplay = displayMaster.slice();
-			}
-	
-			// Search the display array
-			display = settings.aiDisplay;
-	
-			for ( i=0 ; i<display.length ; i++ ) {
-				if ( rpSearch.test( settings.aoData[ display[i] ]._sFilterRow ) ) {
-					filtered.push( display[i] );
-				}
-			}
-	
-			settings.aiDisplay = filtered;
-		}
-	}
-	
-	
-	/**
-	 * Build a regular expression object suitable for searching a table
-	 *  @param {string} sSearch string to search for
-	 *  @param {bool} bRegex treat as a regular expression or not
-	 *  @param {bool} bSmart perform smart filtering or not
-	 *  @param {bool} bCaseInsensitive Do case insensitive matching or not
-	 *  @returns {RegExp} constructed object
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnFilterCreateSearch( search, regex, smart, caseInsensitive )
-	{
-		search = regex ?
-			search :
-			_fnEscapeRegex( search );
-		
-		if ( smart ) {
-			/* For smart filtering we want to allow the search to work regardless of
-			 * word order. We also want double quoted text to be preserved, so word
-			 * order is important - a la google. So this is what we want to
-			 * generate:
-			 * 
-			 * ^(?=.*?\bone\b)(?=.*?\btwo three\b)(?=.*?\bfour\b).*$
-			 */
-			var a = $.map( search.match( /"[^"]+"|[^ ]+/g ) || [''], function ( word ) {
-				if ( word.charAt(0) === '"' ) {
-					var m = word.match( /^"(.*)"$/ );
-					word = m ? m[1] : word;
-				}
-	
-				return word.replace('"', '');
-			} );
-	
-			search = '^(?=.*?'+a.join( ')(?=.*?' )+').*$';
-		}
-	
-		return new RegExp( search, caseInsensitive ? 'i' : '' );
-	}
-	
-	
-	/**
-	 * Escape a string such that it can be used in a regular expression
-	 *  @param {string} sVal string to escape
-	 *  @returns {string} escaped string
-	 *  @memberof DataTable#oApi
-	 */
-	var _fnEscapeRegex = DataTable.util.escapeRegex;
-	
-	var __filter_div = $('<div>')[0];
-	var __filter_div_textContent = __filter_div.textContent !== undefined;
-	
-	// Update the filtering data for each row if needed (by invalidation or first run)
-	function _fnFilterData ( settings )
-	{
-		var columns = settings.aoColumns;
-		var column;
-		var i, j, ien, jen, filterData, cellData, row;
-		var fomatters = DataTable.ext.type.search;
-		var wasInvalidated = false;
-	
-		for ( i=0, ien=settings.aoData.length ; i<ien ; i++ ) {
-			row = settings.aoData[i];
-	
-			if ( ! row._aFilterData ) {
-				filterData = [];
-	
-				for ( j=0, jen=columns.length ; j<jen ; j++ ) {
-					column = columns[j];
-	
-					if ( column.bSearchable ) {
-						cellData = _fnGetCellData( settings, i, j, 'filter' );
-	
-						if ( fomatters[ column.sType ] ) {
-							cellData = fomatters[ column.sType ]( cellData );
-						}
-	
-						// Search in DataTables 1.10 is string based. In 1.11 this
-						// should be altered to also allow strict type checking.
-						if ( cellData === null ) {
-							cellData = '';
-						}
-	
-						if ( typeof cellData !== 'string' && cellData.toString ) {
-							cellData = cellData.toString();
-						}
-					}
-					else {
-						cellData = '';
-					}
-	
-					// If it looks like there is an HTML entity in the string,
-					// attempt to decode it so sorting works as expected. Note that
-					// we could use a single line of jQuery to do this, but the DOM
-					// method used here is much faster http://jsperf.com/html-decode
-					if ( cellData.indexOf && cellData.indexOf('&') !== -1 ) {
-						__filter_div.innerHTML = cellData;
-						cellData = __filter_div_textContent ?
-							__filter_div.textContent :
-							__filter_div.innerText;
-					}
-	
-					if ( cellData.replace ) {
-						cellData = cellData.replace(/[\r\n\u2028]/g, '');
-					}
-	
-					filterData.push( cellData );
-				}
-	
-				row._aFilterData = filterData;
-				row._sFilterRow = filterData.join('  ');
-				wasInvalidated = true;
-			}
-		}
-	
-		return wasInvalidated;
-	}
-	
-	
-	/**
-	 * Convert from the internal Hungarian notation to camelCase for external
-	 * interaction
-	 *  @param {object} obj Object to convert
-	 *  @returns {object} Inverted object
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnSearchToCamel ( obj )
-	{
-		return {
-			search:          obj.sSearch,
-			smart:           obj.bSmart,
-			regex:           obj.bRegex,
-			caseInsensitive: obj.bCaseInsensitive
-		};
-	}
-	
-	
-	
-	/**
-	 * Convert from camelCase notation to the internal Hungarian. We could use the
-	 * Hungarian convert function here, but this is cleaner
-	 *  @param {object} obj Object to convert
-	 *  @returns {object} Inverted object
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnSearchToHung ( obj )
-	{
-		return {
-			sSearch:          obj.search,
-			bSmart:           obj.smart,
-			bRegex:           obj.regex,
-			bCaseInsensitive: obj.caseInsensitive
-		};
-	}
-	
-	/**
-	 * Generate the node required for the info display
-	 *  @param {object} oSettings dataTables settings object
-	 *  @returns {node} Information element
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnFeatureHtmlInfo ( settings )
-	{
-		var
-			tid = settings.sTableId,
-			nodes = settings.aanFeatures.i,
-			n = $('<div/>', {
-				'class': settings.oClasses.sInfo,
-				'id': ! nodes ? tid+'_info' : null
-			} );
-	
-		if ( ! nodes ) {
-			// Update display on each draw
-			settings.aoDrawCallback.push( {
-				"fn": _fnUpdateInfo,
-				"sName": "information"
-			} );
-	
-			n
-				.attr( 'role', 'status' )
-				.attr( 'aria-live', 'polite' );
-	
-			// Table is described by our info div
-			$(settings.nTable).attr( 'aria-describedby', tid+'_info' );
-		}
-	
-		return n[0];
-	}
-	
-	
-	/**
-	 * Update the information elements in the display
-	 *  @param {object} settings dataTables settings object
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnUpdateInfo ( settings )
-	{
-		/* Show information about the table */
-		var nodes = settings.aanFeatures.i;
-		if ( nodes.length === 0 ) {
-			return;
-		}
-	
-		var
-			lang  = settings.oLanguage,
-			start = settings._iDisplayStart+1,
-			end   = settings.fnDisplayEnd(),
-			max   = settings.fnRecordsTotal(),
-			total = settings.fnRecordsDisplay(),
-			out   = total ?
-				lang.sInfo :
-				lang.sInfoEmpty;
-	
-		if ( total !== max ) {
-			/* Record set after filtering */
-			out += ' ' + lang.sInfoFiltered;
-		}
-	
-		// Convert the macros
-		out += lang.sInfoPostFix;
-		out = _fnInfoMacros( settings, out );
-	
-		var callback = lang.fnInfoCallback;
-		if ( callback !== null ) {
-			out = callback.call( settings.oInstance,
-				settings, start, end, max, total, out
-			);
-		}
-	
-		$(nodes).html( out );
-	}
-	
-	
-	function _fnInfoMacros ( settings, str )
-	{
-		// When infinite scrolling, we are always starting at 1. _iDisplayStart is used only
-		// internally
-		var
-			formatter  = settings.fnFormatNumber,
-			start      = settings._iDisplayStart+1,
-			len        = settings._iDisplayLength,
-			vis        = settings.fnRecordsDisplay(),
-			all        = len === -1;
-	
-		return str.
-			replace(/_START_/g, formatter.call( settings, start ) ).
-			replace(/_END_/g,   formatter.call( settings, settings.fnDisplayEnd() ) ).
-			replace(/_MAX_/g,   formatter.call( settings, settings.fnRecordsTotal() ) ).
-			replace(/_TOTAL_/g, formatter.call( settings, vis ) ).
-			replace(/_PAGE_/g,  formatter.call( settings, all ? 1 : Math.ceil( start / len ) ) ).
-			replace(/_PAGES_/g, formatter.call( settings, all ? 1 : Math.ceil( vis / len ) ) );
-	}
-	
-	
-	
-	/**
-	 * Draw the table for the first time, adding all required features
-	 *  @param {object} settings dataTables settings object
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnInitialise ( settings )
-	{
-		var i, iLen, iAjaxStart=settings.iInitDisplayStart;
-		var columns = settings.aoColumns, column;
-		var features = settings.oFeatures;
-		var deferLoading = settings.bDeferLoading; // value modified by the draw
-	
-		/* Ensure that the table data is fully initialised */
-		if ( ! settings.bInitialised ) {
-			setTimeout( function(){ _fnInitialise( settings ); }, 200 );
-			return;
-		}
-	
-		/* Show the display HTML options */
-		_fnAddOptionsHtml( settings );
-	
-		/* Build and draw the header / footer for the table */
-		_fnBuildHead( settings );
-		_fnDrawHead( settings, settings.aoHeader );
-		_fnDrawHead( settings, settings.aoFooter );
-	
-		/* Okay to show that something is going on now */
-		_fnProcessingDisplay( settings, true );
-	
-		/* Calculate sizes for columns */
-		if ( features.bAutoWidth ) {
-			_fnCalculateColumnWidths( settings );
-		}
-	
-		for ( i=0, iLen=columns.length ; i<iLen ; i++ ) {
-			column = columns[i];
-	
-			if ( column.sWidth ) {
-				column.nTh.style.width = _fnStringToCss( column.sWidth );
-			}
-		}
-	
-		_fnCallbackFire( settings, null, 'preInit', [settings] );
-	
-		// If there is default sorting required - let's do it. The sort function
-		// will do the drawing for us. Otherwise we draw the table regardless of the
-		// Ajax source - this allows the table to look initialised for Ajax sourcing
-		// data (show 'loading' message possibly)
-		_fnReDraw( settings );
-	
-		// Server-side processing init complete is done by _fnAjaxUpdateDraw
-		var dataSrc = _fnDataSource( settings );
-		if ( dataSrc != 'ssp' || deferLoading ) {
-			// if there is an ajax source load the data
-			if ( dataSrc == 'ajax' ) {
-				_fnBuildAjax( settings, [], function(json) {
-					var aData = _fnAjaxDataSrc( settings, json );
-	
-					// Got the data - add it to the table
-					for ( i=0 ; i<aData.length ; i++ ) {
-						_fnAddData( settings, aData[i] );
-					}
-	
-					// Reset the init display for cookie saving. We've already done
-					// a filter, and therefore cleared it before. So we need to make
-					// it appear 'fresh'
-					settings.iInitDisplayStart = iAjaxStart;
-	
-					_fnReDraw( settings );
-	
-					_fnProcessingDisplay( settings, false );
-					_fnInitComplete( settings, json );
-				}, settings );
-			}
-			else {
-				_fnProcessingDisplay( settings, false );
-				_fnInitComplete( settings );
-			}
-		}
-	}
-	
-	
-	/**
-	 * Draw the table for the first time, adding all required features
-	 *  @param {object} oSettings dataTables settings object
-	 *  @param {object} [json] JSON from the server that completed the table, if using Ajax source
-	 *    with client-side processing (optional)
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnInitComplete ( settings, json )
-	{
-		settings._bInitComplete = true;
-	
-		// When data was added after the initialisation (data or Ajax) we need to
-		// calculate the column sizing
-		if ( json || settings.oInit.aaData ) {
-			_fnAdjustColumnSizing( settings );
-		}
-	
-		_fnCallbackFire( settings, null, 'plugin-init', [settings, json] );
-		_fnCallbackFire( settings, 'aoInitComplete', 'init', [settings, json] );
-	}
-	
-	
-	function _fnLengthChange ( settings, val )
-	{
-		var len = parseInt( val, 10 );
-		settings._iDisplayLength = len;
-	
-		_fnLengthOverflow( settings );
-	
-		// Fire length change event
-		_fnCallbackFire( settings, null, 'length', [settings, len] );
-	}
-	
-	
-	/**
-	 * Generate the node required for user display length changing
-	 *  @param {object} settings dataTables settings object
-	 *  @returns {node} Display length feature node
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnFeatureHtmlLength ( settings )
-	{
-		var
-			classes  = settings.oClasses,
-			tableId  = settings.sTableId,
-			menu     = settings.aLengthMenu,
-			d2       = Array.isArray( menu[0] ),
-			lengths  = d2 ? menu[0] : menu,
-			language = d2 ? menu[1] : menu;
-	
-		var select = $('<select/>', {
-			'name':          tableId+'_length',
-			'aria-controls': tableId,
-			'class':         classes.sLengthSelect
-		} );
-	
-		for ( var i=0, ien=lengths.length ; i<ien ; i++ ) {
-			select[0][ i ] = new Option(
-				typeof language[i] === 'number' ?
-					settings.fnFormatNumber( language[i] ) :
-					language[i],
-				lengths[i]
-			);
-		}
-	
-		var div = $('<div><label/></div>').addClass( classes.sLength );
-		if ( ! settings.aanFeatures.l ) {
-			div[0].id = tableId+'_length';
-		}
-	
-		div.children().append(
-			settings.oLanguage.sLengthMenu.replace( '_MENU_', select[0].outerHTML )
-		);
-	
-		// Can't use `select` variable as user might provide their own and the
-		// reference is broken by the use of outerHTML
-		$('select', div)
-			.val( settings._iDisplayLength )
-			.on( 'change.DT', function(e) {
-				_fnLengthChange( settings, $(this).val() );
-				_fnDraw( settings );
-			} );
-	
-		// Update node value whenever anything changes the table's length
-		$(settings.nTable).on( 'length.dt.DT', function (e, s, len) {
-			if ( settings === s ) {
-				$('select', div).val( len );
-			}
-		} );
-	
-		return div[0];
-	}
-	
-	
-	
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-	 * Note that most of the paging logic is done in
-	 * DataTable.ext.pager
-	 */
-	
-	/**
-	 * Generate the node required for default pagination
-	 *  @param {object} oSettings dataTables settings object
-	 *  @returns {node} Pagination feature node
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnFeatureHtmlPaginate ( settings )
-	{
-		var
-			type   = settings.sPaginationType,
-			plugin = DataTable.ext.pager[ type ],
-			modern = typeof plugin === 'function',
-			redraw = function( settings ) {
-				_fnDraw( settings );
-			},
-			node = $('<div/>').addClass( settings.oClasses.sPaging + type )[0],
-			features = settings.aanFeatures;
-	
-		if ( ! modern ) {
-			plugin.fnInit( settings, node, redraw );
-		}
-	
-		/* Add a draw callback for the pagination on first instance, to update the paging display */
-		if ( ! features.p )
-		{
-			node.id = settings.sTableId+'_paginate';
-	
-			settings.aoDrawCallback.push( {
-				"fn": function( settings ) {
-					if ( modern ) {
-						var
-							start      = settings._iDisplayStart,
-							len        = settings._iDisplayLength,
-							visRecords = settings.fnRecordsDisplay(),
-							all        = len === -1,
-							page = all ? 0 : Math.ceil( start / len ),
-							pages = all ? 1 : Math.ceil( visRecords / len ),
-							buttons = plugin(page, pages),
-							i, ien;
-	
-						for ( i=0, ien=features.p.length ; i<ien ; i++ ) {
-							_fnRenderer( settings, 'pageButton' )(
-								settings, features.p[i], i, buttons, page, pages
-							);
-						}
-					}
-					else {
-						plugin.fnUpdate( settings, redraw );
-					}
-				},
-				"sName": "pagination"
-			} );
-		}
-	
-		return node;
-	}
-	
-	
-	/**
-	 * Alter the display settings to change the page
-	 *  @param {object} settings DataTables settings object
-	 *  @param {string|int} action Paging action to take: "first", "previous",
-	 *    "next" or "last" or page number to jump to (integer)
-	 *  @param [bool] redraw Automatically draw the update or not
-	 *  @returns {bool} true page has changed, false - no change
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnPageChange ( settings, action, redraw )
-	{
-		var
-			start     = settings._iDisplayStart,
-			len       = settings._iDisplayLength,
-			records   = settings.fnRecordsDisplay();
-	
-		if ( records === 0 || len === -1 )
-		{
-			start = 0;
-		}
-		else if ( typeof action === "number" )
-		{
-			start = action * len;
-	
-			if ( start > records )
-			{
-				start = 0;
-			}
-		}
-		else if ( action == "first" )
-		{
-			start = 0;
-		}
-		else if ( action == "previous" )
-		{
-			start = len >= 0 ?
-				start - len :
-				0;
-	
-			if ( start < 0 )
-			{
-			  start = 0;
-			}
-		}
-		else if ( action == "next" )
-		{
-			if ( start + len < records )
-			{
-				start += len;
-			}
-		}
-		else if ( action == "last" )
-		{
-			start = Math.floor( (records-1) / len) * len;
-		}
-		else
-		{
-			_fnLog( settings, 0, "Unknown paging action: "+action, 5 );
-		}
-	
-		var changed = settings._iDisplayStart !== start;
-		settings._iDisplayStart = start;
-	
-		if ( changed ) {
-			_fnCallbackFire( settings, null, 'page', [settings] );
-	
-			if ( redraw ) {
-				_fnDraw( settings );
-			}
-		}
-	
-		return changed;
-	}
-	
-	
-	
-	/**
-	 * Generate the node required for the processing node
-	 *  @param {object} settings dataTables settings object
-	 *  @returns {node} Processing element
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnFeatureHtmlProcessing ( settings )
-	{
-		return $('<div/>', {
-				'id': ! settings.aanFeatures.r ? settings.sTableId+'_processing' : null,
-				'class': settings.oClasses.sProcessing
-			} )
-			.html( settings.oLanguage.sProcessing )
-			.insertBefore( settings.nTable )[0];
-	}
-	
-	
-	/**
-	 * Display or hide the processing indicator
-	 *  @param {object} settings dataTables settings object
-	 *  @param {bool} show Show the processing indicator (true) or not (false)
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnProcessingDisplay ( settings, show )
-	{
-		if ( settings.oFeatures.bProcessing ) {
-			$(settings.aanFeatures.r).css( 'display', show ? 'block' : 'none' );
-		}
-	
-		_fnCallbackFire( settings, null, 'processing', [settings, show] );
-	}
-	
-	/**
-	 * Add any control elements for the table - specifically scrolling
-	 *  @param {object} settings dataTables settings object
-	 *  @returns {node} Node to add to the DOM
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnFeatureHtmlTable ( settings )
-	{
-		var table = $(settings.nTable);
-	
-		// Add the ARIA grid role to the table
-		table.attr( 'role', 'grid' );
-	
-		// Scrolling from here on in
-		var scroll = settings.oScroll;
-	
-		if ( scroll.sX === '' && scroll.sY === '' ) {
-			return settings.nTable;
-		}
-	
-		var scrollX = scroll.sX;
-		var scrollY = scroll.sY;
-		var classes = settings.oClasses;
-		var caption = table.children('caption');
-		var captionSide = caption.length ? caption[0]._captionSide : null;
-		var headerClone = $( table[0].cloneNode(false) );
-		var footerClone = $( table[0].cloneNode(false) );
-		var footer = table.children('tfoot');
-		var _div = '<div/>';
-		var size = function ( s ) {
-			return !s ? null : _fnStringToCss( s );
-		};
-	
-		if ( ! footer.length ) {
-			footer = null;
-		}
-	
-		/*
-		 * The HTML structure that we want to generate in this function is:
-		 *  div - scroller
-		 *    div - scroll head
-		 *      div - scroll head inner
-		 *        table - scroll head table
-		 *          thead - thead
-		 *    div - scroll body
-		 *      table - table (master table)
-		 *        thead - thead clone for sizing
-		 *        tbody - tbody
-		 *    div - scroll foot
-		 *      div - scroll foot inner
-		 *        table - scroll foot table
-		 *          tfoot - tfoot
-		 */
-		var scroller = $( _div, { 'class': classes.sScrollWrapper } )
-			.append(
-				$(_div, { 'class': classes.sScrollHead } )
-					.css( {
-						overflow: 'hidden',
-						position: 'relative',
-						border: 0,
-						width: scrollX ? size(scrollX) : '100%'
-					} )
-					.append(
-						$(_div, { 'class': classes.sScrollHeadInner } )
-							.css( {
-								'box-sizing': 'content-box',
-								width: scroll.sXInner || '100%'
-							} )
-							.append(
-								headerClone
-									.removeAttr('id')
-									.css( 'margin-left', 0 )
-									.append( captionSide === 'top' ? caption : null )
-									.append(
-										table.children('thead')
-									)
-							)
-					)
-			)
-			.append(
-				$(_div, { 'class': classes.sScrollBody } )
-					.css( {
-						position: 'relative',
-						overflow: 'auto',
-						width: size( scrollX )
-					} )
-					.append( table )
-			);
-	
-		if ( footer ) {
-			scroller.append(
-				$(_div, { 'class': classes.sScrollFoot } )
-					.css( {
-						overflow: 'hidden',
-						border: 0,
-						width: scrollX ? size(scrollX) : '100%'
-					} )
-					.append(
-						$(_div, { 'class': classes.sScrollFootInner } )
-							.append(
-								footerClone
-									.removeAttr('id')
-									.css( 'margin-left', 0 )
-									.append( captionSide === 'bottom' ? caption : null )
-									.append(
-										table.children('tfoot')
-									)
-							)
-					)
-			);
-		}
-	
-		var children = scroller.children();
-		var scrollHead = children[0];
-		var scrollBody = children[1];
-		var scrollFoot = footer ? children[2] : null;
-	
-		// When the body is scrolled, then we also want to scroll the headers
-		if ( scrollX ) {
-			$(scrollBody).on( 'scroll.DT', function (e) {
-				var scrollLeft = this.scrollLeft;
-	
-				scrollHead.scrollLeft = scrollLeft;
-	
-				if ( footer ) {
-					scrollFoot.scrollLeft = scrollLeft;
-				}
-			} );
-		}
-	
-		$(scrollBody).css('max-height', scrollY);
-		if (! scroll.bCollapse) {
-			$(scrollBody).css('height', scrollY);
-		}
-	
-		settings.nScrollHead = scrollHead;
-		settings.nScrollBody = scrollBody;
-		settings.nScrollFoot = scrollFoot;
-	
-		// On redraw - align columns
-		settings.aoDrawCallback.push( {
-			"fn": _fnScrollDraw,
-			"sName": "scrolling"
-		} );
-	
-		return scroller[0];
-	}
-	
-	
-	
-	/**
-	 * Update the header, footer and body tables for resizing - i.e. column
-	 * alignment.
-	 *
-	 * Welcome to the most horrible function DataTables. The process that this
-	 * function follows is basically:
-	 *   1. Re-create the table inside the scrolling div
-	 *   2. Take live measurements from the DOM
-	 *   3. Apply the measurements to align the columns
-	 *   4. Clean up
-	 *
-	 *  @param {object} settings dataTables settings object
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnScrollDraw ( settings )
-	{
-		// Given that this is such a monster function, a lot of variables are use
-		// to try and keep the minimised size as small as possible
-		var
-			scroll         = settings.oScroll,
-			scrollX        = scroll.sX,
-			scrollXInner   = scroll.sXInner,
-			scrollY        = scroll.sY,
-			barWidth       = scroll.iBarWidth,
-			divHeader      = $(settings.nScrollHead),
-			divHeaderStyle = divHeader[0].style,
-			divHeaderInner = divHeader.children('div'),
-			divHeaderInnerStyle = divHeaderInner[0].style,
-			divHeaderTable = divHeaderInner.children('table'),
-			divBodyEl      = settings.nScrollBody,
-			divBody        = $(divBodyEl),
-			divBodyStyle   = divBodyEl.style,
-			divFooter      = $(settings.nScrollFoot),
-			divFooterInner = divFooter.children('div'),
-			divFooterTable = divFooterInner.children('table'),
-			header         = $(settings.nTHead),
-			table          = $(settings.nTable),
-			tableEl        = table[0],
-			tableStyle     = tableEl.style,
-			footer         = settings.nTFoot ? $(settings.nTFoot) : null,
-			browser        = settings.oBrowser,
-			ie67           = browser.bScrollOversize,
-			dtHeaderCells  = _pluck( settings.aoColumns, 'nTh' ),
-			headerTrgEls, footerTrgEls,
-			headerSrcEls, footerSrcEls,
-			headerCopy, footerCopy,
-			headerWidths=[], footerWidths=[],
-			headerContent=[], footerContent=[],
-			idx, correction, sanityWidth,
-			zeroOut = function(nSizer) {
-				var style = nSizer.style;
-				style.paddingTop = "0";
-				style.paddingBottom = "0";
-				style.borderTopWidth = "0";
-				style.borderBottomWidth = "0";
-				style.height = 0;
-			};
-	
-		// If the scrollbar visibility has changed from the last draw, we need to
-		// adjust the column sizes as the table width will have changed to account
-		// for the scrollbar
-		var scrollBarVis = divBodyEl.scrollHeight > divBodyEl.clientHeight;
-		
-		if ( settings.scrollBarVis !== scrollBarVis && settings.scrollBarVis !== undefined ) {
-			settings.scrollBarVis = scrollBarVis;
-			_fnAdjustColumnSizing( settings );
-			return; // adjust column sizing will call this function again
-		}
-		else {
-			settings.scrollBarVis = scrollBarVis;
-		}
-	
-		/*
-		 * 1. Re-create the table inside the scrolling div
-		 */
-	
-		// Remove the old minimised thead and tfoot elements in the inner table
-		table.children('thead, tfoot').remove();
-	
-		if ( footer ) {
-			footerCopy = footer.clone().prependTo( table );
-			footerTrgEls = footer.find('tr'); // the original tfoot is in its own table and must be sized
-			footerSrcEls = footerCopy.find('tr');
-		}
-	
-		// Clone the current header and footer elements and then place it into the inner table
-		headerCopy = header.clone().prependTo( table );
-		headerTrgEls = header.find('tr'); // original header is in its own table
-		headerSrcEls = headerCopy.find('tr');
-		headerCopy.find('th, td').removeAttr('tabindex');
-	
-	
-		/*
-		 * 2. Take live measurements from the DOM - do not alter the DOM itself!
-		 */
-	
-		// Remove old sizing and apply the calculated column widths
-		// Get the unique column headers in the newly created (cloned) header. We want to apply the
-		// calculated sizes to this header
-		if ( ! scrollX )
-		{
-			divBodyStyle.width = '100%';
-			divHeader[0].style.width = '100%';
-		}
-	
-		$.each( _fnGetUniqueThs( settings, headerCopy ), function ( i, el ) {
-			idx = _fnVisibleToColumnIndex( settings, i );
-			el.style.width = settings.aoColumns[idx].sWidth;
-		} );
-	
-		if ( footer ) {
-			_fnApplyToChildren( function(n) {
-				n.style.width = "";
-			}, footerSrcEls );
-		}
-	
-		// Size the table as a whole
-		sanityWidth = table.outerWidth();
-		if ( scrollX === "" ) {
-			// No x scrolling
-			tableStyle.width = "100%";
-	
-			// IE7 will make the width of the table when 100% include the scrollbar
-			// - which is shouldn't. When there is a scrollbar we need to take this
-			// into account.
-			if ( ie67 && (table.find('tbody').height() > divBodyEl.offsetHeight ||
-				divBody.css('overflow-y') == "scroll")
-			) {
-				tableStyle.width = _fnStringToCss( table.outerWidth() - barWidth);
-			}
-	
-			// Recalculate the sanity width
-			sanityWidth = table.outerWidth();
-		}
-		else if ( scrollXInner !== "" ) {
-			// legacy x scroll inner has been given - use it
-			tableStyle.width = _fnStringToCss(scrollXInner);
-	
-			// Recalculate the sanity width
-			sanityWidth = table.outerWidth();
-		}
-	
-		// Hidden header should have zero height, so remove padding and borders. Then
-		// set the width based on the real headers
-	
-		// Apply all styles in one pass
-		_fnApplyToChildren( zeroOut, headerSrcEls );
-	
-		// Read all widths in next pass
-		_fnApplyToChildren( function(nSizer) {
-			headerContent.push( nSizer.innerHTML );
-			headerWidths.push( _fnStringToCss( $(nSizer).css('width') ) );
-		}, headerSrcEls );
-	
-		// Apply all widths in final pass
-		_fnApplyToChildren( function(nToSize, i) {
-			// Only apply widths to the DataTables detected header cells - this
-			// prevents complex headers from having contradictory sizes applied
-			if ( $.inArray( nToSize, dtHeaderCells ) !== -1 ) {
-				nToSize.style.width = headerWidths[i];
-			}
-		}, headerTrgEls );
-	
-		$(headerSrcEls).height(0);
-	
-		/* Same again with the footer if we have one */
-		if ( footer )
-		{
-			_fnApplyToChildren( zeroOut, footerSrcEls );
-	
-			_fnApplyToChildren( function(nSizer) {
-				footerContent.push( nSizer.innerHTML );
-				footerWidths.push( _fnStringToCss( $(nSizer).css('width') ) );
-			}, footerSrcEls );
-	
-			_fnApplyToChildren( function(nToSize, i) {
-				nToSize.style.width = footerWidths[i];
-			}, footerTrgEls );
-	
-			$(footerSrcEls).height(0);
-		}
-	
-	
-		/*
-		 * 3. Apply the measurements
-		 */
-	
-		// "Hide" the header and footer that we used for the sizing. We need to keep
-		// the content of the cell so that the width applied to the header and body
-		// both match, but we want to hide it completely. We want to also fix their
-		// width to what they currently are
-		_fnApplyToChildren( function(nSizer, i) {
-			nSizer.innerHTML = '<div class="dataTables_sizing">'+headerContent[i]+'</div>';
-			nSizer.childNodes[0].style.height = "0";
-			nSizer.childNodes[0].style.overflow = "hidden";
-			nSizer.style.width = headerWidths[i];
-		}, headerSrcEls );
-	
-		if ( footer )
-		{
-			_fnApplyToChildren( function(nSizer, i) {
-				nSizer.innerHTML = '<div class="dataTables_sizing">'+footerContent[i]+'</div>';
-				nSizer.childNodes[0].style.height = "0";
-				nSizer.childNodes[0].style.overflow = "hidden";
-				nSizer.style.width = footerWidths[i];
-			}, footerSrcEls );
-		}
-	
-		// Sanity check that the table is of a sensible width. If not then we are going to get
-		// misalignment - try to prevent this by not allowing the table to shrink below its min width
-		if ( table.outerWidth() < sanityWidth )
-		{
-			// The min width depends upon if we have a vertical scrollbar visible or not */
-			correction = ((divBodyEl.scrollHeight > divBodyEl.offsetHeight ||
-				divBody.css('overflow-y') == "scroll")) ?
-					sanityWidth+barWidth :
-					sanityWidth;
-	
-			// IE6/7 are a law unto themselves...
-			if ( ie67 && (divBodyEl.scrollHeight >
-				divBodyEl.offsetHeight || divBody.css('overflow-y') == "scroll")
-			) {
-				tableStyle.width = _fnStringToCss( correction-barWidth );
-			}
-	
-			// And give the user a warning that we've stopped the table getting too small
-			if ( scrollX === "" || scrollXInner !== "" ) {
-				_fnLog( settings, 1, 'Possible column misalignment', 6 );
-			}
-		}
-		else
-		{
-			correction = '100%';
-		}
-	
-		// Apply to the container elements
-		divBodyStyle.width = _fnStringToCss( correction );
-		divHeaderStyle.width = _fnStringToCss( correction );
-	
-		if ( footer ) {
-			settings.nScrollFoot.style.width = _fnStringToCss( correction );
-		}
-	
-	
-		/*
-		 * 4. Clean up
-		 */
-		if ( ! scrollY ) {
-			/* IE7< puts a vertical scrollbar in place (when it shouldn't be) due to subtracting
-			 * the scrollbar height from the visible display, rather than adding it on. We need to
-			 * set the height in order to sort this. Don't want to do it in any other browsers.
-			 */
-			if ( ie67 ) {
-				divBodyStyle.height = _fnStringToCss( tableEl.offsetHeight+barWidth );
-			}
-		}
-	
-		/* Finally set the width's of the header and footer tables */
-		var iOuterWidth = table.outerWidth();
-		divHeaderTable[0].style.width = _fnStringToCss( iOuterWidth );
-		divHeaderInnerStyle.width = _fnStringToCss( iOuterWidth );
-	
-		// Figure out if there are scrollbar present - if so then we need a the header and footer to
-		// provide a bit more space to allow "overflow" scrolling (i.e. past the scrollbar)
-		var bScrolling = table.height() > divBodyEl.clientHeight || divBody.css('overflow-y') == "scroll";
-		var padding = 'padding' + (browser.bScrollbarLeft ? 'Left' : 'Right' );
-		divHeaderInnerStyle[ padding ] = bScrolling ? barWidth+"px" : "0px";
-	
-		if ( footer ) {
-			divFooterTable[0].style.width = _fnStringToCss( iOuterWidth );
-			divFooterInner[0].style.width = _fnStringToCss( iOuterWidth );
-			divFooterInner[0].style[padding] = bScrolling ? barWidth+"px" : "0px";
-		}
-	
-		// Correct DOM ordering for colgroup - comes before the thead
-		table.children('colgroup').insertBefore( table.children('thead') );
-	
-		/* Adjust the position of the header in case we loose the y-scrollbar */
-		divBody.trigger('scroll');
-	
-		// If sorting or filtering has occurred, jump the scrolling back to the top
-		// only if we aren't holding the position
-		if ( (settings.bSorted || settings.bFiltered) && ! settings._drawHold ) {
-			divBodyEl.scrollTop = 0;
-		}
-	}
-	
-	
-	
-	/**
-	 * Apply a given function to the display child nodes of an element array (typically
-	 * TD children of TR rows
-	 *  @param {function} fn Method to apply to the objects
-	 *  @param array {nodes} an1 List of elements to look through for display children
-	 *  @param array {nodes} an2 Another list (identical structure to the first) - optional
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnApplyToChildren( fn, an1, an2 )
-	{
-		var index=0, i=0, iLen=an1.length;
-		var nNode1, nNode2;
-	
-		while ( i < iLen ) {
-			nNode1 = an1[i].firstChild;
-			nNode2 = an2 ? an2[i].firstChild : null;
-	
-			while ( nNode1 ) {
-				if ( nNode1.nodeType === 1 ) {
-					if ( an2 ) {
-						fn( nNode1, nNode2, index );
-					}
-					else {
-						fn( nNode1, index );
-					}
-	
-					index++;
-				}
-	
-				nNode1 = nNode1.nextSibling;
-				nNode2 = an2 ? nNode2.nextSibling : null;
-			}
-	
-			i++;
-		}
-	}
-	
-	
-	
-	var __re_html_remove = /<.*?>/g;
-	
-	
-	/**
-	 * Calculate the width of columns for the table
-	 *  @param {object} oSettings dataTables settings object
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnCalculateColumnWidths ( oSettings )
-	{
-		var
-			table = oSettings.nTable,
-			columns = oSettings.aoColumns,
-			scroll = oSettings.oScroll,
-			scrollY = scroll.sY,
-			scrollX = scroll.sX,
-			scrollXInner = scroll.sXInner,
-			columnCount = columns.length,
-			visibleColumns = _fnGetColumns( oSettings, 'bVisible' ),
-			headerCells = $('th', oSettings.nTHead),
-			tableWidthAttr = table.getAttribute('width'), // from DOM element
-			tableContainer = table.parentNode,
-			userInputs = false,
-			i, column, columnIdx, width, outerWidth,
-			browser = oSettings.oBrowser,
-			ie67 = browser.bScrollOversize;
-	
-		var styleWidth = table.style.width;
-		if ( styleWidth && styleWidth.indexOf('%') !== -1 ) {
-			tableWidthAttr = styleWidth;
-		}
-	
-		/* Convert any user input sizes into pixel sizes */
-		for ( i=0 ; i<visibleColumns.length ; i++ ) {
-			column = columns[ visibleColumns[i] ];
-	
-			if ( column.sWidth !== null ) {
-				column.sWidth = _fnConvertToWidth( column.sWidthOrig, tableContainer );
-	
-				userInputs = true;
-			}
-		}
-	
-		/* If the number of columns in the DOM equals the number that we have to
-		 * process in DataTables, then we can use the offsets that are created by
-		 * the web- browser. No custom sizes can be set in order for this to happen,
-		 * nor scrolling used
-		 */
-		if ( ie67 || ! userInputs && ! scrollX && ! scrollY &&
-		     columnCount == _fnVisbleColumns( oSettings ) &&
-		     columnCount == headerCells.length
-		) {
-			for ( i=0 ; i<columnCount ; i++ ) {
-				var colIdx = _fnVisibleToColumnIndex( oSettings, i );
-	
-				if ( colIdx !== null ) {
-					columns[ colIdx ].sWidth = _fnStringToCss( headerCells.eq(i).width() );
-				}
-			}
-		}
-		else
-		{
-			// Otherwise construct a single row, worst case, table with the widest
-			// node in the data, assign any user defined widths, then insert it into
-			// the DOM and allow the browser to do all the hard work of calculating
-			// table widths
-			var tmpTable = $(table).clone() // don't use cloneNode - IE8 will remove events on the main table
-				.css( 'visibility', 'hidden' )
-				.removeAttr( 'id' );
-	
-			// Clean up the table body
-			tmpTable.find('tbody tr').remove();
-			var tr = $('<tr/>').appendTo( tmpTable.find('tbody') );
-	
-			// Clone the table header and footer - we can't use the header / footer
-			// from the cloned table, since if scrolling is active, the table's
-			// real header and footer are contained in different table tags
-			tmpTable.find('thead, tfoot').remove();
-			tmpTable
-				.append( $(oSettings.nTHead).clone() )
-				.append( $(oSettings.nTFoot).clone() );
-	
-			// Remove any assigned widths from the footer (from scrolling)
-			tmpTable.find('tfoot th, tfoot td').css('width', '');
-	
-			// Apply custom sizing to the cloned header
-			headerCells = _fnGetUniqueThs( oSettings, tmpTable.find('thead')[0] );
-	
-			for ( i=0 ; i<visibleColumns.length ; i++ ) {
-				column = columns[ visibleColumns[i] ];
-	
-				headerCells[i].style.width = column.sWidthOrig !== null && column.sWidthOrig !== '' ?
-					_fnStringToCss( column.sWidthOrig ) :
-					'';
-	
-				// For scrollX we need to force the column width otherwise the
-				// browser will collapse it. If this width is smaller than the
-				// width the column requires, then it will have no effect
-				if ( column.sWidthOrig && scrollX ) {
-					$( headerCells[i] ).append( $('<div/>').css( {
-						width: column.sWidthOrig,
-						margin: 0,
-						padding: 0,
-						border: 0,
-						height: 1
-					} ) );
-				}
-			}
-	
-			// Find the widest cell for each column and put it into the table
-			if ( oSettings.aoData.length ) {
-				for ( i=0 ; i<visibleColumns.length ; i++ ) {
-					columnIdx = visibleColumns[i];
-					column = columns[ columnIdx ];
-	
-					$( _fnGetWidestNode( oSettings, columnIdx ) )
-						.clone( false )
-						.append( column.sContentPadding )
-						.appendTo( tr );
-				}
-			}
-	
-			// Tidy the temporary table - remove name attributes so there aren't
-			// duplicated in the dom (radio elements for example)
-			$('[name]', tmpTable).removeAttr('name');
-	
-			// Table has been built, attach to the document so we can work with it.
-			// A holding element is used, positioned at the top of the container
-			// with minimal height, so it has no effect on if the container scrolls
-			// or not. Otherwise it might trigger scrolling when it actually isn't
-			// needed
-			var holder = $('<div/>').css( scrollX || scrollY ?
-					{
-						position: 'absolute',
-						top: 0,
-						left: 0,
-						height: 1,
-						right: 0,
-						overflow: 'hidden'
-					} :
-					{}
-				)
-				.append( tmpTable )
-				.appendTo( tableContainer );
-	
-			// When scrolling (X or Y) we want to set the width of the table as 
-			// appropriate. However, when not scrolling leave the table width as it
-			// is. This results in slightly different, but I think correct behaviour
-			if ( scrollX && scrollXInner ) {
-				tmpTable.width( scrollXInner );
-			}
-			else if ( scrollX ) {
-				tmpTable.css( 'width', 'auto' );
-				tmpTable.removeAttr('width');
-	
-				// If there is no width attribute or style, then allow the table to
-				// collapse
-				if ( tmpTable.width() < tableContainer.clientWidth && tableWidthAttr ) {
-					tmpTable.width( tableContainer.clientWidth );
-				}
-			}
-			else if ( scrollY ) {
-				tmpTable.width( tableContainer.clientWidth );
-			}
-			else if ( tableWidthAttr ) {
-				tmpTable.width( tableWidthAttr );
-			}
-	
-			// Get the width of each column in the constructed table - we need to
-			// know the inner width (so it can be assigned to the other table's
-			// cells) and the outer width so we can calculate the full width of the
-			// table. This is safe since DataTables requires a unique cell for each
-			// column, but if ever a header can span multiple columns, this will
-			// need to be modified.
-			var total = 0;
-			for ( i=0 ; i<visibleColumns.length ; i++ ) {
-				var cell = $(headerCells[i]);
-				var border = cell.outerWidth() - cell.width();
-	
-				// Use getBounding... where possible (not IE8-) because it can give
-				// sub-pixel accuracy, which we then want to round up!
-				var bounding = browser.bBounding ?
-					Math.ceil( headerCells[i].getBoundingClientRect().width ) :
-					cell.outerWidth();
-	
-				// Total is tracked to remove any sub-pixel errors as the outerWidth
-				// of the table might not equal the total given here (IE!).
-				total += bounding;
-	
-				// Width for each column to use
-				columns[ visibleColumns[i] ].sWidth = _fnStringToCss( bounding - border );
-			}
-	
-			table.style.width = _fnStringToCss( total );
-	
-			// Finished with the table - ditch it
-			holder.remove();
-		}
-	
-		// If there is a width attr, we want to attach an event listener which
-		// allows the table sizing to automatically adjust when the window is
-		// resized. Use the width attr rather than CSS, since we can't know if the
-		// CSS is a relative value or absolute - DOM read is always px.
-		if ( tableWidthAttr ) {
-			table.style.width = _fnStringToCss( tableWidthAttr );
-		}
-	
-		if ( (tableWidthAttr || scrollX) && ! oSettings._reszEvt ) {
-			var bindResize = function () {
-				$(window).on('resize.DT-'+oSettings.sInstance, _fnThrottle( function () {
-					_fnAdjustColumnSizing( oSettings );
-				} ) );
-			};
-	
-			// IE6/7 will crash if we bind a resize event handler on page load.
-			// To be removed in 1.11 which drops IE6/7 support
-			if ( ie67 ) {
-				setTimeout( bindResize, 1000 );
-			}
-			else {
-				bindResize();
-			}
-	
-			oSettings._reszEvt = true;
-		}
-	}
-	
-	
-	/**
-	 * Throttle the calls to a function. Arguments and context are maintained for
-	 * the throttled function
-	 *  @param {function} fn Function to be called
-	 *  @param {int} [freq=200] call frequency in mS
-	 *  @returns {function} wrapped function
-	 *  @memberof DataTable#oApi
-	 */
-	var _fnThrottle = DataTable.util.throttle;
-	
-	
-	/**
-	 * Convert a CSS unit width to pixels (e.g. 2em)
-	 *  @param {string} width width to be converted
-	 *  @param {node} parent parent to get the with for (required for relative widths) - optional
-	 *  @returns {int} width in pixels
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnConvertToWidth ( width, parent )
-	{
-		if ( ! width ) {
-			return 0;
-		}
-	
-		var n = $('<div/>')
-			.css( 'width', _fnStringToCss( width ) )
-			.appendTo( parent || document.body );
-	
-		var val = n[0].offsetWidth;
-		n.remove();
-	
-		return val;
-	}
-	
-	
-	/**
-	 * Get the widest node
-	 *  @param {object} settings dataTables settings object
-	 *  @param {int} colIdx column of interest
-	 *  @returns {node} widest table node
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnGetWidestNode( settings, colIdx )
-	{
-		var idx = _fnGetMaxLenString( settings, colIdx );
-		if ( idx < 0 ) {
-			return null;
-		}
-	
-		var data = settings.aoData[ idx ];
-		return ! data.nTr ? // Might not have been created when deferred rendering
-			$('<td/>').html( _fnGetCellData( settings, idx, colIdx, 'display' ) )[0] :
-			data.anCells[ colIdx ];
-	}
-	
-	
-	/**
-	 * Get the maximum strlen for each data column
-	 *  @param {object} settings dataTables settings object
-	 *  @param {int} colIdx column of interest
-	 *  @returns {string} max string length for each column
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnGetMaxLenString( settings, colIdx )
-	{
-		var s, max=-1, maxIdx = -1;
-	
-		for ( var i=0, ien=settings.aoData.length ; i<ien ; i++ ) {
-			s = _fnGetCellData( settings, i, colIdx, 'display' )+'';
-			s = s.replace( __re_html_remove, '' );
-			s = s.replace( /&nbsp;/g, ' ' );
-	
-			if ( s.length > max ) {
-				max = s.length;
-				maxIdx = i;
-			}
-		}
-	
-		return maxIdx;
-	}
-	
-	
-	/**
-	 * Append a CSS unit (only if required) to a string
-	 *  @param {string} value to css-ify
-	 *  @returns {string} value with css unit
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnStringToCss( s )
-	{
-		if ( s === null ) {
-			return '0px';
-		}
-	
-		if ( typeof s == 'number' ) {
-			return s < 0 ?
-				'0px' :
-				s+'px';
-		}
-	
-		// Check it has a unit character already
-		return s.match(/\d$/) ?
-			s+'px' :
-			s;
-	}
-	
-	
-	
-	function _fnSortFlatten ( settings )
-	{
-		var
-			i, iLen, k, kLen,
-			aSort = [],
-			aiOrig = [],
-			aoColumns = settings.aoColumns,
-			aDataSort, iCol, sType, srcCol,
-			fixed = settings.aaSortingFixed,
-			fixedObj = $.isPlainObject( fixed ),
-			nestedSort = [],
-			add = function ( a ) {
-				if ( a.length && ! Array.isArray( a[0] ) ) {
-					// 1D array
-					nestedSort.push( a );
-				}
-				else {
-					// 2D array
-					$.merge( nestedSort, a );
-				}
-			};
-	
-		// Build the sort array, with pre-fix and post-fix options if they have been
-		// specified
-		if ( Array.isArray( fixed ) ) {
-			add( fixed );
-		}
-	
-		if ( fixedObj && fixed.pre ) {
-			add( fixed.pre );
-		}
-	
-		add( settings.aaSorting );
-	
-		if (fixedObj && fixed.post ) {
-			add( fixed.post );
-		}
-	
-		for ( i=0 ; i<nestedSort.length ; i++ )
-		{
-			srcCol = nestedSort[i][0];
-			aDataSort = aoColumns[ srcCol ].aDataSort;
-	
-			for ( k=0, kLen=aDataSort.length ; k<kLen ; k++ )
-			{
-				iCol = aDataSort[k];
-				sType = aoColumns[ iCol ].sType || 'string';
-	
-				if ( nestedSort[i]._idx === undefined ) {
-					nestedSort[i]._idx = $.inArray( nestedSort[i][1], aoColumns[iCol].asSorting );
-				}
-	
-				aSort.push( {
-					src:       srcCol,
-					col:       iCol,
-					dir:       nestedSort[i][1],
-					index:     nestedSort[i]._idx,
-					type:      sType,
-					formatter: DataTable.ext.type.order[ sType+"-pre" ]
-				} );
-			}
-		}
-	
-		return aSort;
-	}
-	
-	/**
-	 * Change the order of the table
-	 *  @param {object} oSettings dataTables settings object
-	 *  @memberof DataTable#oApi
-	 *  @todo This really needs split up!
-	 */
-	function _fnSort ( oSettings )
-	{
-		var
-			i, ien, iLen, j, jLen, k, kLen,
-			sDataType, nTh,
-			aiOrig = [],
-			oExtSort = DataTable.ext.type.order,
-			aoData = oSettings.aoData,
-			aoColumns = oSettings.aoColumns,
-			aDataSort, data, iCol, sType, oSort,
-			formatters = 0,
-			sortCol,
-			displayMaster = oSettings.aiDisplayMaster,
-			aSort;
-	
-		// Resolve any column types that are unknown due to addition or invalidation
-		// @todo Can this be moved into a 'data-ready' handler which is called when
-		//   data is going to be used in the table?
-		_fnColumnTypes( oSettings );
-	
-		aSort = _fnSortFlatten( oSettings );
-	
-		for ( i=0, ien=aSort.length ; i<ien ; i++ ) {
-			sortCol = aSort[i];
-	
-			// Track if we can use the fast sort algorithm
-			if ( sortCol.formatter ) {
-				formatters++;
-			}
-	
-			// Load the data needed for the sort, for each cell
-			_fnSortData( oSettings, sortCol.col );
-		}
-	
-		/* No sorting required if server-side or no sorting array */
-		if ( _fnDataSource( oSettings ) != 'ssp' && aSort.length !== 0 )
-		{
-			// Create a value - key array of the current row positions such that we can use their
-			// current position during the sort, if values match, in order to perform stable sorting
-			for ( i=0, iLen=displayMaster.length ; i<iLen ; i++ ) {
-				aiOrig[ displayMaster[i] ] = i;
-			}
-	
-			/* Do the sort - here we want multi-column sorting based on a given data source (column)
-			 * and sorting function (from oSort) in a certain direction. It's reasonably complex to
-			 * follow on it's own, but this is what we want (example two column sorting):
-			 *  fnLocalSorting = function(a,b){
-			 *    var iTest;
-			 *    iTest = oSort['string-asc']('data11', 'data12');
-			 *      if (iTest !== 0)
-			 *        return iTest;
-			 *    iTest = oSort['numeric-desc']('data21', 'data22');
-			 *    if (iTest !== 0)
-			 *      return iTest;
-			 *    return oSort['numeric-asc']( aiOrig[a], aiOrig[b] );
-			 *  }
-			 * Basically we have a test for each sorting column, if the data in that column is equal,
-			 * test the next column. If all columns match, then we use a numeric sort on the row
-			 * positions in the original data array to provide a stable sort.
-			 *
-			 * Note - I know it seems excessive to have two sorting methods, but the first is around
-			 * 15% faster, so the second is only maintained for backwards compatibility with sorting
-			 * methods which do not have a pre-sort formatting function.
-			 */
-			if ( formatters === aSort.length ) {
-				// All sort types have formatting functions
-				displayMaster.sort( function ( a, b ) {
-					var
-						x, y, k, test, sort,
-						len=aSort.length,
-						dataA = aoData[a]._aSortData,
-						dataB = aoData[b]._aSortData;
-	
-					for ( k=0 ; k<len ; k++ ) {
-						sort = aSort[k];
-	
-						x = dataA[ sort.col ];
-						y = dataB[ sort.col ];
-	
-						test = x<y ? -1 : x>y ? 1 : 0;
-						if ( test !== 0 ) {
-							return sort.dir === 'asc' ? test : -test;
-						}
-					}
-	
-					x = aiOrig[a];
-					y = aiOrig[b];
-					return x<y ? -1 : x>y ? 1 : 0;
-				} );
-			}
-			else {
-				// Depreciated - remove in 1.11 (providing a plug-in option)
-				// Not all sort types have formatting methods, so we have to call their sorting
-				// methods.
-				displayMaster.sort( function ( a, b ) {
-					var
-						x, y, k, l, test, sort, fn,
-						len=aSort.length,
-						dataA = aoData[a]._aSortData,
-						dataB = aoData[b]._aSortData;
-	
-					for ( k=0 ; k<len ; k++ ) {
-						sort = aSort[k];
-	
-						x = dataA[ sort.col ];
-						y = dataB[ sort.col ];
-	
-						fn = oExtSort[ sort.type+"-"+sort.dir ] || oExtSort[ "string-"+sort.dir ];
-						test = fn( x, y );
-						if ( test !== 0 ) {
-							return test;
-						}
-					}
-	
-					x = aiOrig[a];
-					y = aiOrig[b];
-					return x<y ? -1 : x>y ? 1 : 0;
-				} );
-			}
-		}
-	
-		/* Tell the draw function that we have sorted the data */
-		oSettings.bSorted = true;
-	}
-	
-	
-	function _fnSortAria ( settings )
-	{
-		var label;
-		var nextSort;
-		var columns = settings.aoColumns;
-		var aSort = _fnSortFlatten( settings );
-		var oAria = settings.oLanguage.oAria;
-	
-		// ARIA attributes - need to loop all columns, to update all (removing old
-		// attributes as needed)
-		for ( var i=0, iLen=columns.length ; i<iLen ; i++ )
-		{
-			var col = columns[i];
-			var asSorting = col.asSorting;
-			var sTitle = col.ariaTitle || col.sTitle.replace( /<.*?>/g, "" );
-			var th = col.nTh;
-	
-			// IE7 is throwing an error when setting these properties with jQuery's
-			// attr() and removeAttr() methods...
-			th.removeAttribute('aria-sort');
-	
-			/* In ARIA only the first sorting column can be marked as sorting - no multi-sort option */
-			if ( col.bSortable ) {
-				if ( aSort.length > 0 && aSort[0].col == i ) {
-					th.setAttribute('aria-sort', aSort[0].dir=="asc" ? "ascending" : "descending" );
-					nextSort = asSorting[ aSort[0].index+1 ] || asSorting[0];
-				}
-				else {
-					nextSort = asSorting[0];
-				}
-	
-				label = sTitle + ( nextSort === "asc" ?
-					oAria.sSortAscending :
-					oAria.sSortDescending
-				);
-			}
-			else {
-				label = sTitle;
-			}
-	
-			th.setAttribute('aria-label', label);
-		}
-	}
-	
-	
-	/**
-	 * Function to run on user sort request
-	 *  @param {object} settings dataTables settings object
-	 *  @param {node} attachTo node to attach the handler to
-	 *  @param {int} colIdx column sorting index
-	 *  @param {boolean} [append=false] Append the requested sort to the existing
-	 *    sort if true (i.e. multi-column sort)
-	 *  @param {function} [callback] callback function
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnSortListener ( settings, colIdx, append, callback )
-	{
-		var col = settings.aoColumns[ colIdx ];
-		var sorting = settings.aaSorting;
-		var asSorting = col.asSorting;
-		var nextSortIdx;
-		var next = function ( a, overflow ) {
-			var idx = a._idx;
-			if ( idx === undefined ) {
-				idx = $.inArray( a[1], asSorting );
-			}
-	
-			return idx+1 < asSorting.length ?
-				idx+1 :
-				overflow ?
-					null :
-					0;
-		};
-	
-		// Convert to 2D array if needed
-		if ( typeof sorting[0] === 'number' ) {
-			sorting = settings.aaSorting = [ sorting ];
-		}
-	
-		// If appending the sort then we are multi-column sorting
-		if ( append && settings.oFeatures.bSortMulti ) {
-			// Are we already doing some kind of sort on this column?
-			var sortIdx = $.inArray( colIdx, _pluck(sorting, '0') );
-	
-			if ( sortIdx !== -1 ) {
-				// Yes, modify the sort
-				nextSortIdx = next( sorting[sortIdx], true );
-	
-				if ( nextSortIdx === null && sorting.length === 1 ) {
-					nextSortIdx = 0; // can't remove sorting completely
-				}
-	
-				if ( nextSortIdx === null ) {
-					sorting.splice( sortIdx, 1 );
-				}
-				else {
-					sorting[sortIdx][1] = asSorting[ nextSortIdx ];
-					sorting[sortIdx]._idx = nextSortIdx;
-				}
-			}
-			else {
-				// No sort on this column yet
-				sorting.push( [ colIdx, asSorting[0], 0 ] );
-				sorting[sorting.length-1]._idx = 0;
-			}
-		}
-		else if ( sorting.length && sorting[0][0] == colIdx ) {
-			// Single column - already sorting on this column, modify the sort
-			nextSortIdx = next( sorting[0] );
-	
-			sorting.length = 1;
-			sorting[0][1] = asSorting[ nextSortIdx ];
-			sorting[0]._idx = nextSortIdx;
-		}
-		else {
-			// Single column - sort only on this column
-			sorting.length = 0;
-			sorting.push( [ colIdx, asSorting[0] ] );
-			sorting[0]._idx = 0;
-		}
-	
-		// Run the sort by calling a full redraw
-		_fnReDraw( settings );
-	
-		// callback used for async user interaction
-		if ( typeof callback == 'function' ) {
-			callback( settings );
-		}
-	}
-	
-	
-	/**
-	 * Attach a sort handler (click) to a node
-	 *  @param {object} settings dataTables settings object
-	 *  @param {node} attachTo node to attach the handler to
-	 *  @param {int} colIdx column sorting index
-	 *  @param {function} [callback] callback function
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnSortAttachListener ( settings, attachTo, colIdx, callback )
-	{
-		var col = settings.aoColumns[ colIdx ];
-	
-		_fnBindAction( attachTo, {}, function (e) {
-			/* If the column is not sortable - don't to anything */
-			if ( col.bSortable === false ) {
-				return;
-			}
-	
-			// If processing is enabled use a timeout to allow the processing
-			// display to be shown - otherwise to it synchronously
-			if ( settings.oFeatures.bProcessing ) {
-				_fnProcessingDisplay( settings, true );
-	
-				setTimeout( function() {
-					_fnSortListener( settings, colIdx, e.shiftKey, callback );
-	
-					// In server-side processing, the draw callback will remove the
-					// processing display
-					if ( _fnDataSource( settings ) !== 'ssp' ) {
-						_fnProcessingDisplay( settings, false );
-					}
-				}, 0 );
-			}
-			else {
-				_fnSortListener( settings, colIdx, e.shiftKey, callback );
-			}
-		} );
-	}
-	
-	
-	/**
-	 * Set the sorting classes on table's body, Note: it is safe to call this function
-	 * when bSort and bSortClasses are false
-	 *  @param {object} oSettings dataTables settings object
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnSortingClasses( settings )
-	{
-		var oldSort = settings.aLastSort;
-		var sortClass = settings.oClasses.sSortColumn;
-		var sort = _fnSortFlatten( settings );
-		var features = settings.oFeatures;
-		var i, ien, colIdx;
-	
-		if ( features.bSort && features.bSortClasses ) {
-			// Remove old sorting classes
-			for ( i=0, ien=oldSort.length ; i<ien ; i++ ) {
-				colIdx = oldSort[i].src;
-	
-				// Remove column sorting
-				$( _pluck( settings.aoData, 'anCells', colIdx ) )
-					.removeClass( sortClass + (i<2 ? i+1 : 3) );
-			}
-	
-			// Add new column sorting
-			for ( i=0, ien=sort.length ; i<ien ; i++ ) {
-				colIdx = sort[i].src;
-	
-				$( _pluck( settings.aoData, 'anCells', colIdx ) )
-					.addClass( sortClass + (i<2 ? i+1 : 3) );
-			}
-		}
-	
-		settings.aLastSort = sort;
-	}
-	
-	
-	// Get the data to sort a column, be it from cache, fresh (populating the
-	// cache), or from a sort formatter
-	function _fnSortData( settings, idx )
-	{
-		// Custom sorting function - provided by the sort data type
-		var column = settings.aoColumns[ idx ];
-		var customSort = DataTable.ext.order[ column.sSortDataType ];
-		var customData;
-	
-		if ( customSort ) {
-			customData = customSort.call( settings.oInstance, settings, idx,
-				_fnColumnIndexToVisible( settings, idx )
-			);
-		}
-	
-		// Use / populate cache
-		var row, cellData;
-		var formatter = DataTable.ext.type.order[ column.sType+"-pre" ];
-	
-		for ( var i=0, ien=settings.aoData.length ; i<ien ; i++ ) {
-			row = settings.aoData[i];
-	
-			if ( ! row._aSortData ) {
-				row._aSortData = [];
-			}
-	
-			if ( ! row._aSortData[idx] || customSort ) {
-				cellData = customSort ?
-					customData[i] : // If there was a custom sort function, use data from there
-					_fnGetCellData( settings, i, idx, 'sort' );
-	
-				row._aSortData[ idx ] = formatter ?
-					formatter( cellData ) :
-					cellData;
-			}
-		}
-	}
-	
-	
-	
-	/**
-	 * Save the state of a table
-	 *  @param {object} oSettings dataTables settings object
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnSaveState ( settings )
-	{
-		if ( !settings.oFeatures.bStateSave || settings.bDestroying )
-		{
-			return;
-		}
-	
-		/* Store the interesting variables */
-		var state = {
-			time:    +new Date(),
-			start:   settings._iDisplayStart,
-			length:  settings._iDisplayLength,
-			order:   $.extend( true, [], settings.aaSorting ),
-			search:  _fnSearchToCamel( settings.oPreviousSearch ),
-			columns: $.map( settings.aoColumns, function ( col, i ) {
-				return {
-					visible: col.bVisible,
-					search: _fnSearchToCamel( settings.aoPreSearchCols[i] )
-				};
-			} )
-		};
-	
-		_fnCallbackFire( settings, "aoStateSaveParams", 'stateSaveParams', [settings, state] );
-	
-		settings.oSavedState = state;
-		settings.fnStateSaveCallback.call( settings.oInstance, settings, state );
-	}
-	
-	
-	/**
-	 * Attempt to load a saved table state
-	 *  @param {object} oSettings dataTables settings object
-	 *  @param {object} oInit DataTables init object so we can override settings
-	 *  @param {function} callback Callback to execute when the state has been loaded
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnLoadState ( settings, oInit, callback )
-	{
-		var i, ien;
-		var columns = settings.aoColumns;
-		var loaded = function ( s ) {
-			if ( ! s || ! s.time ) {
-				callback();
-				return;
-			}
-	
-			// Allow custom and plug-in manipulation functions to alter the saved data set and
-			// cancelling of loading by returning false
-			var abStateLoad = _fnCallbackFire( settings, 'aoStateLoadParams', 'stateLoadParams', [settings, s] );
-			if ( $.inArray( false, abStateLoad ) !== -1 ) {
-				callback();
-				return;
-			}
-	
-			// Reject old data
-			var duration = settings.iStateDuration;
-			if ( duration > 0 && s.time < +new Date() - (duration*1000) ) {
-				callback();
-				return;
-			}
-	
-			// Number of columns have changed - all bets are off, no restore of settings
-			if ( s.columns && columns.length !== s.columns.length ) {
-				callback();
-				return;
-			}
-	
-			// Store the saved state so it might be accessed at any time
-			settings.oLoadedState = $.extend( true, {}, s );
-	
-			// Restore key features - todo - for 1.11 this needs to be done by
-			// subscribed events
-			if ( s.start !== undefined ) {
-				settings._iDisplayStart    = s.start;
-				settings.iInitDisplayStart = s.start;
-			}
-			if ( s.length !== undefined ) {
-				settings._iDisplayLength   = s.length;
-			}
-	
-			// Order
-			if ( s.order !== undefined ) {
-				settings.aaSorting = [];
-				$.each( s.order, function ( i, col ) {
-					settings.aaSorting.push( col[0] >= columns.length ?
-						[ 0, col[1] ] :
-						col
-					);
-				} );
-			}
-	
-			// Search
-			if ( s.search !== undefined ) {
-				$.extend( settings.oPreviousSearch, _fnSearchToHung( s.search ) );
-			}
-	
-			// Columns
-			//
-			if ( s.columns ) {
-				for ( i=0, ien=s.columns.length ; i<ien ; i++ ) {
-					var col = s.columns[i];
-	
-					// Visibility
-					if ( col.visible !== undefined ) {
-						columns[i].bVisible = col.visible;
-					}
-	
-					// Search
-					if ( col.search !== undefined ) {
-						$.extend( settings.aoPreSearchCols[i], _fnSearchToHung( col.search ) );
-					}
-				}
-			}
-	
-			_fnCallbackFire( settings, 'aoStateLoaded', 'stateLoaded', [settings, s] );
-			callback();
-		};
-	
-		if ( ! settings.oFeatures.bStateSave ) {
-			callback();
-			return;
-		}
-	
-		var state = settings.fnStateLoadCallback.call( settings.oInstance, settings, loaded );
-	
-		if ( state !== undefined ) {
-			loaded( state );
-		}
-		// otherwise, wait for the loaded callback to be executed
-	}
-	
-	
-	/**
-	 * Return the settings object for a particular table
-	 *  @param {node} table table we are using as a dataTable
-	 *  @returns {object} Settings object - or null if not found
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnSettingsFromNode ( table )
-	{
-		var settings = DataTable.settings;
-		var idx = $.inArray( table, _pluck( settings, 'nTable' ) );
-	
-		return idx !== -1 ?
-			settings[ idx ] :
-			null;
-	}
-	
-	
-	/**
-	 * Log an error message
-	 *  @param {object} settings dataTables settings object
-	 *  @param {int} level log error messages, or display them to the user
-	 *  @param {string} msg error message
-	 *  @param {int} tn Technical note id to get more information about the error.
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnLog( settings, level, msg, tn )
-	{
-		msg = 'DataTables warning: '+
-			(settings ? 'table id='+settings.sTableId+' - ' : '')+msg;
-	
-		if ( tn ) {
-			msg += '. For more information about this error, please see '+
-			'http://datatables.net/tn/'+tn;
-		}
-	
-		if ( ! level  ) {
-			// Backwards compatibility pre 1.10
-			var ext = DataTable.ext;
-			var type = ext.sErrMode || ext.errMode;
-	
-			if ( settings ) {
-				_fnCallbackFire( settings, null, 'error', [ settings, tn, msg ] );
-			}
-	
-			if ( type == 'alert' ) {
-				alert( msg );
-			}
-			else if ( type == 'throw' ) {
-				throw new Error(msg);
-			}
-			else if ( typeof type == 'function' ) {
-				type( settings, tn, msg );
-			}
-		}
-		else if ( window.console && console.log ) {
-			console.log( msg );
-		}
-	}
-	
-	
-	/**
-	 * See if a property is defined on one object, if so assign it to the other object
-	 *  @param {object} ret target object
-	 *  @param {object} src source object
-	 *  @param {string} name property
-	 *  @param {string} [mappedName] name to map too - optional, name used if not given
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnMap( ret, src, name, mappedName )
-	{
-		if ( Array.isArray( name ) ) {
-			$.each( name, function (i, val) {
-				if ( Array.isArray( val ) ) {
-					_fnMap( ret, src, val[0], val[1] );
-				}
-				else {
-					_fnMap( ret, src, val );
-				}
-			} );
-	
-			return;
-		}
-	
-		if ( mappedName === undefined ) {
-			mappedName = name;
-		}
-	
-		if ( src[name] !== undefined ) {
-			ret[mappedName] = src[name];
-		}
-	}
-	
-	
-	/**
-	 * Extend objects - very similar to jQuery.extend, but deep copy objects, and
-	 * shallow copy arrays. The reason we need to do this, is that we don't want to
-	 * deep copy array init values (such as aaSorting) since the dev wouldn't be
-	 * able to override them, but we do want to deep copy arrays.
-	 *  @param {object} out Object to extend
-	 *  @param {object} extender Object from which the properties will be applied to
-	 *      out
-	 *  @param {boolean} breakRefs If true, then arrays will be sliced to take an
-	 *      independent copy with the exception of the `data` or `aaData` parameters
-	 *      if they are present. This is so you can pass in a collection to
-	 *      DataTables and have that used as your data source without breaking the
-	 *      references
-	 *  @returns {object} out Reference, just for convenience - out === the return.
-	 *  @memberof DataTable#oApi
-	 *  @todo This doesn't take account of arrays inside the deep copied objects.
-	 */
-	function _fnExtend( out, extender, breakRefs )
-	{
-		var val;
-	
-		for ( var prop in extender ) {
-			if ( extender.hasOwnProperty(prop) ) {
-				val = extender[prop];
-	
-				if ( $.isPlainObject( val ) ) {
-					if ( ! $.isPlainObject( out[prop] ) ) {
-						out[prop] = {};
-					}
-					$.extend( true, out[prop], val );
-				}
-				else if ( breakRefs && prop !== 'data' && prop !== 'aaData' && Array.isArray(val) ) {
-					out[prop] = val.slice();
-				}
-				else {
-					out[prop] = val;
-				}
-			}
-		}
-	
-		return out;
-	}
-	
-	
-	/**
-	 * Bind an event handers to allow a click or return key to activate the callback.
-	 * This is good for accessibility since a return on the keyboard will have the
-	 * same effect as a click, if the element has focus.
-	 *  @param {element} n Element to bind the action to
-	 *  @param {object} oData Data object to pass to the triggered function
-	 *  @param {function} fn Callback function for when the event is triggered
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnBindAction( n, oData, fn )
-	{
-		$(n)
-			.on( 'click.DT', oData, function (e) {
-					$(n).trigger('blur'); // Remove focus outline for mouse users
-					fn(e);
-				} )
-			.on( 'keypress.DT', oData, function (e){
-					if ( e.which === 13 ) {
-						e.preventDefault();
-						fn(e);
-					}
-				} )
-			.on( 'selectstart.DT', function () {
-					/* Take the brutal approach to cancelling text selection */
-					return false;
-				} );
-	}
-	
-	
-	/**
-	 * Register a callback function. Easily allows a callback function to be added to
-	 * an array store of callback functions that can then all be called together.
-	 *  @param {object} oSettings dataTables settings object
-	 *  @param {string} sStore Name of the array storage for the callbacks in oSettings
-	 *  @param {function} fn Function to be called back
-	 *  @param {string} sName Identifying name for the callback (i.e. a label)
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnCallbackReg( oSettings, sStore, fn, sName )
-	{
-		if ( fn )
-		{
-			oSettings[sStore].push( {
-				"fn": fn,
-				"sName": sName
-			} );
-		}
-	}
-	
-	
-	/**
-	 * Fire callback functions and trigger events. Note that the loop over the
-	 * callback array store is done backwards! Further note that you do not want to
-	 * fire off triggers in time sensitive applications (for example cell creation)
-	 * as its slow.
-	 *  @param {object} settings dataTables settings object
-	 *  @param {string} callbackArr Name of the array storage for the callbacks in
-	 *      oSettings
-	 *  @param {string} eventName Name of the jQuery custom event to trigger. If
-	 *      null no trigger is fired
-	 *  @param {array} args Array of arguments to pass to the callback function /
-	 *      trigger
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnCallbackFire( settings, callbackArr, eventName, args )
-	{
-		var ret = [];
-	
-		if ( callbackArr ) {
-			ret = $.map( settings[callbackArr].slice().reverse(), function (val, i) {
-				return val.fn.apply( settings.oInstance, args );
-			} );
-		}
-	
-		if ( eventName !== null ) {
-			var e = $.Event( eventName+'.dt' );
-	
-			$(settings.nTable).trigger( e, args );
-	
-			ret.push( e.result );
-		}
-	
-		return ret;
-	}
-	
-	
-	function _fnLengthOverflow ( settings )
-	{
-		var
-			start = settings._iDisplayStart,
-			end = settings.fnDisplayEnd(),
-			len = settings._iDisplayLength;
-	
-		/* If we have space to show extra rows (backing up from the end point - then do so */
-		if ( start >= end )
-		{
-			start = end - len;
-		}
-	
-		// Keep the start record on the current page
-		start -= (start % len);
-	
-		if ( len === -1 || start < 0 )
-		{
-			start = 0;
-		}
-	
-		settings._iDisplayStart = start;
-	}
-	
-	
-	function _fnRenderer( settings, type )
-	{
-		var renderer = settings.renderer;
-		var host = DataTable.ext.renderer[type];
-	
-		if ( $.isPlainObject( renderer ) && renderer[type] ) {
-			// Specific renderer for this type. If available use it, otherwise use
-			// the default.
-			return host[renderer[type]] || host._;
-		}
-		else if ( typeof renderer === 'string' ) {
-			// Common renderer - if there is one available for this type use it,
-			// otherwise use the default
-			return host[renderer] || host._;
-		}
-	
-		// Use the default
-		return host._;
-	}
-	
-	
-	/**
-	 * Detect the data source being used for the table. Used to simplify the code
-	 * a little (ajax) and to make it compress a little smaller.
-	 *
-	 *  @param {object} settings dataTables settings object
-	 *  @returns {string} Data source
-	 *  @memberof DataTable#oApi
-	 */
-	function _fnDataSource ( settings )
-	{
-		if ( settings.oFeatures.bServerSide ) {
-			return 'ssp';
-		}
-		else if ( settings.ajax || settings.sAjaxSource ) {
-			return 'ajax';
-		}
-		return 'dom';
-	}
-	
-
-	
-	
-	/**
-	 * Computed structure of the DataTables API, defined by the options passed to
-	 * `DataTable.Api.register()` when building the API.
-	 *
-	 * The structure is built in order to speed creation and extension of the Api
-	 * objects since the extensions are effectively pre-parsed.
-	 *
-	 * The array is an array of objects with the following structure, where this
-	 * base array represents the Api prototype base:
-	 *
-	 *     [
-	 *       {
-	 *         name:      'data'                -- string   - Property name
-	 *         val:       function () {},       -- function - Api method (or undefined if just an object
-	 *         methodExt: [ ... ],              -- array    - Array of Api object definitions to extend the method result
-	 *         propExt:   [ ... ]               -- array    - Array of Api object definitions to extend the property
-	 *       },
-	 *       {
-	 *         name:     'row'
-	 *         val:       {},
-	 *         methodExt: [ ... ],
-	 *         propExt:   [
-	 *           {
-	 *             name:      'data'
-	 *             val:       function () {},
-	 *             methodExt: [ ... ],
-	 *             propExt:   [ ... ]
-	 *           },
-	 *           ...
-	 *         ]
-	 *       }
-	 *     ]
-	 *
-	 * @type {Array}
-	 * @ignore
-	 */
-	var __apiStruct = [];
-	
-	
-	/**
-	 * `Array.prototype` reference.
-	 *
-	 * @type object
-	 * @ignore
-	 */
-	var __arrayProto = Array.prototype;
-	
-	
-	/**
-	 * Abstraction for `context` parameter of the `Api` constructor to allow it to
-	 * take several different forms for ease of use.
-	 *
-	 * Each of the input parameter types will be converted to a DataTables settings
-	 * object where possible.
-	 *
-	 * @param  {string|node|jQuery|object} mixed DataTable identifier. Can be one
-	 *   of:
-	 *
-	 *   * `string` - jQuery selector. Any DataTables' matching the given selector
-	 *     with be found and used.
-	 *   * `node` - `TABLE` node which has already been formed into a DataTable.
-	 *   * `jQuery` - A jQuery object of `TABLE` nodes.
-	 *   * `object` - DataTables settings object
-	 *   * `DataTables.Api` - API instance
-	 * @return {array|null} Matching DataTables settings objects. `null` or
-	 *   `undefined` is returned if no matching DataTable is found.
-	 * @ignore
-	 */
-	var _toSettings = function ( mixed )
-	{
-		var idx, jq;
-		var settings = DataTable.settings;
-		var tables = $.map( settings, function (el, i) {
-			return el.nTable;
-		} );
-	
-		if ( ! mixed ) {
-			return [];
-		}
-		else if ( mixed.nTable && mixed.oApi ) {
-			// DataTables settings object
-			return [ mixed ];
-		}
-		else if ( mixed.nodeName && mixed.nodeName.toLowerCase() === 'table' ) {
-			// Table node
-			idx = $.inArray( mixed, tables );
-			return idx !== -1 ? [ settings[idx] ] : null;
-		}
-		else if ( mixed && typeof mixed.settings === 'function' ) {
-			return mixed.settings().toArray();
-		}
-		else if ( typeof mixed === 'string' ) {
-			// jQuery selector
-			jq = $(mixed);
-		}
-		else if ( mixed instanceof $ ) {
-			// jQuery object (also DataTables instance)
-			jq = mixed;
-		}
-	
-		if ( jq ) {
-			return jq.map( function(i) {
-				idx = $.inArray( this, tables );
-				return idx !== -1 ? settings[idx] : null;
-			} ).toArray();
-		}
-	};
-	
-	
-	/**
-	 * DataTables API class - used to control and interface with  one or more
-	 * DataTables enhanced tables.
-	 *
-	 * The API class is heavily based on jQuery, presenting a chainable interface
-	 * that you can use to interact with tables. Each instance of the API class has
-	 * a "context" - i.e. the tables that it will operate on. This could be a single
-	 * table, all tables on a page or a sub-set thereof.
-	 *
-	 * Additionally the API is designed to allow you to easily work with the data in
-	 * the tables, retrieving and manipulating it as required. This is done by
-	 * presenting the API class as an array like interface. The contents of the
-	 * array depend upon the actions requested by each method (for example
-	 * `rows().nodes()` will return an array of nodes, while `rows().data()` will
-	 * return an array of objects or arrays depending upon your table's
-	 * configuration). The API object has a number of array like methods (`push`,
-	 * `pop`, `reverse` etc) as well as additional helper methods (`each`, `pluck`,
-	 * `unique` etc) to assist your working with the data held in a table.
-	 *
-	 * Most methods (those which return an Api instance) are chainable, which means
-	 * the return from a method call also has all of the methods available that the
-	 * top level object had. For example, these two calls are equivalent:
-	 *
-	 *     // Not chained
-	 *     api.row.add( {...} );
-	 *     api.draw();
-	 *
-	 *     // Chained
-	 *     api.row.add( {...} ).draw();
-	 *
-	 * @class DataTable.Api
-	 * @param {array|object|string|jQuery} context DataTable identifier. This is
-	 *   used to define which DataTables enhanced tables this API will operate on.
-	 *   Can be one of:
-	 *
-	 *   * `string` - jQuery selector. Any DataTables' matching the given selector
-	 *     with be found and used.
-	 *   * `node` - `TABLE` node which has already been formed into a DataTable.
-	 *   * `jQuery` - A jQuery object of `TABLE` nodes.
-	 *   * `object` - DataTables settings object
-	 * @param {array} [data] Data to initialise the Api instance with.
-	 *
-	 * @example
-	 *   // Direct initialisation during DataTables construction
-	 *   var api = $('#example').DataTable();
-	 *
-	 * @example
-	 *   // Initialisation using a DataTables jQuery object
-	 *   var api = $('#example').dataTable().api();
-	 *
-	 * @example
-	 *   // Initialisation as a constructor
-	 *   var api = new $.fn.DataTable.Api( 'table.dataTable' );
-	 */
-	_Api = function ( context, data )
-	{
-		if ( ! (this instanceof _Api) ) {
-			return new _Api( context, data );
-		}
-	
-		var settings = [];
-		var ctxSettings = function ( o ) {
-			var a = _toSettings( o );
-			if ( a ) {
-				settings.push.apply( settings, a );
-			}
-		};
-	
-		if ( Array.isArray( context ) ) {
-			for ( var i=0, ien=context.length ; i<ien ; i++ ) {
-				ctxSettings( context[i] );
-			}
-		}
-		else {
-			ctxSettings( context );
-		}
-	
-		// Remove duplicates
-		this.context = _unique( settings );
-	
-		// Initial data
-		if ( data ) {
-			$.merge( this, data );
-		}
-	
-		// selector
-		this.selector = {
-			rows: null,
-			cols: null,
-			opts: null
-		};
-	
-		_Api.extend( this, this, __apiStruct );
-	};
-	
-	DataTable.Api = _Api;
-	
-	// Don't destroy the existing prototype, just extend it. Required for jQuery 2's
-	// isPlainObject.
-	$.extend( _Api.prototype, {
-		any: function ()
-		{
-			return this.count() !== 0;
-		},
-	
-	
-		concat:  __arrayProto.concat,
-	
-	
-		context: [], // array of table settings objects
-	
-	
-		count: function ()
-		{
-			return this.flatten().length;
-		},
-	
-	
-		each: function ( fn )
-		{
-			for ( var i=0, ien=this.length ; i<ien; i++ ) {
-				fn.call( this, this[i], i, this );
-			}
-	
-			return this;
-		},
-	
-	
-		eq: function ( idx )
-		{
-			var ctx = this.context;
-	
-			return ctx.length > idx ?
-				new _Api( ctx[idx], this[idx] ) :
-				null;
-		},
-	
-	
-		filter: function ( fn )
-		{
-			var a = [];
-	
-			if ( __arrayProto.filter ) {
-				a = __arrayProto.filter.call( this, fn, this );
-			}
-			else {
-				// Compatibility for browsers without EMCA-252-5 (JS 1.6)
-				for ( var i=0, ien=this.length ; i<ien ; i++ ) {
-					if ( fn.call( this, this[i], i, this ) ) {
-						a.push( this[i] );
-					}
-				}
-			}
-	
-			return new _Api( this.context, a );
-		},
-	
-	
-		flatten: function ()
-		{
-			var a = [];
-			return new _Api( this.context, a.concat.apply( a, this.toArray() ) );
-		},
-	
-	
-		join:    __arrayProto.join,
-	
-	
-		indexOf: __arrayProto.indexOf || function (obj, start)
-		{
-			for ( var i=(start || 0), ien=this.length ; i<ien ; i++ ) {
-				if ( this[i] === obj ) {
-					return i;
-				}
-			}
-			return -1;
-		},
-	
-		iterator: function ( flatten, type, fn, alwaysNew ) {
-			var
-				a = [], ret,
-				i, ien, j, jen,
-				context = this.context,
-				rows, items, item,
-				selector = this.selector;
-	
-			// Argument shifting
-			if ( typeof flatten === 'string' ) {
-				alwaysNew = fn;
-				fn = type;
-				type = flatten;
-				flatten = false;
-			}
-	
-			for ( i=0, ien=context.length ; i<ien ; i++ ) {
-				var apiInst = new _Api( context[i] );
-	
-				if ( type === 'table' ) {
-					ret = fn.call( apiInst, context[i], i );
-	
-					if ( ret !== undefined ) {
-						a.push( ret );
-					}
-				}
-				else if ( type === 'columns' || type === 'rows' ) {
-					// this has same length as context - one entry for each table
-					ret = fn.call( apiInst, context[i], this[i], i );
-	
-					if ( ret !== undefined ) {
-						a.push( ret );
-					}
-				}
-				else if ( type === 'column' || type === 'column-rows' || type === 'row' || type === 'cell' ) {
-					// columns and rows share the same structure.
-					// 'this' is an array of column indexes for each context
-					items = this[i];
-	
-					if ( type === 'column-rows' ) {
-						rows = _selector_row_indexes( context[i], selector.opts );
-					}
-	
-					for ( j=0, jen=items.length ; j<jen ; j++ ) {
-						item = items[j];
-	
-						if ( type === 'cell' ) {
-							ret = fn.call( apiInst, context[i], item.row, item.column, i, j );
-						}
-						else {
-							ret = fn.call( apiInst, context[i], item, i, j, rows );
-						}
-	
-						if ( ret !== undefined ) {
-							a.push( ret );
-						}
-					}
-				}
-			}
-	
-			if ( a.length || alwaysNew ) {
-				var api = new _Api( context, flatten ? a.concat.apply( [], a ) : a );
-				var apiSelector = api.selector;
-				apiSelector.rows = selector.rows;
-				apiSelector.cols = selector.cols;
-				apiSelector.opts = selector.opts;
-				return api;
-			}
-			return this;
-		},
-	
-	
-		lastIndexOf: __arrayProto.lastIndexOf || function (obj, start)
-		{
-			// Bit cheeky...
-			return this.indexOf.apply( this.toArray.reverse(), arguments );
-		},
-	
-	
-		length:  0,
-	
-	
-		map: function ( fn )
-		{
-			var a = [];
-	
-			if ( __arrayProto.map ) {
-				a = __arrayProto.map.call( this, fn, this );
-			}
-			else {
-				// Compatibility for browsers without EMCA-252-5 (JS 1.6)
-				for ( var i=0, ien=this.length ; i<ien ; i++ ) {
-					a.push( fn.call( this, this[i], i ) );
-				}
-			}
-	
-			return new _Api( this.context, a );
-		},
-	
-	
-		pluck: function ( prop )
-		{
-			return this.map( function ( el ) {
-				return el[ prop ];
-			} );
-		},
-	
-		pop:     __arrayProto.pop,
-	
-	
-		push:    __arrayProto.push,
-	
-	
-		// Does not return an API instance
-		reduce: __arrayProto.reduce || function ( fn, init )
-		{
-			return _fnReduce( this, fn, init, 0, this.length, 1 );
-		},
-	
-	
-		reduceRight: __arrayProto.reduceRight || function ( fn, init )
-		{
-			return _fnReduce( this, fn, init, this.length-1, -1, -1 );
-		},
-	
-	
-		reverse: __arrayProto.reverse,
-	
-	
-		// Object with rows, columns and opts
-		selector: null,
-	
-	
-		shift:   __arrayProto.shift,
-	
-	
-		slice: function () {
-			return new _Api( this.context, this );
-		},
-	
-	
-		sort:    __arrayProto.sort, // ? name - order?
-	
-	
-		splice:  __arrayProto.splice,
-	
-	
-		toArray: function ()
-		{
-			return __arrayProto.slice.call( this );
-		},
-	
-	
-		to$: function ()
-		{
-			return $( this );
-		},
-	
-	
-		toJQuery: function ()
-		{
-			return $( this );
-		},
-	
-	
-		unique: function ()
-		{
-			return new _Api( this.context, _unique(this) );
-		},
-	
-	
-		unshift: __arrayProto.unshift
-	} );
-	
-	
-	_Api.extend = function ( scope, obj, ext )
-	{
-		// Only extend API instances and static properties of the API
-		if ( ! ext.length || ! obj || ( ! (obj instanceof _Api) && ! obj.__dt_wrapper ) ) {
-			return;
-		}
-	
-		var
-			i, ien,
-			struct,
-			methodScoping = function ( scope, fn, struc ) {
-				return function () {
-					var ret = fn.apply( scope, arguments );
-	
-					// Method extension
-					_Api.extend( ret, ret, struc.methodExt );
-					return ret;
-				};
-			};
-	
-		for ( i=0, ien=ext.length ; i<ien ; i++ ) {
-			struct = ext[i];
-	
-			// Value
-			obj[ struct.name ] = struct.type === 'function' ?
-				methodScoping( scope, struct.val, struct ) :
-				struct.type === 'object' ?
-					{} :
-					struct.val;
-	
-			obj[ struct.name ].__dt_wrapper = true;
-	
-			// Property extension
-			_Api.extend( scope, obj[ struct.name ], struct.propExt );
-		}
-	};
-	
-	
-	// @todo - Is there need for an augment function?
-	// _Api.augment = function ( inst, name )
-	// {
-	// 	// Find src object in the structure from the name
-	// 	var parts = name.split('.');
-	
-	// 	_Api.extend( inst, obj );
-	// };
-	
-	
-	//     [
-	//       {
-	//         name:      'data'                -- string   - Property name
-	//         val:       function () {},       -- function - Api method (or undefined if just an object
-	//         methodExt: [ ... ],              -- array    - Array of Api object definitions to extend the method result
-	//         propExt:   [ ... ]               -- array    - Array of Api object definitions to extend the property
-	//       },
-	//       {
-	//         name:     'row'
-	//         val:       {},
-	//         methodExt: [ ... ],
-	//         propExt:   [
-	//           {
-	//             name:      'data'
-	//             val:       function () {},
-	//             methodExt: [ ... ],
-	//             propExt:   [ ... ]
-	//           },
-	//           ...
-	//         ]
-	//       }
-	//     ]
-	
-	_Api.register = _api_register = function ( name, val )
-	{
-		if ( Array.isArray( name ) ) {
-			for ( var j=0, jen=name.length ; j<jen ; j++ ) {
-				_Api.register( name[j], val );
-			}
-			return;
-		}
-	
-		var
-			i, ien,
-			heir = name.split('.'),
-			struct = __apiStruct,
-			key, method;
-	
-		var find = function ( src, name ) {
-			for ( var i=0, ien=src.length ; i<ien ; i++ ) {
-				if ( src[i].name === name ) {
-					return src[i];
-				}
-			}
-			return null;
-		};
-	
-		for ( i=0, ien=heir.length ; i<ien ; i++ ) {
-			method = heir[i].indexOf('()') !== -1;
-			key = method ?
-				heir[i].replace('()', '') :
-				heir[i];
-	
-			var src = find( struct, key );
-			if ( ! src ) {
-				src = {
-					name:      key,
-					val:       {},
-					methodExt: [],
-					propExt:   [],
-					type:      'object'
-				};
-				struct.push( src );
-			}
-	
-			if ( i === ien-1 ) {
-				src.val = val;
-				src.type = typeof val === 'function' ?
-					'function' :
-					$.isPlainObject( val ) ?
-						'object' :
-						'other';
-			}
-			else {
-				struct = method ?
-					src.methodExt :
-					src.propExt;
-			}
-		}
-	};
-	
-	_Api.registerPlural = _api_registerPlural = function ( pluralName, singularName, val ) {
-		_Api.register( pluralName, val );
-	
-		_Api.register( singularName, function () {
-			var ret = val.apply( this, arguments );
-	
-			if ( ret === this ) {
-				// Returned item is the API instance that was passed in, return it
-				return this;
-			}
-			else if ( ret instanceof _Api ) {
-				// New API instance returned, want the value from the first item
-				// in the returned array for the singular result.
-				return ret.length ?
-					Array.isArray( ret[0] ) ?
-						new _Api( ret.context, ret[0] ) : // Array results are 'enhanced'
-						ret[0] :
-					undefined;
-			}
-	
-			// Non-API return - just fire it back
-			return ret;
-		} );
-	};
-	
-	
-	/**
-	 * Selector for HTML tables. Apply the given selector to the give array of
-	 * DataTables settings objects.
-	 *
-	 * @param {string|integer} [selector] jQuery selector string or integer
-	 * @param  {array} Array of DataTables settings objects to be filtered
-	 * @return {array}
-	 * @ignore
-	 */
-	var __table_selector = function ( selector, a )
-	{
-		if ( Array.isArray(selector) ) {
-			return $.map( selector, function (item) {
-				return __table_selector(item, a);
-			} );
-		}
-	
-		// Integer is used to pick out a table by index
-		if ( typeof selector === 'number' ) {
-			return [ a[ selector ] ];
-		}
-	
-		// Perform a jQuery selector on the table nodes
-		var nodes = $.map( a, function (el, i) {
-			return el.nTable;
-		} );
-	
-		return $(nodes)
-			.filter( selector )
-			.map( function (i) {
-				// Need to translate back from the table node to the settings
-				var idx = $.inArray( this, nodes );
-				return a[ idx ];
-			} )
-			.toArray();
-	};
-	
-	
-	
-	/**
-	 * Context selector for the API's context (i.e. the tables the API instance
-	 * refers to.
-	 *
-	 * @name    DataTable.Api#tables
-	 * @param {string|integer} [selector] Selector to pick which tables the iterator
-	 *   should operate on. If not given, all tables in the current context are
-	 *   used. This can be given as a jQuery selector (for example `':gt(0)'`) to
-	 *   select multiple tables or as an integer to select a single table.
-	 * @returns {DataTable.Api} Returns a new API instance if a selector is given.
-	 */
-	_api_register( 'tables()', function ( selector ) {
-		// A new instance is created if there was a selector specified
-		return selector !== undefined && selector !== null ?
-			new _Api( __table_selector( selector, this.context ) ) :
-			this;
-	} );
-	
-	
-	_api_register( 'table()', function ( selector ) {
-		var tables = this.tables( selector );
-		var ctx = tables.context;
-	
-		// Truncate to the first matched table
-		return ctx.length ?
-			new _Api( ctx[0] ) :
-			tables;
-	} );
-	
-	
-	_api_registerPlural( 'tables().nodes()', 'table().node()' , function () {
-		return this.iterator( 'table', function ( ctx ) {
-			return ctx.nTable;
-		}, 1 );
-	} );
-	
-	
-	_api_registerPlural( 'tables().body()', 'table().body()' , function () {
-		return this.iterator( 'table', function ( ctx ) {
-			return ctx.nTBody;
-		}, 1 );
-	} );
-	
-	
-	_api_registerPlural( 'tables().header()', 'table().header()' , function () {
-		return this.iterator( 'table', function ( ctx ) {
-			return ctx.nTHead;
-		}, 1 );
-	} );
-	
-	
-	_api_registerPlural( 'tables().footer()', 'table().footer()' , function () {
-		return this.iterator( 'table', function ( ctx ) {
-			return ctx.nTFoot;
-		}, 1 );
-	} );
-	
-	
-	_api_registerPlural( 'tables().containers()', 'table().container()' , function () {
-		return this.iterator( 'table', function ( ctx ) {
-			return ctx.nTableWrapper;
-		}, 1 );
-	} );
-	
-	
-	
-	/**
-	 * Redraw the tables in the current context.
-	 */
-	_api_register( 'draw()', function ( paging ) {
-		return this.iterator( 'table', function ( settings ) {
-			if ( paging === 'page' ) {
-				_fnDraw( settings );
-			}
-			else {
-				if ( typeof paging === 'string' ) {
-					paging = paging === 'full-hold' ?
-						false :
-						true;
-				}
-	
-				_fnReDraw( settings, paging===false );
-			}
-		} );
-	} );
-	
-	
-	
-	/**
-	 * Get the current page index.
-	 *
-	 * @return {integer} Current page index (zero based)
-	 *//**
-	 * Set the current page.
-	 *
-	 * Note that if you attempt to show a page which does not exist, DataTables will
-	 * not throw an error, but rather reset the paging.
-	 *
-	 * @param {integer|string} action The paging action to take. This can be one of:
-	 *  * `integer` - The page index to jump to
-	 *  * `string` - An action to take:
-	 *    * `first` - Jump to first page.
-	 *    * `next` - Jump to the next page
-	 *    * `previous` - Jump to previous page
-	 *    * `last` - Jump to the last page.
-	 * @returns {DataTables.Api} this
-	 */
-	_api_register( 'page()', function ( action ) {
-		if ( action === undefined ) {
-			return this.page.info().page; // not an expensive call
-		}
-	
-		// else, have an action to take on all tables
-		return this.iterator( 'table', function ( settings ) {
-			_fnPageChange( settings, action );
-		} );
-	} );
-	
-	
-	/**
-	 * Paging information for the first table in the current context.
-	 *
-	 * If you require paging information for another table, use the `table()` method
-	 * with a suitable selector.
-	 *
-	 * @return {object} Object with the following properties set:
-	 *  * `page` - Current page index (zero based - i.e. the first page is `0`)
-	 *  * `pages` - Total number of pages
-	 *  * `start` - Display index for the first record shown on the current page
-	 *  * `end` - Display index for the last record shown on the current page
-	 *  * `length` - Display length (number of records). Note that generally `start
-	 *    + length = end`, but this is not always true, for example if there are
-	 *    only 2 records to show on the final page, with a length of 10.
-	 *  * `recordsTotal` - Full data set length
-	 *  * `recordsDisplay` - Data set length once the current filtering criterion
-	 *    are applied.
-	 */
-	_api_register( 'page.info()', function ( action ) {
-		if ( this.context.length === 0 ) {
-			return undefined;
-		}
-	
-		var
-			settings   = this.context[0],
-			start      = settings._iDisplayStart,
-			len        = settings.oFeatures.bPaginate ? settings._iDisplayLength : -1,
-			visRecords = settings.fnRecordsDisplay(),
-			all        = len === -1;
-	
-		return {
-			"page":           all ? 0 : Math.floor( start / len ),
-			"pages":          all ? 1 : Math.ceil( visRecords / len ),
-			"start":          start,
-			"end":            settings.fnDisplayEnd(),
-			"length":         len,
-			"recordsTotal":   settings.fnRecordsTotal(),
-			"recordsDisplay": visRecords,
-			"serverSide":     _fnDataSource( settings ) === 'ssp'
-		};
-	} );
-	
-	
-	/**
-	 * Get the current page length.
-	 *
-	 * @return {integer} Current page length. Note `-1` indicates that all records
-	 *   are to be shown.
-	 *//**
-	 * Set the current page length.
-	 *
-	 * @param {integer} Page length to set. Use `-1` to show all records.
-	 * @returns {DataTables.Api} this
-	 */
-	_api_register( 'page.len()', function ( len ) {
-		// Note that we can't call this function 'length()' because `length`
-		// is a Javascript property of functions which defines how many arguments
-		// the function expects.
-		if ( len === undefined ) {
-			return this.context.length !== 0 ?
-				this.context[0]._iDisplayLength :
-				undefined;
-		}
-	
-		// else, set the page length
-		return this.iterator( 'table', function ( settings ) {
-			_fnLengthChange( settings, len );
-		} );
-	} );
-	
-	
-	
-	var __reload = function ( settings, holdPosition, callback ) {
-		// Use the draw event to trigger a callback
-		if ( callback ) {
-			var api = new _Api( settings );
-	
-			api.one( 'draw', function () {
-				callback( api.ajax.json() );
-			} );
-		}
-	
-		if ( _fnDataSource( settings ) == 'ssp' ) {
-			_fnReDraw( settings, holdPosition );
-		}
-		else {
-			_fnProcessingDisplay( settings, true );
-	
-			// Cancel an existing request
-			var xhr = settings.jqXHR;
-			if ( xhr && xhr.readyState !== 4 ) {
-				xhr.abort();
-			}
-	
-			// Trigger xhr
-			_fnBuildAjax( settings, [], function( json ) {
-				_fnClearTable( settings );
-	
-				var data = _fnAjaxDataSrc( settings, json );
-				for ( var i=0, ien=data.length ; i<ien ; i++ ) {
-					_fnAddData( settings, data[i] );
-				}
-	
-				_fnReDraw( settings, holdPosition );
-				_fnProcessingDisplay( settings, false );
-			} );
-		}
-	};
-	
-	
-	/**
-	 * Get the JSON response from the last Ajax request that DataTables made to the
-	 * server. Note that this returns the JSON from the first table in the current
-	 * context.
-	 *
-	 * @return {object} JSON received from the server.
-	 */
-	_api_register( 'ajax.json()', function () {
-		var ctx = this.context;
-	
-		if ( ctx.length > 0 ) {
-			return ctx[0].json;
-		}
-	
-		// else return undefined;
-	} );
-	
-	
-	/**
-	 * Get the data submitted in the last Ajax request
-	 */
-	_api_register( 'ajax.params()', function () {
-		var ctx = this.context;
-	
-		if ( ctx.length > 0 ) {
-			return ctx[0].oAjaxData;
-		}
-	
-		// else return undefined;
-	} );
-	
-	
-	/**
-	 * Reload tables from the Ajax data source. Note that this function will
-	 * automatically re-draw the table when the remote data has been loaded.
-	 *
-	 * @param {boolean} [reset=true] Reset (default) or hold the current paging
-	 *   position. A full re-sort and re-filter is performed when this method is
-	 *   called, which is why the pagination reset is the default action.
-	 * @returns {DataTables.Api} this
-	 */
-	_api_register( 'ajax.reload()', function ( callback, resetPaging ) {
-		return this.iterator( 'table', function (settings) {
-			__reload( settings, resetPaging===false, callback );
-		} );
-	} );
-	
-	
-	/**
-	 * Get the current Ajax URL. Note that this returns the URL from the first
-	 * table in the current context.
-	 *
-	 * @return {string} Current Ajax source URL
-	 *//**
-	 * Set the Ajax URL. Note that this will set the URL for all tables in the
-	 * current context.
-	 *
-	 * @param {string} url URL to set.
-	 * @returns {DataTables.Api} this
-	 */
-	_api_register( 'ajax.url()', function ( url ) {
-		var ctx = this.context;
-	
-		if ( url === undefined ) {
-			// get
-			if ( ctx.length === 0 ) {
-				return undefined;
-			}
-			ctx = ctx[0];
-	
-			return ctx.ajax ?
-				$.isPlainObject( ctx.ajax ) ?
-					ctx.ajax.url :
-					ctx.ajax :
-				ctx.sAjaxSource;
-		}
-	
-		// set
-		return this.iterator( 'table', function ( settings ) {
-			if ( $.isPlainObject( settings.ajax ) ) {
-				settings.ajax.url = url;
-			}
-			else {
-				settings.ajax = url;
-			}
-			// No need to consider sAjaxSource here since DataTables gives priority
-			// to `ajax` over `sAjaxSource`. So setting `ajax` here, renders any
-			// value of `sAjaxSource` redundant.
-		} );
-	} );
-	
-	
-	/**
-	 * Load data from the newly set Ajax URL. Note that this method is only
-	 * available when `ajax.url()` is used to set a URL. Additionally, this method
-	 * has the same effect as calling `ajax.reload()` but is provided for
-	 * convenience when setting a new URL. Like `ajax.reload()` it will
-	 * automatically redraw the table once the remote data has been loaded.
-	 *
-	 * @returns {DataTables.Api} this
-	 */
-	_api_register( 'ajax.url().load()', function ( callback, resetPaging ) {
-		// Same as a reload, but makes sense to present it for easy access after a
-		// url change
-		return this.iterator( 'table', function ( ctx ) {
-			__reload( ctx, resetPaging===false, callback );
-		} );
-	} );
-	
-	
-	
-	
-	var _selector_run = function ( type, selector, selectFn, settings, opts )
-	{
-		var
-			out = [], res,
-			a, i, ien, j, jen,
-			selectorType = typeof selector;
-	
-		// Can't just check for isArray here, as an API or jQuery instance might be
-		// given with their array like look
-		if ( ! selector || selectorType === 'string' || selectorType === 'function' || selector.length === undefined ) {
-			selector = [ selector ];
-		}
-	
-		for ( i=0, ien=selector.length ; i<ien ; i++ ) {
-			// Only split on simple strings - complex expressions will be jQuery selectors
-			a = selector[i] && selector[i].split && ! selector[i].match(/[\[\(:]/) ?
-				selector[i].split(',') :
-				[ selector[i] ];
-	
-			for ( j=0, jen=a.length ; j<jen ; j++ ) {
-				res = selectFn( typeof a[j] === 'string' ? (a[j]).trim() : a[j] );
-	
-				if ( res && res.length ) {
-					out = out.concat( res );
-				}
-			}
-		}
-	
-		// selector extensions
-		var ext = _ext.selector[ type ];
-		if ( ext.length ) {
-			for ( i=0, ien=ext.length ; i<ien ; i++ ) {
-				out = ext[i]( settings, opts, out );
-			}
-		}
-	
-		return _unique( out );
-	};
-	
-	
-	var _selector_opts = function ( opts )
-	{
-		if ( ! opts ) {
-			opts = {};
-		}
-	
-		// Backwards compatibility for 1.9- which used the terminology filter rather
-		// than search
-		if ( opts.filter && opts.search === undefined ) {
-			opts.search = opts.filter;
-		}
-	
-		return $.extend( {
-			search: 'none',
-			order: 'current',
-			page: 'all'
-		}, opts );
-	};
-	
-	
-	var _selector_first = function ( inst )
-	{
-		// Reduce the API instance to the first item found
-		for ( var i=0, ien=inst.length ; i<ien ; i++ ) {
-			if ( inst[i].length > 0 ) {
-				// Assign the first element to the first item in the instance
-				// and truncate the instance and context
-				inst[0] = inst[i];
-				inst[0].length = 1;
-				inst.length = 1;
-				inst.context = [ inst.context[i] ];
-	
-				return inst;
-			}
-		}
-	
-		// Not found - return an empty instance
-		inst.length = 0;
-		return inst;
-	};
-	
-	
-	var _selector_row_indexes = function ( settings, opts )
-	{
-		var
-			i, ien, tmp, a=[],
-			displayFiltered = settings.aiDisplay,
-			displayMaster = settings.aiDisplayMaster;
-	
-		var
-			search = opts.search,  // none, applied, removed
-			order  = opts.order,   // applied, current, index (original - compatibility with 1.9)
-			page   = opts.page;    // all, current
-	
-		if ( _fnDataSource( settings ) == 'ssp' ) {
-			// In server-side processing mode, most options are irrelevant since
-			// rows not shown don't exist and the index order is the applied order
-			// Removed is a special case - for consistency just return an empty
-			// array
-			return search === 'removed' ?
-				[] :
-				_range( 0, displayMaster.length );
-		}
-		else if ( page == 'current' ) {
-			// Current page implies that order=current and fitler=applied, since it is
-			// fairly senseless otherwise, regardless of what order and search actually
-			// are
-			for ( i=settings._iDisplayStart, ien=settings.fnDisplayEnd() ; i<ien ; i++ ) {
-				a.push( displayFiltered[i] );
-			}
-		}
-		else if ( order == 'current' || order == 'applied' ) {
-			if ( search == 'none') {
-				a = displayMaster.slice();
-			}
-			else if ( search == 'applied' ) {
-				a = displayFiltered.slice();
-			}
-			else if ( search == 'removed' ) {
-				// O(n+m) solution by creating a hash map
-				var displayFilteredMap = {};
-	
-				for ( var i=0, ien=displayFiltered.length ; i<ien ; i++ ) {
-					displayFilteredMap[displayFiltered[i]] = null;
-				}
-	
-				a = $.map( displayMaster, function (el) {
-					return ! displayFilteredMap.hasOwnProperty(el) ?
-						el :
-						null;
-				} );
-			}
-		}
-		else if ( order == 'index' || order == 'original' ) {
-			for ( i=0, ien=settings.aoData.length ; i<ien ; i++ ) {
-				if ( search == 'none' ) {
-					a.push( i );
-				}
-				else { // applied | removed
-					tmp = $.inArray( i, displayFiltered );
-	
-					if ((tmp === -1 && search == 'removed') ||
-						(tmp >= 0   && search == 'applied') )
-					{
-						a.push( i );
-					}
-				}
-			}
-		}
-	
-		return a;
-	};
-	
-	
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-	 * Rows
-	 *
-	 * {}          - no selector - use all available rows
-	 * {integer}   - row aoData index
-	 * {node}      - TR node
-	 * {string}    - jQuery selector to apply to the TR elements
-	 * {array}     - jQuery array of nodes, or simply an array of TR nodes
-	 *
-	 */
-	var __row_selector = function ( settings, selector, opts )
-	{
-		var rows;
-		var run = function ( sel ) {
-			var selInt = _intVal( sel );
-			var i, ien;
-			var aoData = settings.aoData;
-	
-			// Short cut - selector is a number and no options provided (default is
-			// all records, so no need to check if the index is in there, since it
-			// must be - dev error if the index doesn't exist).
-			if ( selInt !== null && ! opts ) {
-				return [ selInt ];
-			}
-	
-			if ( ! rows ) {
-				rows = _selector_row_indexes( settings, opts );
-			}
-	
-			if ( selInt !== null && $.inArray( selInt, rows ) !== -1 ) {
-				// Selector - integer
-				return [ selInt ];
-			}
-			else if ( sel === null || sel === undefined || sel === '' ) {
-				// Selector - none
-				return rows;
-			}
-	
-			// Selector - function
-			if ( typeof sel === 'function' ) {
-				return $.map( rows, function (idx) {
-					var row = aoData[ idx ];
-					return sel( idx, row._aData, row.nTr ) ? idx : null;
-				} );
-			}
-	
-			// Selector - node
-			if ( sel.nodeName ) {
-				var rowIdx = sel._DT_RowIndex;  // Property added by DT for fast lookup
-				var cellIdx = sel._DT_CellIndex;
-	
-				if ( rowIdx !== undefined ) {
-					// Make sure that the row is actually still present in the table
-					return aoData[ rowIdx ] && aoData[ rowIdx ].nTr === sel ?
-						[ rowIdx ] :
-						[];
-				}
-				else if ( cellIdx ) {
-					return aoData[ cellIdx.row ] && aoData[ cellIdx.row ].nTr === sel.parentNode ?
-						[ cellIdx.row ] :
-						[];
-				}
-				else {
-					var host = $(sel).closest('*[data-dt-row]');
-					return host.length ?
-						[ host.data('dt-row') ] :
-						[];
-				}
-			}
-	
-			// ID selector. Want to always be able to select rows by id, regardless
-			// of if the tr element has been created or not, so can't rely upon
-			// jQuery here - hence a custom implementation. This does not match
-			// Sizzle's fast selector or HTML4 - in HTML5 the ID can be anything,
-			// but to select it using a CSS selector engine (like Sizzle or
-			// querySelect) it would need to need to be escaped for some characters.
-			// DataTables simplifies this for row selectors since you can select
-			// only a row. A # indicates an id any anything that follows is the id -
-			// unescaped.
-			if ( typeof sel === 'string' && sel.charAt(0) === '#' ) {
-				// get row index from id
-				var rowObj = settings.aIds[ sel.replace( /^#/, '' ) ];
-				if ( rowObj !== undefined ) {
-					return [ rowObj.idx ];
-				}
-	
-				// need to fall through to jQuery in case there is DOM id that
-				// matches
-			}
-			
-			// Get nodes in the order from the `rows` array with null values removed
-			var nodes = _removeEmpty(
-				_pluck_order( settings.aoData, rows, 'nTr' )
-			);
-	
-			// Selector - jQuery selector string, array of nodes or jQuery object/
-			// As jQuery's .filter() allows jQuery objects to be passed in filter,
-			// it also allows arrays, so this will cope with all three options
-			return $(nodes)
-				.filter( sel )
-				.map( function () {
-					return this._DT_RowIndex;
-				} )
-				.toArray();
-		};
-	
-		return _selector_run( 'row', selector, run, settings, opts );
-	};
-	
-	
-	_api_register( 'rows()', function ( selector, opts ) {
-		// argument shifting
-		if ( selector === undefined ) {
-			selector = '';
-		}
-		else if ( $.isPlainObject( selector ) ) {
-			opts = selector;
-			selector = '';
-		}
-	
-		opts = _selector_opts( opts );
-	
-		var inst = this.iterator( 'table', function ( settings ) {
-			return __row_selector( settings, selector, opts );
-		}, 1 );
-	
-		// Want argument shifting here and in __row_selector?
-		inst.selector.rows = selector;
-		inst.selector.opts = opts;
-	
-		return inst;
-	} );
-	
-	_api_register( 'rows().nodes()', function () {
-		return this.iterator( 'row', function ( settings, row ) {
-			return settings.aoData[ row ].nTr || undefined;
-		}, 1 );
-	} );
-	
-	_api_register( 'rows().data()', function () {
-		return this.iterator( true, 'rows', function ( settings, rows ) {
-			return _pluck_order( settings.aoData, rows, '_aData' );
-		}, 1 );
-	} );
-	
-	_api_registerPlural( 'rows().cache()', 'row().cache()', function ( type ) {
-		return this.iterator( 'row', function ( settings, row ) {
-			var r = settings.aoData[ row ];
-			return type === 'search' ? r._aFilterData : r._aSortData;
-		}, 1 );
-	} );
-	
-	_api_registerPlural( 'rows().invalidate()', 'row().invalidate()', function ( src ) {
-		return this.iterator( 'row', function ( settings, row ) {
-			_fnInvalidate( settings, row, src );
-		} );
-	} );
-	
-	_api_registerPlural( 'rows().indexes()', 'row().index()', function () {
-		return this.iterator( 'row', function ( settings, row ) {
-			return row;
-		}, 1 );
-	} );
-	
-	_api_registerPlural( 'rows().ids()', 'row().id()', function ( hash ) {
-		var a = [];
-		var context = this.context;
-	
-		// `iterator` will drop undefined values, but in this case we want them
-		for ( var i=0, ien=context.length ; i<ien ; i++ ) {
-			for ( var j=0, jen=this[i].length ; j<jen ; j++ ) {
-				var id = context[i].rowIdFn( context[i].aoData[ this[i][j] ]._aData );
-				a.push( (hash === true ? '#' : '' )+ id );
-			}
-		}
-	
-		return new _Api( context, a );
-	} );
-	
-	_api_registerPlural( 'rows().remove()', 'row().remove()', function () {
-		var that = this;
-	
-		this.iterator( 'row', function ( settings, row, thatIdx ) {
-			var data = settings.aoData;
-			var rowData = data[ row ];
-			var i, ien, j, jen;
-			var loopRow, loopCells;
-	
-			data.splice( row, 1 );
-	
-			// Update the cached indexes
-			for ( i=0, ien=data.length ; i<ien ; i++ ) {
-				loopRow = data[i];
-				loopCells = loopRow.anCells;
-	
-				// Rows
-				if ( loopRow.nTr !== null ) {
-					loopRow.nTr._DT_RowIndex = i;
-				}
-	
-				// Cells
-				if ( loopCells !== null ) {
-					for ( j=0, jen=loopCells.length ; j<jen ; j++ ) {
-						loopCells[j]._DT_CellIndex.row = i;
-					}
-				}
-			}
-	
-			// Delete from the display arrays
-			_fnDeleteIndex( settings.aiDisplayMaster, row );
-			_fnDeleteIndex( settings.aiDisplay, row );
-			_fnDeleteIndex( that[ thatIdx ], row, false ); // maintain local indexes
-	
-			// For server-side processing tables - subtract the deleted row from the count
-			if ( settings._iRecordsDisplay > 0 ) {
-				settings._iRecordsDisplay--;
-			}
-	
-			// Check for an 'overflow' they case for displaying the table
-			_fnLengthOverflow( settings );
-	
-			// Remove the row's ID reference if there is one
-			var id = settings.rowIdFn( rowData._aData );
-			if ( id !== undefined ) {
-				delete settings.aIds[ id ];
-			}
-		} );
-	
-		this.iterator( 'table', function ( settings ) {
-			for ( var i=0, ien=settings.aoData.length ; i<ien ; i++ ) {
-				settings.aoData[i].idx = i;
-			}
-		} );
-	
-		return this;
-	} );
-	
-	
-	_api_register( 'rows.add()', function ( rows ) {
-		var newRows = this.iterator( 'table', function ( settings ) {
-				var row, i, ien;
-				var out = [];
-	
-				for ( i=0, ien=rows.length ; i<ien ; i++ ) {
-					row = rows[i];
-	
-					if ( row.nodeName && row.nodeName.toUpperCase() === 'TR' ) {
-						out.push( _fnAddTr( settings, row )[0] );
-					}
-					else {
-						out.push( _fnAddData( settings, row ) );
-					}
-				}
-	
-				return out;
-			}, 1 );
-	
-		// Return an Api.rows() extended instance, so rows().nodes() etc can be used
-		var modRows = this.rows( -1 );
-		modRows.pop();
-		$.merge( modRows, newRows );
-	
-		return modRows;
-	} );
-	
-	
-	
-	
-	
-	/**
-	 *
-	 */
-	_api_register( 'row()', function ( selector, opts ) {
-		return _selector_first( this.rows( selector, opts ) );
-	} );
-	
-	
-	_api_register( 'row().data()', function ( data ) {
-		var ctx = this.context;
-	
-		if ( data === undefined ) {
-			// Get
-			return ctx.length && this.length ?
-				ctx[0].aoData[ this[0] ]._aData :
-				undefined;
-		}
-	
-		// Set
-		var row = ctx[0].aoData[ this[0] ];
-		row._aData = data;
-	
-		// If the DOM has an id, and the data source is an array
-		if ( Array.isArray( data ) && row.nTr && row.nTr.id ) {
-			_fnSetObjectDataFn( ctx[0].rowId )( data, row.nTr.id );
-		}
-	
-		// Automatically invalidate
-		_fnInvalidate( ctx[0], this[0], 'data' );
-	
-		return this;
-	} );
-	
-	
-	_api_register( 'row().node()', function () {
-		var ctx = this.context;
-	
-		return ctx.length && this.length ?
-			ctx[0].aoData[ this[0] ].nTr || null :
-			null;
-	} );
-	
-	
-	_api_register( 'row.add()', function ( row ) {
-		// Allow a jQuery object to be passed in - only a single row is added from
-		// it though - the first element in the set
-		if ( row instanceof $ && row.length ) {
-			row = row[0];
-		}
-	
-		var rows = this.iterator( 'table', function ( settings ) {
-			if ( row.nodeName && row.nodeName.toUpperCase() === 'TR' ) {
-				return _fnAddTr( settings, row )[0];
-			}
-			return _fnAddData( settings, row );
-		} );
-	
-		// Return an Api.rows() extended instance, with the newly added row selected
-		return this.row( rows[0] );
-	} );
-	
-	
-	
-	var __details_add = function ( ctx, row, data, klass )
-	{
-		// Convert to array of TR elements
-		var rows = [];
-		var addRow = function ( r, k ) {
-			// Recursion to allow for arrays of jQuery objects
-			if ( Array.isArray( r ) || r instanceof $ ) {
-				for ( var i=0, ien=r.length ; i<ien ; i++ ) {
-					addRow( r[i], k );
-				}
-				return;
-			}
-	
-			// If we get a TR element, then just add it directly - up to the dev
-			// to add the correct number of columns etc
-			if ( r.nodeName && r.nodeName.toLowerCase() === 'tr' ) {
-				rows.push( r );
-			}
-			else {
-				// Otherwise create a row with a wrapper
-				var created = $('<tr><td></td></tr>').addClass( k );
-				$('td', created)
-					.addClass( k )
-					.html( r )
-					[0].colSpan = _fnVisbleColumns( ctx );
-	
-				rows.push( created[0] );
-			}
-		};
-	
-		addRow( data, klass );
-	
-		if ( row._details ) {
-			row._details.detach();
-		}
-	
-		row._details = $(rows);
-	
-		// If the children were already shown, that state should be retained
-		if ( row._detailsShow ) {
-			row._details.insertAfter( row.nTr );
-		}
-	};
-	
-	
-	var __details_remove = function ( api, idx )
-	{
-		var ctx = api.context;
-	
-		if ( ctx.length ) {
-			var row = ctx[0].aoData[ idx !== undefined ? idx : api[0] ];
-	
-			if ( row && row._details ) {
-				row._details.remove();
-	
-				row._detailsShow = undefined;
-				row._details = undefined;
-			}
-		}
-	};
-	
-	
-	var __details_display = function ( api, show ) {
-		var ctx = api.context;
-	
-		if ( ctx.length && api.length ) {
-			var row = ctx[0].aoData[ api[0] ];
-	
-			if ( row._details ) {
-				row._detailsShow = show;
-	
-				if ( show ) {
-					row._details.insertAfter( row.nTr );
-				}
-				else {
-					row._details.detach();
-				}
-	
-				__details_events( ctx[0] );
-			}
-		}
-	};
-	
-	
-	var __details_events = function ( settings )
-	{
-		var api = new _Api( settings );
-		var namespace = '.dt.DT_details';
-		var drawEvent = 'draw'+namespace;
-		var colvisEvent = 'column-visibility'+namespace;
-		var destroyEvent = 'destroy'+namespace;
-		var data = settings.aoData;
-	
-		api.off( drawEvent +' '+ colvisEvent +' '+ destroyEvent );
-	
-		if ( _pluck( data, '_details' ).length > 0 ) {
-			// On each draw, insert the required elements into the document
-			api.on( drawEvent, function ( e, ctx ) {
-				if ( settings !== ctx ) {
-					return;
-				}
-	
-				api.rows( {page:'current'} ).eq(0).each( function (idx) {
-					// Internal data grab
-					var row = data[ idx ];
-	
-					if ( row._detailsShow ) {
-						row._details.insertAfter( row.nTr );
-					}
-				} );
-			} );
-	
-			// Column visibility change - update the colspan
-			api.on( colvisEvent, function ( e, ctx, idx, vis ) {
-				if ( settings !== ctx ) {
-					return;
-				}
-	
-				// Update the colspan for the details rows (note, only if it already has
-				// a colspan)
-				var row, visible = _fnVisbleColumns( ctx );
-	
-				for ( var i=0, ien=data.length ; i<ien ; i++ ) {
-					row = data[i];
-	
-					if ( row._details ) {
-						row._details.children('td[colspan]').attr('colspan', visible );
-					}
-				}
-			} );
-	
-			// Table destroyed - nuke any child rows
-			api.on( destroyEvent, function ( e, ctx ) {
-				if ( settings !== ctx ) {
-					return;
-				}
-	
-				for ( var i=0, ien=data.length ; i<ien ; i++ ) {
-					if ( data[i]._details ) {
-						__details_remove( api, i );
-					}
-				}
-			} );
-		}
-	};
-	
-	// Strings for the method names to help minification
-	var _emp = '';
-	var _child_obj = _emp+'row().child';
-	var _child_mth = _child_obj+'()';
-	
-	// data can be:
-	//  tr
-	//  string
-	//  jQuery or array of any of the above
-	_api_register( _child_mth, function ( data, klass ) {
-		var ctx = this.context;
-	
-		if ( data === undefined ) {
-			// get
-			return ctx.length && this.length ?
-				ctx[0].aoData[ this[0] ]._details :
-				undefined;
-		}
-		else if ( data === true ) {
-			// show
-			this.child.show();
-		}
-		else if ( data === false ) {
-			// remove
-			__details_remove( this );
-		}
-		else if ( ctx.length && this.length ) {
-			// set
-			__details_add( ctx[0], ctx[0].aoData[ this[0] ], data, klass );
-		}
-	
-		return this;
-	} );
-	
-	
-	_api_register( [
-		_child_obj+'.show()',
-		_child_mth+'.show()' // only when `child()` was called with parameters (without
-	], function ( show ) {   // it returns an object and this method is not executed)
-		__details_display( this, true );
-		return this;
-	} );
-	
-	
-	_api_register( [
-		_child_obj+'.hide()',
-		_child_mth+'.hide()' // only when `child()` was called with parameters (without
-	], function () {         // it returns an object and this method is not executed)
-		__details_display( this, false );
-		return this;
-	} );
-	
-	
-	_api_register( [
-		_child_obj+'.remove()',
-		_child_mth+'.remove()' // only when `child()` was called with parameters (without
-	], function () {           // it returns an object and this method is not executed)
-		__details_remove( this );
-		return this;
-	} );
-	
-	
-	_api_register( _child_obj+'.isShown()', function () {
-		var ctx = this.context;
-	
-		if ( ctx.length && this.length ) {
-			// _detailsShown as false or undefined will fall through to return false
-			return ctx[0].aoData[ this[0] ]._detailsShow || false;
-		}
-		return false;
-	} );
-	
-	
-	
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-	 * Columns
-	 *
-	 * {integer}           - column index (>=0 count from left, <0 count from right)
-	 * "{integer}:visIdx"  - visible column index (i.e. translate to column index)  (>=0 count from left, <0 count from right)
-	 * "{integer}:visible" - alias for {integer}:visIdx  (>=0 count from left, <0 count from right)
-	 * "{string}:name"     - column name
-	 * "{string}"          - jQuery selector on column header nodes
-	 *
-	 */
-	
-	// can be an array of these items, comma separated list, or an array of comma
-	// separated lists
-	
-	var __re_column_selector = /^([^:]+):(name|visIdx|visible)$/;
-	
-	
-	// r1 and r2 are redundant - but it means that the parameters match for the
-	// iterator callback in columns().data()
-	var __columnData = function ( settings, column, r1, r2, rows ) {
-		var a = [];
-		for ( var row=0, ien=rows.length ; row<ien ; row++ ) {
-			a.push( _fnGetCellData( settings, rows[row], column ) );
-		}
-		return a;
-	};
-	
-	
-	var __column_selector = function ( settings, selector, opts )
-	{
-		var
-			columns = settings.aoColumns,
-			names = _pluck( columns, 'sName' ),
-			nodes = _pluck( columns, 'nTh' );
-	
-		var run = function ( s ) {
-			var selInt = _intVal( s );
-	
-			// Selector - all
-			if ( s === '' ) {
-				return _range( columns.length );
-			}
-	
-			// Selector - index
-			if ( selInt !== null ) {
-				return [ selInt >= 0 ?
-					selInt : // Count from left
-					columns.length + selInt // Count from right (+ because its a negative value)
-				];
-			}
-	
-			// Selector = function
-			if ( typeof s === 'function' ) {
-				var rows = _selector_row_indexes( settings, opts );
-	
-				return $.map( columns, function (col, idx) {
-					return s(
-							idx,
-							__columnData( settings, idx, 0, 0, rows ),
-							nodes[ idx ]
-						) ? idx : null;
-				} );
-			}
-	
-			// jQuery or string selector
-			var match = typeof s === 'string' ?
-				s.match( __re_column_selector ) :
-				'';
-	
-			if ( match ) {
-				switch( match[2] ) {
-					case 'visIdx':
-					case 'visible':
-						var idx = parseInt( match[1], 10 );
-						// Visible index given, convert to column index
-						if ( idx < 0 ) {
-							// Counting from the right
-							var visColumns = $.map( columns, function (col,i) {
-								return col.bVisible ? i : null;
-							} );
-							return [ visColumns[ visColumns.length + idx ] ];
-						}
-						// Counting from the left
-						return [ _fnVisibleToColumnIndex( settings, idx ) ];
-	
-					case 'name':
-						// match by name. `names` is column index complete and in order
-						return $.map( names, function (name, i) {
-							return name === match[1] ? i : null;
-						} );
-	
-					default:
-						return [];
-				}
-			}
-	
-			// Cell in the table body
-			if ( s.nodeName && s._DT_CellIndex ) {
-				return [ s._DT_CellIndex.column ];
-			}
-	
-			// jQuery selector on the TH elements for the columns
-			var jqResult = $( nodes )
-				.filter( s )
-				.map( function () {
-					return $.inArray( this, nodes ); // `nodes` is column index complete and in order
-				} )
-				.toArray();
-	
-			if ( jqResult.length || ! s.nodeName ) {
-				return jqResult;
-			}
-	
-			// Otherwise a node which might have a `dt-column` data attribute, or be
-			// a child or such an element
-			var host = $(s).closest('*[data-dt-column]');
-			return host.length ?
-				[ host.data('dt-column') ] :
-				[];
-		};
-	
-		return _selector_run( 'column', selector, run, settings, opts );
-	};
-	
-	
-	var __setColumnVis = function ( settings, column, vis ) {
-		var
-			cols = settings.aoColumns,
-			col  = cols[ column ],
-			data = settings.aoData,
-			row, cells, i, ien, tr;
-	
-		// Get
-		if ( vis === undefined ) {
-			return col.bVisible;
-		}
-	
-		// Set
-		// No change
-		if ( col.bVisible === vis ) {
-			return;
-		}
-	
-		if ( vis ) {
-			// Insert column
-			// Need to decide if we should use appendChild or insertBefore
-			var insertBefore = $.inArray( true, _pluck(cols, 'bVisible'), column+1 );
-	
-			for ( i=0, ien=data.length ; i<ien ; i++ ) {
-				tr = data[i].nTr;
-				cells = data[i].anCells;
-	
-				if ( tr ) {
-					// insertBefore can act like appendChild if 2nd arg is null
-					tr.insertBefore( cells[ column ], cells[ insertBefore ] || null );
-				}
-			}
-		}
-		else {
-			// Remove column
-			$( _pluck( settings.aoData, 'anCells', column ) ).detach();
-		}
-	
-		// Common actions
-		col.bVisible = vis;
-	};
-	
-	
-	_api_register( 'columns()', function ( selector, opts ) {
-		// argument shifting
-		if ( selector === undefined ) {
-			selector = '';
-		}
-		else if ( $.isPlainObject( selector ) ) {
-			opts = selector;
-			selector = '';
-		}
-	
-		opts = _selector_opts( opts );
-	
-		var inst = this.iterator( 'table', function ( settings ) {
-			return __column_selector( settings, selector, opts );
-		}, 1 );
-	
-		// Want argument shifting here and in _row_selector?
-		inst.selector.cols = selector;
-		inst.selector.opts = opts;
-	
-		return inst;
-	} );
-	
-	_api_registerPlural( 'columns().header()', 'column().header()', function ( selector, opts ) {
-		return this.iterator( 'column', function ( settings, column ) {
-			return settings.aoColumns[column].nTh;
-		}, 1 );
-	} );
-	
-	_api_registerPlural( 'columns().footer()', 'column().footer()', function ( selector, opts ) {
-		return this.iterator( 'column', function ( settings, column ) {
-			return settings.aoColumns[column].nTf;
-		}, 1 );
-	} );
-	
-	_api_registerPlural( 'columns().data()', 'column().data()', function () {
-		return this.iterator( 'column-rows', __columnData, 1 );
-	} );
-	
-	_api_registerPlural( 'columns().dataSrc()', 'column().dataSrc()', function () {
-		return this.iterator( 'column', function ( settings, column ) {
-			return settings.aoColumns[column].mData;
-		}, 1 );
-	} );
-	
-	_api_registerPlural( 'columns().cache()', 'column().cache()', function ( type ) {
-		return this.iterator( 'column-rows', function ( settings, column, i, j, rows ) {
-			return _pluck_order( settings.aoData, rows,
-				type === 'search' ? '_aFilterData' : '_aSortData', column
-			);
-		}, 1 );
-	} );
-	
-	_api_registerPlural( 'columns().nodes()', 'column().nodes()', function () {
-		return this.iterator( 'column-rows', function ( settings, column, i, j, rows ) {
-			return _pluck_order( settings.aoData, rows, 'anCells', column ) ;
-		}, 1 );
-	} );
-	
-	_api_registerPlural( 'columns().visible()', 'column().visible()', function ( vis, calc ) {
-		var that = this;
-		var ret = this.iterator( 'column', function ( settings, column ) {
-			if ( vis === undefined ) {
-				return settings.aoColumns[ column ].bVisible;
-			} // else
-			__setColumnVis( settings, column, vis );
-		} );
-	
-		// Group the column visibility changes
-		if ( vis !== undefined ) {
-			this.iterator( 'table', function ( settings ) {
-				// Redraw the header after changes
-				_fnDrawHead( settings, settings.aoHeader );
-				_fnDrawHead( settings, settings.aoFooter );
-		
-				// Update colspan for no records display. Child rows and extensions will use their own
-				// listeners to do this - only need to update the empty table item here
-				if ( ! settings.aiDisplay.length ) {
-					$(settings.nTBody).find('td[colspan]').attr('colspan', _fnVisbleColumns(settings));
-				}
-		
-				_fnSaveState( settings );
-	
-				// Second loop once the first is done for events
-				that.iterator( 'column', function ( settings, column ) {
-					_fnCallbackFire( settings, null, 'column-visibility', [settings, column, vis, calc] );
-				} );
-	
-				if ( calc === undefined || calc ) {
-					that.columns.adjust();
-				}
-			});
-		}
-	
-		return ret;
-	} );
-	
-	_api_registerPlural( 'columns().indexes()', 'column().index()', function ( type ) {
-		return this.iterator( 'column', function ( settings, column ) {
-			return type === 'visible' ?
-				_fnColumnIndexToVisible( settings, column ) :
-				column;
-		}, 1 );
-	} );
-	
-	_api_register( 'columns.adjust()', function () {
-		return this.iterator( 'table', function ( settings ) {
-			_fnAdjustColumnSizing( settings );
-		}, 1 );
-	} );
-	
-	_api_register( 'column.index()', function ( type, idx ) {
-		if ( this.context.length !== 0 ) {
-			var ctx = this.context[0];
-	
-			if ( type === 'fromVisible' || type === 'toData' ) {
-				return _fnVisibleToColumnIndex( ctx, idx );
-			}
-			else if ( type === 'fromData' || type === 'toVisible' ) {
-				return _fnColumnIndexToVisible( ctx, idx );
-			}
-		}
-	} );
-	
-	_api_register( 'column()', function ( selector, opts ) {
-		return _selector_first( this.columns( selector, opts ) );
-	} );
-	
-	var __cell_selector = function ( settings, selector, opts )
-	{
-		var data = settings.aoData;
-		var rows = _selector_row_indexes( settings, opts );
-		var cells = _removeEmpty( _pluck_order( data, rows, 'anCells' ) );
-		var allCells = $(_flatten( [], cells ));
-		var row;
-		var columns = settings.aoColumns.length;
-		var a, i, ien, j, o, host;
-	
-		var run = function ( s ) {
-			var fnSelector = typeof s === 'function';
-	
-			if ( s === null || s === undefined || fnSelector ) {
-				// All cells and function selectors
-				a = [];
-	
-				for ( i=0, ien=rows.length ; i<ien ; i++ ) {
-					row = rows[i];
-	
-					for ( j=0 ; j<columns ; j++ ) {
-						o = {
-							row: row,
-							column: j
-						};
-	
-						if ( fnSelector ) {
-							// Selector - function
-							host = data[ row ];
-	
-							if ( s( o, _fnGetCellData(settings, row, j), host.anCells ? host.anCells[j] : null ) ) {
-								a.push( o );
-							}
-						}
-						else {
-							// Selector - all
-							a.push( o );
-						}
-					}
-				}
-	
-				return a;
-			}
-			
-			// Selector - index
-			if ( $.isPlainObject( s ) ) {
-				// Valid cell index and its in the array of selectable rows
-				return s.column !== undefined && s.row !== undefined && $.inArray( s.row, rows ) !== -1 ?
-					[s] :
-					[];
-			}
-	
-			// Selector - jQuery filtered cells
-			var jqResult = allCells
-				.filter( s )
-				.map( function (i, el) {
-					return { // use a new object, in case someone changes the values
-						row:    el._DT_CellIndex.row,
-						column: el._DT_CellIndex.column
-	 				};
-				} )
-				.toArray();
-	
-			if ( jqResult.length || ! s.nodeName ) {
-				return jqResult;
-			}
-	
-			// Otherwise the selector is a node, and there is one last option - the
-			// element might be a child of an element which has dt-row and dt-column
-			// data attributes
-			host = $(s).closest('*[data-dt-row]');
-			return host.length ?
-				[ {
-					row: host.data('dt-row'),
-					column: host.data('dt-column')
-				} ] :
-				[];
-		};
-	
-		return _selector_run( 'cell', selector, run, settings, opts );
-	};
-	
-	
-	
-	
-	_api_register( 'cells()', function ( rowSelector, columnSelector, opts ) {
-		// Argument shifting
-		if ( $.isPlainObject( rowSelector ) ) {
-			// Indexes
-			if ( rowSelector.row === undefined ) {
-				// Selector options in first parameter
-				opts = rowSelector;
-				rowSelector = null;
-			}
-			else {
-				// Cell index objects in first parameter
-				opts = columnSelector;
-				columnSelector = null;
-			}
-		}
-		if ( $.isPlainObject( columnSelector ) ) {
-			opts = columnSelector;
-			columnSelector = null;
-		}
-	
-		// Cell selector
-		if ( columnSelector === null || columnSelector === undefined ) {
-			return this.iterator( 'table', function ( settings ) {
-				return __cell_selector( settings, rowSelector, _selector_opts( opts ) );
-			} );
-		}
-	
-		// The default built in options need to apply to row and columns
-		var internalOpts = opts ? {
-			page: opts.page,
-			order: opts.order,
-			search: opts.search
-		} : {};
-	
-		// Row + column selector
-		var columns = this.columns( columnSelector, internalOpts );
-		var rows = this.rows( rowSelector, internalOpts );
-		var i, ien, j, jen;
-	
-		var cellsNoOpts = this.iterator( 'table', function ( settings, idx ) {
-			var a = [];
-	
-			for ( i=0, ien=rows[idx].length ; i<ien ; i++ ) {
-				for ( j=0, jen=columns[idx].length ; j<jen ; j++ ) {
-					a.push( {
-						row:    rows[idx][i],
-						column: columns[idx][j]
-					} );
-				}
-			}
-	
-			return a;
-		}, 1 );
-	
-		// There is currently only one extension which uses a cell selector extension
-		// It is a _major_ performance drag to run this if it isn't needed, so this is
-		// an extension specific check at the moment
-		var cells = opts && opts.selected ?
-			this.cells( cellsNoOpts, opts ) :
-			cellsNoOpts;
-	
-		$.extend( cells.selector, {
-			cols: columnSelector,
-			rows: rowSelector,
-			opts: opts
-		} );
-	
-		return cells;
-	} );
-	
-	
-	_api_registerPlural( 'cells().nodes()', 'cell().node()', function () {
-		return this.iterator( 'cell', function ( settings, row, column ) {
-			var data = settings.aoData[ row ];
-	
-			return data && data.anCells ?
-				data.anCells[ column ] :
-				undefined;
-		}, 1 );
-	} );
-	
-	
-	_api_register( 'cells().data()', function () {
-		return this.iterator( 'cell', function ( settings, row, column ) {
-			return _fnGetCellData( settings, row, column );
-		}, 1 );
-	} );
-	
-	
-	_api_registerPlural( 'cells().cache()', 'cell().cache()', function ( type ) {
-		type = type === 'search' ? '_aFilterData' : '_aSortData';
-	
-		return this.iterator( 'cell', function ( settings, row, column ) {
-			return settings.aoData[ row ][ type ][ column ];
-		}, 1 );
-	} );
-	
-	
-	_api_registerPlural( 'cells().render()', 'cell().render()', function ( type ) {
-		return this.iterator( 'cell', function ( settings, row, column ) {
-			return _fnGetCellData( settings, row, column, type );
-		}, 1 );
-	} );
-	
-	
-	_api_registerPlural( 'cells().indexes()', 'cell().index()', function () {
-		return this.iterator( 'cell', function ( settings, row, column ) {
-			return {
-				row: row,
-				column: column,
-				columnVisible: _fnColumnIndexToVisible( settings, column )
-			};
-		}, 1 );
-	} );
-	
-	
-	_api_registerPlural( 'cells().invalidate()', 'cell().invalidate()', function ( src ) {
-		return this.iterator( 'cell', function ( settings, row, column ) {
-			_fnInvalidate( settings, row, src, column );
-		} );
-	} );
-	
-	
-	
-	_api_register( 'cell()', function ( rowSelector, columnSelector, opts ) {
-		return _selector_first( this.cells( rowSelector, columnSelector, opts ) );
-	} );
-	
-	
-	_api_register( 'cell().data()', function ( data ) {
-		var ctx = this.context;
-		var cell = this[0];
-	
-		if ( data === undefined ) {
-			// Get
-			return ctx.length && cell.length ?
-				_fnGetCellData( ctx[0], cell[0].row, cell[0].column ) :
-				undefined;
-		}
-	
-		// Set
-		_fnSetCellData( ctx[0], cell[0].row, cell[0].column, data );
-		_fnInvalidate( ctx[0], cell[0].row, 'data', cell[0].column );
-	
-		return this;
-	} );
-	
-	
-	
-	/**
-	 * Get current ordering (sorting) that has been applied to the table.
-	 *
-	 * @returns {array} 2D array containing the sorting information for the first
-	 *   table in the current context. Each element in the parent array represents
-	 *   a column being sorted upon (i.e. multi-sorting with two columns would have
-	 *   2 inner arrays). The inner arrays may have 2 or 3 elements. The first is
-	 *   the column index that the sorting condition applies to, the second is the
-	 *   direction of the sort (`desc` or `asc`) and, optionally, the third is the
-	 *   index of the sorting order from the `column.sorting` initialisation array.
-	 *//**
-	 * Set the ordering for the table.
-	 *
-	 * @param {integer} order Column index to sort upon.
-	 * @param {string} direction Direction of the sort to be applied (`asc` or `desc`)
-	 * @returns {DataTables.Api} this
-	 *//**
-	 * Set the ordering for the table.
-	 *
-	 * @param {array} order 1D array of sorting information to be applied.
-	 * @param {array} [...] Optional additional sorting conditions
-	 * @returns {DataTables.Api} this
-	 *//**
-	 * Set the ordering for the table.
-	 *
-	 * @param {array} order 2D array of sorting information to be applied.
-	 * @returns {DataTables.Api} this
-	 */
-	_api_register( 'order()', function ( order, dir ) {
-		var ctx = this.context;
-	
-		if ( order === undefined ) {
-			// get
-			return ctx.length !== 0 ?
-				ctx[0].aaSorting :
-				undefined;
-		}
-	
-		// set
-		if ( typeof order === 'number' ) {
-			// Simple column / direction passed in
-			order = [ [ order, dir ] ];
-		}
-		else if ( order.length && ! Array.isArray( order[0] ) ) {
-			// Arguments passed in (list of 1D arrays)
-			order = Array.prototype.slice.call( arguments );
-		}
-		// otherwise a 2D array was passed in
-	
-		return this.iterator( 'table', function ( settings ) {
-			settings.aaSorting = order.slice();
-		} );
-	} );
-	
-	
-	/**
-	 * Attach a sort listener to an element for a given column
-	 *
-	 * @param {node|jQuery|string} node Identifier for the element(s) to attach the
-	 *   listener to. This can take the form of a single DOM node, a jQuery
-	 *   collection of nodes or a jQuery selector which will identify the node(s).
-	 * @param {integer} column the column that a click on this node will sort on
-	 * @param {function} [callback] callback function when sort is run
-	 * @returns {DataTables.Api} this
-	 */
-	_api_register( 'order.listener()', function ( node, column, callback ) {
-		return this.iterator( 'table', function ( settings ) {
-			_fnSortAttachListener( settings, node, column, callback );
-		} );
-	} );
-	
-	
-	_api_register( 'order.fixed()', function ( set ) {
-		if ( ! set ) {
-			var ctx = this.context;
-			var fixed = ctx.length ?
-				ctx[0].aaSortingFixed :
-				undefined;
-	
-			return Array.isArray( fixed ) ?
-				{ pre: fixed } :
-				fixed;
-		}
-	
-		return this.iterator( 'table', function ( settings ) {
-			settings.aaSortingFixed = $.extend( true, {}, set );
-		} );
-	} );
-	
-	
-	// Order by the selected column(s)
-	_api_register( [
-		'columns().order()',
-		'column().order()'
-	], function ( dir ) {
-		var that = this;
-	
-		return this.iterator( 'table', function ( settings, i ) {
-			var sort = [];
-	
-			$.each( that[i], function (j, col) {
-				sort.push( [ col, dir ] );
-			} );
-	
-			settings.aaSorting = sort;
-		} );
-	} );
-	
-	
-	
-	_api_register( 'search()', function ( input, regex, smart, caseInsen ) {
-		var ctx = this.context;
-	
-		if ( input === undefined ) {
-			// get
-			return ctx.length !== 0 ?
-				ctx[0].oPreviousSearch.sSearch :
-				undefined;
-		}
-	
-		// set
-		return this.iterator( 'table', function ( settings ) {
-			if ( ! settings.oFeatures.bFilter ) {
-				return;
-			}
-	
-			_fnFilterComplete( settings, $.extend( {}, settings.oPreviousSearch, {
-				"sSearch": input+"",
-				"bRegex":  regex === null ? false : regex,
-				"bSmart":  smart === null ? true  : smart,
-				"bCaseInsensitive": caseInsen === null ? true : caseInsen
-			} ), 1 );
-		} );
-	} );
-	
-	
-	_api_registerPlural(
-		'columns().search()',
-		'column().search()',
-		function ( input, regex, smart, caseInsen ) {
-			return this.iterator( 'column', function ( settings, column ) {
-				var preSearch = settings.aoPreSearchCols;
-	
-				if ( input === undefined ) {
-					// get
-					return preSearch[ column ].sSearch;
-				}
-	
-				// set
-				if ( ! settings.oFeatures.bFilter ) {
-					return;
-				}
-	
-				$.extend( preSearch[ column ], {
-					"sSearch": input+"",
-					"bRegex":  regex === null ? false : regex,
-					"bSmart":  smart === null ? true  : smart,
-					"bCaseInsensitive": caseInsen === null ? true : caseInsen
-				} );
-	
-				_fnFilterComplete( settings, settings.oPreviousSearch, 1 );
-			} );
-		}
-	);
-	
-	/*
-	 * State API methods
-	 */
-	
-	_api_register( 'state()', function () {
-		return this.context.length ?
-			this.context[0].oSavedState :
-			null;
-	} );
-	
-	
-	_api_register( 'state.clear()', function () {
-		return this.iterator( 'table', function ( settings ) {
-			// Save an empty object
-			settings.fnStateSaveCallback.call( settings.oInstance, settings, {} );
-		} );
-	} );
-	
-	
-	_api_register( 'state.loaded()', function () {
-		return this.context.length ?
-			this.context[0].oLoadedState :
-			null;
-	} );
-	
-	
-	_api_register( 'state.save()', function () {
-		return this.iterator( 'table', function ( settings ) {
-			_fnSaveState( settings );
-		} );
-	} );
-	
-	
-	
-	/**
-	 * Provide a common method for plug-ins to check the version of DataTables being
-	 * used, in order to ensure compatibility.
-	 *
-	 *  @param {string} version Version string to check for, in the format "X.Y.Z".
-	 *    Note that the formats "X" and "X.Y" are also acceptable.
-	 *  @returns {boolean} true if this version of DataTables is greater or equal to
-	 *    the required version, or false if this version of DataTales is not
-	 *    suitable
-	 *  @static
-	 *  @dtopt API-Static
-	 *
-	 *  @example
-	 *    alert( $.fn.dataTable.versionCheck( '1.9.0' ) );
-	 */
-	DataTable.versionCheck = DataTable.fnVersionCheck = function( version )
-	{
-		var aThis = DataTable.version.split('.');
-		var aThat = version.split('.');
-		var iThis, iThat;
-	
-		for ( var i=0, iLen=aThat.length ; i<iLen ; i++ ) {
-			iThis = parseInt( aThis[i], 10 ) || 0;
-			iThat = parseInt( aThat[i], 10 ) || 0;
-	
-			// Parts are the same, keep comparing
-			if (iThis === iThat) {
-				continue;
-			}
-	
-			// Parts are different, return immediately
-			return iThis > iThat;
-		}
-	
-		return true;
-	};
-	
-	
-	/**
-	 * Check if a `<table>` node is a DataTable table already or not.
-	 *
-	 *  @param {node|jquery|string} table Table node, jQuery object or jQuery
-	 *      selector for the table to test. Note that if more than more than one
-	 *      table is passed on, only the first will be checked
-	 *  @returns {boolean} true the table given is a DataTable, or false otherwise
-	 *  @static
-	 *  @dtopt API-Static
-	 *
-	 *  @example
-	 *    if ( ! $.fn.DataTable.isDataTable( '#example' ) ) {
-	 *      $('#example').dataTable();
-	 *    }
-	 */
-	DataTable.isDataTable = DataTable.fnIsDataTable = function ( table )
-	{
-		var t = $(table).get(0);
-		var is = false;
-	
-		if ( table instanceof DataTable.Api ) {
-			return true;
-		}
-	
-		$.each( DataTable.settings, function (i, o) {
-			var head = o.nScrollHead ? $('table', o.nScrollHead)[0] : null;
-			var foot = o.nScrollFoot ? $('table', o.nScrollFoot)[0] : null;
-	
-			if ( o.nTable === t || head === t || foot === t ) {
-				is = true;
-			}
-		} );
-	
-		return is;
-	};
-	
-	
-	/**
-	 * Get all DataTable tables that have been initialised - optionally you can
-	 * select to get only currently visible tables.
-	 *
-	 *  @param {boolean} [visible=false] Flag to indicate if you want all (default)
-	 *    or visible tables only.
-	 *  @returns {array} Array of `table` nodes (not DataTable instances) which are
-	 *    DataTables
-	 *  @static
-	 *  @dtopt API-Static
-	 *
-	 *  @example
-	 *    $.each( $.fn.dataTable.tables(true), function () {
-	 *      $(table).DataTable().columns.adjust();
-	 *    } );
-	 */
-	DataTable.tables = DataTable.fnTables = function ( visible )
-	{
-		var api = false;
-	
-		if ( $.isPlainObject( visible ) ) {
-			api = visible.api;
-			visible = visible.visible;
-		}
-	
-		var a = $.map( DataTable.settings, function (o) {
-			if ( !visible || (visible && $(o.nTable).is(':visible')) ) {
-				return o.nTable;
-			}
-		} );
-	
-		return api ?
-			new _Api( a ) :
-			a;
-	};
-	
-	
-	/**
-	 * Convert from camel case parameters to Hungarian notation. This is made public
-	 * for the extensions to provide the same ability as DataTables core to accept
-	 * either the 1.9 style Hungarian notation, or the 1.10+ style camelCase
-	 * parameters.
-	 *
-	 *  @param {object} src The model object which holds all parameters that can be
-	 *    mapped.
-	 *  @param {object} user The object to convert from camel case to Hungarian.
-	 *  @param {boolean} force When set to `true`, properties which already have a
-	 *    Hungarian value in the `user` object will be overwritten. Otherwise they
-	 *    won't be.
-	 */
-	DataTable.camelToHungarian = _fnCamelToHungarian;
-	
-	
-	
-	/**
-	 *
-	 */
-	_api_register( '$()', function ( selector, opts ) {
-		var
-			rows   = this.rows( opts ).nodes(), // Get all rows
-			jqRows = $(rows);
-	
-		return $( [].concat(
-			jqRows.filter( selector ).toArray(),
-			jqRows.find( selector ).toArray()
-		) );
-	} );
-	
-	
-	// jQuery functions to operate on the tables
-	$.each( [ 'on', 'one', 'off' ], function (i, key) {
-		_api_register( key+'()', function ( /* event, handler */ ) {
-			var args = Array.prototype.slice.call(arguments);
-	
-			// Add the `dt` namespace automatically if it isn't already present
-			args[0] = $.map( args[0].split( /\s/ ), function ( e ) {
-				return ! e.match(/\.dt\b/) ?
-					e+'.dt' :
-					e;
-				} ).join( ' ' );
-	
-			var inst = $( this.tables().nodes() );
-			inst[key].apply( inst, args );
-			return this;
-		} );
-	} );
-	
-	
-	_api_register( 'clear()', function () {
-		return this.iterator( 'table', function ( settings ) {
-			_fnClearTable( settings );
-		} );
-	} );
-	
-	
-	_api_register( 'settings()', function () {
-		return new _Api( this.context, this.context );
-	} );
-	
-	
-	_api_register( 'init()', function () {
-		var ctx = this.context;
-		return ctx.length ? ctx[0].oInit : null;
-	} );
-	
-	
-	_api_register( 'data()', function () {
-		return this.iterator( 'table', function ( settings ) {
-			return _pluck( settings.aoData, '_aData' );
-		} ).flatten();
-	} );
-	
-	
-	_api_register( 'destroy()', function ( remove ) {
-		remove = remove || false;
-	
-		return this.iterator( 'table', function ( settings ) {
-			var orig      = settings.nTableWrapper.parentNode;
-			var classes   = settings.oClasses;
-			var table     = settings.nTable;
-			var tbody     = settings.nTBody;
-			var thead     = settings.nTHead;
-			var tfoot     = settings.nTFoot;
-			var jqTable   = $(table);
-			var jqTbody   = $(tbody);
-			var jqWrapper = $(settings.nTableWrapper);
-			var rows      = $.map( settings.aoData, function (r) { return r.nTr; } );
-			var i, ien;
-	
-			// Flag to note that the table is currently being destroyed - no action
-			// should be taken
-			settings.bDestroying = true;
-	
-			// Fire off the destroy callbacks for plug-ins etc
-			_fnCallbackFire( settings, "aoDestroyCallback", "destroy", [settings] );
-	
-			// If not being removed from the document, make all columns visible
-			if ( ! remove ) {
-				new _Api( settings ).columns().visible( true );
-			}
-	
-			// Blitz all `DT` namespaced events (these are internal events, the
-			// lowercase, `dt` events are user subscribed and they are responsible
-			// for removing them
-			jqWrapper.off('.DT').find(':not(tbody *)').off('.DT');
-			$(window).off('.DT-'+settings.sInstance);
-	
-			// When scrolling we had to break the table up - restore it
-			if ( table != thead.parentNode ) {
-				jqTable.children('thead').detach();
-				jqTable.append( thead );
-			}
-	
-			if ( tfoot && table != tfoot.parentNode ) {
-				jqTable.children('tfoot').detach();
-				jqTable.append( tfoot );
-			}
-	
-			settings.aaSorting = [];
-			settings.aaSortingFixed = [];
-			_fnSortingClasses( settings );
-	
-			$( rows ).removeClass( settings.asStripeClasses.join(' ') );
-	
-			$('th, td', thead).removeClass( classes.sSortable+' '+
-				classes.sSortableAsc+' '+classes.sSortableDesc+' '+classes.sSortableNone
-			);
-	
-			// Add the TR elements back into the table in their original order
-			jqTbody.children().detach();
-			jqTbody.append( rows );
-	
-			// Remove the DataTables generated nodes, events and classes
-			var removedMethod = remove ? 'remove' : 'detach';
-			jqTable[ removedMethod ]();
-			jqWrapper[ removedMethod ]();
-	
-			// If we need to reattach the table to the document
-			if ( ! remove && orig ) {
-				// insertBefore acts like appendChild if !arg[1]
-				orig.insertBefore( table, settings.nTableReinsertBefore );
-	
-				// Restore the width of the original table - was read from the style property,
-				// so we can restore directly to that
-				jqTable
-					.css( 'width', settings.sDestroyWidth )
-					.removeClass( classes.sTable );
-	
-				// If the were originally stripe classes - then we add them back here.
-				// Note this is not fool proof (for example if not all rows had stripe
-				// classes - but it's a good effort without getting carried away
-				ien = settings.asDestroyStripes.length;
-	
-				if ( ien ) {
-					jqTbody.children().each( function (i) {
-						$(this).addClass( settings.asDestroyStripes[i % ien] );
-					} );
-				}
-			}
-	
-			/* Remove the settings object from the settings array */
-			var idx = $.inArray( settings, DataTable.settings );
-			if ( idx !== -1 ) {
-				DataTable.settings.splice( idx, 1 );
-			}
-		} );
-	} );
-	
-	
-	// Add the `every()` method for rows, columns and cells in a compact form
-	$.each( [ 'column', 'row', 'cell' ], function ( i, type ) {
-		_api_register( type+'s().every()', function ( fn ) {
-			var opts = this.selector.opts;
-			var api = this;
-	
-			return this.iterator( type, function ( settings, arg1, arg2, arg3, arg4 ) {
-				// Rows and columns:
-				//  arg1 - index
-				//  arg2 - table counter
-				//  arg3 - loop counter
-				//  arg4 - undefined
-				// Cells:
-				//  arg1 - row index
-				//  arg2 - column index
-				//  arg3 - table counter
-				//  arg4 - loop counter
-				fn.call(
-					api[ type ](
-						arg1,
-						type==='cell' ? arg2 : opts,
-						type==='cell' ? opts : undefined
-					),
-					arg1, arg2, arg3, arg4
-				);
-			} );
-		} );
-	} );
-	
-	
-	// i18n method for extensions to be able to use the language object from the
-	// DataTable
-	_api_register( 'i18n()', function ( token, def, plural ) {
-		var ctx = this.context[0];
-		var resolved = _fnGetObjectDataFn( token )( ctx.oLanguage );
-	
-		if ( resolved === undefined ) {
-			resolved = def;
-		}
-	
-		if ( plural !== undefined && $.isPlainObject( resolved ) ) {
-			resolved = resolved[ plural ] !== undefined ?
-				resolved[ plural ] :
-				resolved._;
-		}
-	
-		return resolved.replace( '%d', plural ); // nb: plural might be undefined,
-	} );
-	/**
-	 * Version string for plug-ins to check compatibility. Allowed format is
-	 * `a.b.c-d` where: a:int, b:int, c:int, d:string(dev|beta|alpha). `d` is used
-	 * only for non-release builds. See http://semver.org/ for more information.
-	 *  @member
-	 *  @type string
-	 *  @default Version number
-	 */
-	DataTable.version = "1.10.25";
-
-	/**
-	 * Private data store, containing all of the settings objects that are
-	 * created for the tables on a given page.
-	 *
-	 * Note that the `DataTable.settings` object is aliased to
-	 * `jQuery.fn.dataTableExt` through which it may be accessed and
-	 * manipulated, or `jQuery.fn.dataTable.settings`.
-	 *  @member
-	 *  @type array
-	 *  @default []
-	 *  @private
-	 */
-	DataTable.settings = [];
-
-	/**
-	 * Object models container, for the various models that DataTables has
-	 * available to it. These models define the objects that are used to hold
-	 * the active state and configuration of the table.
-	 *  @namespace
-	 */
-	DataTable.models = {};
-	
-	
-	
-	/**
-	 * Template object for the way in which DataTables holds information about
-	 * search information for the global filter and individual column filters.
-	 *  @namespace
-	 */
-	DataTable.models.oSearch = {
-		/**
-		 * Flag to indicate if the filtering should be case insensitive or not
-		 *  @type boolean
-		 *  @default true
-		 */
-		"bCaseInsensitive": true,
-	
-		/**
-		 * Applied search term
-		 *  @type string
-		 *  @default <i>Empty string</i>
-		 */
-		"sSearch": "",
-	
-		/**
-		 * Flag to indicate if the search term should be interpreted as a
-		 * regular expression (true) or not (false) and therefore and special
-		 * regex characters escaped.
-		 *  @type boolean
-		 *  @default false
-		 */
-		"bRegex": false,
-	
-		/**
-		 * Flag to indicate if DataTables is to use its smart filtering or not.
-		 *  @type boolean
-		 *  @default true
-		 */
-		"bSmart": true
-	};
-	
-	
-	
-	
-	/**
-	 * Template object for the way in which DataTables holds information about
-	 * each individual row. This is the object format used for the settings
-	 * aoData array.
-	 *  @namespace
-	 */
-	DataTable.models.oRow = {
-		/**
-		 * TR element for the row
-		 *  @type node
-		 *  @default null
-		 */
-		"nTr": null,
-	
-		/**
-		 * Array of TD elements for each row. This is null until the row has been
-		 * created.
-		 *  @type array nodes
-		 *  @default []
-		 */
-		"anCells": null,
-	
-		/**
-		 * Data object from the original data source for the row. This is either
-		 * an array if using the traditional form of DataTables, or an object if
-		 * using mData options. The exact type will depend on the passed in
-		 * data from the data source, or will be an array if using DOM a data
-		 * source.
-		 *  @type array|object
-		 *  @default []
-		 */
-		"_aData": [],
-	
-		/**
-		 * Sorting data cache - this array is ostensibly the same length as the
-		 * number of columns (although each index is generated only as it is
-		 * needed), and holds the data that is used for sorting each column in the
-		 * row. We do this cache generation at the start of the sort in order that
-		 * the formatting of the sort data need be done only once for each cell
-		 * per sort. This array should not be read from or written to by anything
-		 * other than the master sorting methods.
-		 *  @type array
-		 *  @default null
-		 *  @private
-		 */
-		"_aSortData": null,
-	
-		/**
-		 * Per cell filtering data cache. As per the sort data cache, used to
-		 * increase the performance of the filtering in DataTables
-		 *  @type array
-		 *  @default null
-		 *  @private
-		 */
-		"_aFilterData": null,
-	
-		/**
-		 * Filtering data cache. This is the same as the cell filtering cache, but
-		 * in this case a string rather than an array. This is easily computed with
-		 * a join on `_aFilterData`, but is provided as a cache so the join isn't
-		 * needed on every search (memory traded for performance)
-		 *  @type array
-		 *  @default null
-		 *  @private
-		 */
-		"_sFilterRow": null,
-	
-		/**
-		 * Cache of the class name that DataTables has applied to the row, so we
-		 * can quickly look at this variable rather than needing to do a DOM check
-		 * on className for the nTr property.
-		 *  @type string
-		 *  @default <i>Empty string</i>
-		 *  @private
-		 */
-		"_sRowStripe": "",
-	
-		/**
-		 * Denote if the original data source was from the DOM, or the data source
-		 * object. This is used for invalidating data, so DataTables can
-		 * automatically read data from the original source, unless uninstructed
-		 * otherwise.
-		 *  @type string
-		 *  @default null
-		 *  @private
-		 */
-		"src": null,
-	
-		/**
-		 * Index in the aoData array. This saves an indexOf lookup when we have the
-		 * object, but want to know the index
-		 *  @type integer
-		 *  @default -1
-		 *  @private
-		 */
-		"idx": -1
-	};
-	
-	
-	/**
-	 * Template object for the column information object in DataTables. This object
-	 * is held in the settings aoColumns array and contains all the information that
-	 * DataTables needs about each individual column.
-	 *
-	 * Note that this object is related to {@link DataTable.defaults.column}
-	 * but this one is the internal data store for DataTables's cache of columns.
-	 * It should NOT be manipulated outside of DataTables. Any configuration should
-	 * be done through the initialisation options.
-	 *  @namespace
-	 */
-	DataTable.models.oColumn = {
-		/**
-		 * Column index. This could be worked out on-the-fly with $.inArray, but it
-		 * is faster to just hold it as a variable
-		 *  @type integer
-		 *  @default null
-		 */
-		"idx": null,
-	
-		/**
-		 * A list of the columns that sorting should occur on when this column
-		 * is sorted. That this property is an array allows multi-column sorting
-		 * to be defined for a column (for example first name / last name columns
-		 * would benefit from this). The values are integers pointing to the
-		 * columns to be sorted on (typically it will be a single integer pointing
-		 * at itself, but that doesn't need to be the case).
-		 *  @type array
-		 */
-		"aDataSort": null,
-	
-		/**
-		 * Define the sorting directions that are applied to the column, in sequence
-		 * as the column is repeatedly sorted upon - i.e. the first value is used
-		 * as the sorting direction when the column if first sorted (clicked on).
-		 * Sort it again (click again) and it will move on to the next index.
-		 * Repeat until loop.
-		 *  @type array
-		 */
-		"asSorting": null,
-	
-		/**
-		 * Flag to indicate if the column is searchable, and thus should be included
-		 * in the filtering or not.
-		 *  @type boolean
-		 */
-		"bSearchable": null,
-	
-		/**
-		 * Flag to indicate if the column is sortable or not.
-		 *  @type boolean
-		 */
-		"bSortable": null,
-	
-		/**
-		 * Flag to indicate if the column is currently visible in the table or not
-		 *  @type boolean
-		 */
-		"bVisible": null,
-	
-		/**
-		 * Store for manual type assignment using the `column.type` option. This
-		 * is held in store so we can manipulate the column's `sType` property.
-		 *  @type string
-		 *  @default null
-		 *  @private
-		 */
-		"_sManualType": null,
-	
-		/**
-		 * Flag to indicate if HTML5 data attributes should be used as the data
-		 * source for filtering or sorting. True is either are.
-		 *  @type boolean
-		 *  @default false
-		 *  @private
-		 */
-		"_bAttrSrc": false,
-	
-		/**
-		 * Developer definable function that is called whenever a cell is created (Ajax source,
-		 * etc) or processed for input (DOM source). This can be used as a compliment to mRender
-		 * allowing you to modify the DOM element (add background colour for example) when the
-		 * element is available.
-		 *  @type function
-		 *  @param {element} nTd The TD node that has been created
-		 *  @param {*} sData The Data for the cell
-		 *  @param {array|object} oData The data for the whole row
-		 *  @param {int} iRow The row index for the aoData data store
-		 *  @default null
-		 */
-		"fnCreatedCell": null,
-	
-		/**
-		 * Function to get data from a cell in a column. You should <b>never</b>
-		 * access data directly through _aData internally in DataTables - always use
-		 * the method attached to this property. It allows mData to function as
-		 * required. This function is automatically assigned by the column
-		 * initialisation method
-		 *  @type function
-		 *  @param {array|object} oData The data array/object for the array
-		 *    (i.e. aoData[]._aData)
-		 *  @param {string} sSpecific The specific data type you want to get -
-		 *    'display', 'type' 'filter' 'sort'
-		 *  @returns {*} The data for the cell from the given row's data
-		 *  @default null
-		 */
-		"fnGetData": null,
-	
-		/**
-		 * Function to set data for a cell in the column. You should <b>never</b>
-		 * set the data directly to _aData internally in DataTables - always use
-		 * this method. It allows mData to function as required. This function
-		 * is automatically assigned by the column initialisation method
-		 *  @type function
-		 *  @param {array|object} oData The data array/object for the array
-		 *    (i.e. aoData[]._aData)
-		 *  @param {*} sValue Value to set
-		 *  @default null
-		 */
-		"fnSetData": null,
-	
-		/**
-		 * Property to read the value for the cells in the column from the data
-		 * source array / object. If null, then the default content is used, if a
-		 * function is given then the return from the function is used.
-		 *  @type function|int|string|null
-		 *  @default null
-		 */
-		"mData": null,
-	
-		/**
-		 * Partner property to mData which is used (only when defined) to get
-		 * the data - i.e. it is basically the same as mData, but without the
-		 * 'set' option, and also the data fed to it is the result from mData.
-		 * This is the rendering method to match the data method of mData.
-		 *  @type function|int|string|null
-		 *  @default null
-		 */
-		"mRender": null,
-	
-		/**
-		 * Unique header TH/TD element for this column - this is what the sorting
-		 * listener is attached to (if sorting is enabled.)
-		 *  @type node
-		 *  @default null
-		 */
-		"nTh": null,
-	
-		/**
-		 * Unique footer TH/TD element for this column (if there is one). Not used
-		 * in DataTables as such, but can be used for plug-ins to reference the
-		 * footer for each column.
-		 *  @type node
-		 *  @default null
-		 */
-		"nTf": null,
-	
-		/**
-		 * The class to apply to all TD elements in the table's TBODY for the column
-		 *  @type string
-		 *  @default null
-		 */
-		"sClass": null,
-	
-		/**
-		 * When DataTables calculates the column widths to assign to each column,
-		 * it finds the longest string in each column and then constructs a
-		 * temporary table and reads the widths from that. The problem with this
-		 * is that "mmm" is much wider then "iiii", but the latter is a longer
-		 * string - thus the calculation can go wrong (doing it properly and putting
-		 * it into an DOM object and measuring that is horribly(!) slow). Thus as
-		 * a "work around" we provide this option. It will append its value to the
-		 * text that is found to be the longest string for the column - i.e. padding.
-		 *  @type string
-		 */
-		"sContentPadding": null,
-	
-		/**
-		 * Allows a default value to be given for a column's data, and will be used
-		 * whenever a null data source is encountered (this can be because mData
-		 * is set to null, or because the data source itself is null).
-		 *  @type string
-		 *  @default null
-		 */
-		"sDefaultContent": null,
-	
-		/**
-		 * Name for the column, allowing reference to the column by name as well as
-		 * by index (needs a lookup to work by name).
-		 *  @type string
-		 */
-		"sName": null,
-	
-		/**
-		 * Custom sorting data type - defines which of the available plug-ins in
-		 * afnSortData the custom sorting will use - if any is defined.
-		 *  @type string
-		 *  @default std
-		 */
-		"sSortDataType": 'std',
-	
-		/**
-		 * Class to be applied to the header element when sorting on this column
-		 *  @type string
-		 *  @default null
-		 */
-		"sSortingClass": null,
-	
-		/**
-		 * Class to be applied to the header element when sorting on this column -
-		 * when jQuery UI theming is used.
-		 *  @type string
-		 *  @default null
-		 */
-		"sSortingClassJUI": null,
-	
-		/**
-		 * Title of the column - what is seen in the TH element (nTh).
-		 *  @type string
-		 */
-		"sTitle": null,
-	
-		/**
-		 * Column sorting and filtering type
-		 *  @type string
-		 *  @default null
-		 */
-		"sType": null,
-	
-		/**
-		 * Width of the column
-		 *  @type string
-		 *  @default null
-		 */
-		"sWidth": null,
-	
-		/**
-		 * Width of the column when it was first "encountered"
-		 *  @type string
-		 *  @default null
-		 */
-		"sWidthOrig": null
-	};
-	
-	
-	/*
-	 * Developer note: The properties of the object below are given in Hungarian
-	 * notation, that was used as the interface for DataTables prior to v1.10, however
-	 * from v1.10 onwards the primary interface is camel case. In order to avoid
-	 * breaking backwards compatibility utterly with this change, the Hungarian
-	 * version is still, internally the primary interface, but is is not documented
-	 * - hence the @name tags in each doc comment. This allows a Javascript function
-	 * to create a map from Hungarian notation to camel case (going the other direction
-	 * would require each property to be listed, which would add around 3K to the size
-	 * of DataTables, while this method is about a 0.5K hit).
-	 *
-	 * Ultimately this does pave the way for Hungarian notation to be dropped
-	 * completely, but that is a massive amount of work and will break current
-	 * installs (therefore is on-hold until v2).
-	 */
-	
-	/**
-	 * Initialisation options that can be given to DataTables at initialisation
-	 * time.
-	 *  @namespace
-	 */
-	DataTable.defaults = {
-		/**
-		 * An array of data to use for the table, passed in at initialisation which
-		 * will be used in preference to any data which is already in the DOM. This is
-		 * particularly useful for constructing tables purely in Javascript, for
-		 * example with a custom Ajax call.
-		 *  @type array
-		 *  @default null
-		 *
-		 *  @dtopt Option
-		 *  @name DataTable.defaults.data
-		 *
-		 *  @example
-		 *    // Using a 2D array data source
-		 *    $(document).ready( function () {
-		 *      $('#example').dataTable( {
-		 *        "data": [
-		 *          ['Trident', 'Internet Explorer 4.0', 'Win 95+', 4, 'X'],
-		 *          ['Trident', 'Internet Explorer 5.0', 'Win 95+', 5, 'C'],
-		 *        ],
-		 *        "columns": [
-		 *          { "title": "Engine" },
-		 *          { "title": "Browser" },
-		 *          { "title": "Platform" },
-		 *          { "title": "Version" },
-		 *          { "title": "Grade" }
-		 *        ]
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Using an array of objects as a data source (`data`)
-		 *    $(document).ready( function () {
-		 *      $('#example').dataTable( {
-		 *        "data": [
-		 *          {
-		 *            "engine":   "Trident",
-		 *            "browser":  "Internet Explorer 4.0",
-		 *            "platform": "Win 95+",
-		 *            "version":  4,
-		 *            "grade":    "X"
-		 *          },
-		 *          {
-		 *            "engine":   "Trident",
-		 *            "browser":  "Internet Explorer 5.0",
-		 *            "platform": "Win 95+",
-		 *            "version":  5,
-		 *            "grade":    "C"
-		 *          }
-		 *        ],
-		 *        "columns": [
-		 *          { "title": "Engine",   "data": "engine" },
-		 *          { "title": "Browser",  "data": "browser" },
-		 *          { "title": "Platform", "data": "platform" },
-		 *          { "title": "Version",  "data": "version" },
-		 *          { "title": "Grade",    "data": "grade" }
-		 *        ]
-		 *      } );
-		 *    } );
-		 */
-		"aaData": null,
-	
-	
-		/**
-		 * If ordering is enabled, then DataTables will perform a first pass sort on
-		 * initialisation. You can define which column(s) the sort is performed
-		 * upon, and the sorting direction, with this variable. The `sorting` array
-		 * should contain an array for each column to be sorted initially containing
-		 * the column's index and a direction string ('asc' or 'desc').
-		 *  @type array
-		 *  @default [[0,'asc']]
-		 *
-		 *  @dtopt Option
-		 *  @name DataTable.defaults.order
-		 *
-		 *  @example
-		 *    // Sort by 3rd column first, and then 4th column
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "order": [[2,'asc'], [3,'desc']]
-		 *      } );
-		 *    } );
-		 *
-		 *    // No initial sorting
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "order": []
-		 *      } );
-		 *    } );
-		 */
-		"aaSorting": [[0,'asc']],
-	
-	
-		/**
-		 * This parameter is basically identical to the `sorting` parameter, but
-		 * cannot be overridden by user interaction with the table. What this means
-		 * is that you could have a column (visible or hidden) which the sorting
-		 * will always be forced on first - any sorting after that (from the user)
-		 * will then be performed as required. This can be useful for grouping rows
-		 * together.
-		 *  @type array
-		 *  @default null
-		 *
-		 *  @dtopt Option
-		 *  @name DataTable.defaults.orderFixed
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "orderFixed": [[0,'asc']]
-		 *      } );
-		 *    } )
-		 */
-		"aaSortingFixed": [],
-	
-	
-		/**
-		 * DataTables can be instructed to load data to display in the table from a
-		 * Ajax source. This option defines how that Ajax call is made and where to.
-		 *
-		 * The `ajax` property has three different modes of operation, depending on
-		 * how it is defined. These are:
-		 *
-		 * * `string` - Set the URL from where the data should be loaded from.
-		 * * `object` - Define properties for `jQuery.ajax`.
-		 * * `function` - Custom data get function
-		 *
-		 * `string`
-		 * --------
-		 *
-		 * As a string, the `ajax` property simply defines the URL from which
-		 * DataTables will load data.
-		 *
-		 * `object`
-		 * --------
-		 *
-		 * As an object, the parameters in the object are passed to
-		 * [jQuery.ajax](http://api.jquery.com/jQuery.ajax/) allowing fine control
-		 * of the Ajax request. DataTables has a number of default parameters which
-		 * you can override using this option. Please refer to the jQuery
-		 * documentation for a full description of the options available, although
-		 * the following parameters provide additional options in DataTables or
-		 * require special consideration:
-		 *
-		 * * `data` - As with jQuery, `data` can be provided as an object, but it
-		 *   can also be used as a function to manipulate the data DataTables sends
-		 *   to the server. The function takes a single parameter, an object of
-		 *   parameters with the values that DataTables has readied for sending. An
-		 *   object may be returned which will be merged into the DataTables
-		 *   defaults, or you can add the items to the object that was passed in and
-		 *   not return anything from the function. This supersedes `fnServerParams`
-		 *   from DataTables 1.9-.
-		 *
-		 * * `dataSrc` - By default DataTables will look for the property `data` (or
-		 *   `aaData` for compatibility with DataTables 1.9-) when obtaining data
-		 *   from an Ajax source or for server-side processing - this parameter
-		 *   allows that property to be changed. You can use Javascript dotted
-		 *   object notation to get a data source for multiple levels of nesting, or
-		 *   it my be used as a function. As a function it takes a single parameter,
-		 *   the JSON returned from the server, which can be manipulated as
-		 *   required, with the returned value being that used by DataTables as the
-		 *   data source for the table. This supersedes `sAjaxDataProp` from
-		 *   DataTables 1.9-.
-		 *
-		 * * `success` - Should not be overridden it is used internally in
-		 *   DataTables. To manipulate / transform the data returned by the server
-		 *   use `ajax.dataSrc`, or use `ajax` as a function (see below).
-		 *
-		 * `function`
-		 * ----------
-		 *
-		 * As a function, making the Ajax call is left up to yourself allowing
-		 * complete control of the Ajax request. Indeed, if desired, a method other
-		 * than Ajax could be used to obtain the required data, such as Web storage
-		 * or an AIR database.
-		 *
-		 * The function is given four parameters and no return is required. The
-		 * parameters are:
-		 *
-		 * 1. _object_ - Data to send to the server
-		 * 2. _function_ - Callback function that must be executed when the required
-		 *    data has been obtained. That data should be passed into the callback
-		 *    as the only parameter
-		 * 3. _object_ - DataTables settings object for the table
-		 *
-		 * Note that this supersedes `fnServerData` from DataTables 1.9-.
-		 *
-		 *  @type string|object|function
-		 *  @default null
-		 *
-		 *  @dtopt Option
-		 *  @name DataTable.defaults.ajax
-		 *  @since 1.10.0
-		 *
-		 * @example
-		 *   // Get JSON data from a file via Ajax.
-		 *   // Note DataTables expects data in the form `{ data: [ ...data... ] }` by default).
-		 *   $('#example').dataTable( {
-		 *     "ajax": "data.json"
-		 *   } );
-		 *
-		 * @example
-		 *   // Get JSON data from a file via Ajax, using `dataSrc` to change
-		 *   // `data` to `tableData` (i.e. `{ tableData: [ ...data... ] }`)
-		 *   $('#example').dataTable( {
-		 *     "ajax": {
-		 *       "url": "data.json",
-		 *       "dataSrc": "tableData"
-		 *     }
-		 *   } );
-		 *
-		 * @example
-		 *   // Get JSON data from a file via Ajax, using `dataSrc` to read data
-		 *   // from a plain array rather than an array in an object
-		 *   $('#example').dataTable( {
-		 *     "ajax": {
-		 *       "url": "data.json",
-		 *       "dataSrc": ""
-		 *     }
-		 *   } );
-		 *
-		 * @example
-		 *   // Manipulate the data returned from the server - add a link to data
-		 *   // (note this can, should, be done using `render` for the column - this
-		 *   // is just a simple example of how the data can be manipulated).
-		 *   $('#example').dataTable( {
-		 *     "ajax": {
-		 *       "url": "data.json",
-		 *       "dataSrc": function ( json ) {
-		 *         for ( var i=0, ien=json.length ; i<ien ; i++ ) {
-		 *           json[i][0] = '<a href="/message/'+json[i][0]+'>View message</a>';
-		 *         }
-		 *         return json;
-		 *       }
-		 *     }
-		 *   } );
-		 *
-		 * @example
-		 *   // Add data to the request
-		 *   $('#example').dataTable( {
-		 *     "ajax": {
-		 *       "url": "data.json",
-		 *       "data": function ( d ) {
-		 *         return {
-		 *           "extra_search": $('#extra').val()
-		 *         };
-		 *       }
-		 *     }
-		 *   } );
-		 *
-		 * @example
-		 *   // Send request as POST
-		 *   $('#example').dataTable( {
-		 *     "ajax": {
-		 *       "url": "data.json",
-		 *       "type": "POST"
-		 *     }
-		 *   } );
-		 *
-		 * @example
-		 *   // Get the data from localStorage (could interface with a form for
-		 *   // adding, editing and removing rows).
-		 *   $('#example').dataTable( {
-		 *     "ajax": function (data, callback, settings) {
-		 *       callback(
-		 *         JSON.parse( localStorage.getItem('dataTablesData') )
-		 *       );
-		 *     }
-		 *   } );
-		 */
-		"ajax": null,
-	
-	
-		/**
-		 * This parameter allows you to readily specify the entries in the length drop
-		 * down menu that DataTables shows when pagination is enabled. It can be
-		 * either a 1D array of options which will be used for both the displayed
-		 * option and the value, or a 2D array which will use the array in the first
-		 * position as the value, and the array in the second position as the
-		 * displayed options (useful for language strings such as 'All').
-		 *
-		 * Note that the `pageLength` property will be automatically set to the
-		 * first value given in this array, unless `pageLength` is also provided.
-		 *  @type array
-		 *  @default [ 10, 25, 50, 100 ]
-		 *
-		 *  @dtopt Option
-		 *  @name DataTable.defaults.lengthMenu
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
-		 *      } );
-		 *    } );
-		 */
-		"aLengthMenu": [ 10, 25, 50, 100 ],
-	
-	
-		/**
-		 * The `columns` option in the initialisation parameter allows you to define
-		 * details about the way individual columns behave. For a full list of
-		 * column options that can be set, please see
-		 * {@link DataTable.defaults.column}. Note that if you use `columns` to
-		 * define your columns, you must have an entry in the array for every single
-		 * column that you have in your table (these can be null if you don't which
-		 * to specify any options).
-		 *  @member
-		 *
-		 *  @name DataTable.defaults.column
-		 */
-		"aoColumns": null,
-	
-		/**
-		 * Very similar to `columns`, `columnDefs` allows you to target a specific
-		 * column, multiple columns, or all columns, using the `targets` property of
-		 * each object in the array. This allows great flexibility when creating
-		 * tables, as the `columnDefs` arrays can be of any length, targeting the
-		 * columns you specifically want. `columnDefs` may use any of the column
-		 * options available: {@link DataTable.defaults.column}, but it _must_
-		 * have `targets` defined in each object in the array. Values in the `targets`
-		 * array may be:
-		 *   <ul>
-		 *     <li>a string - class name will be matched on the TH for the column</li>
-		 *     <li>0 or a positive integer - column index counting from the left</li>
-		 *     <li>a negative integer - column index counting from the right</li>
-		 *     <li>the string "_all" - all columns (i.e. assign a default)</li>
-		 *   </ul>
-		 *  @member
-		 *
-		 *  @name DataTable.defaults.columnDefs
-		 */
-		"aoColumnDefs": null,
-	
-	
-		/**
-		 * Basically the same as `search`, this parameter defines the individual column
-		 * filtering state at initialisation time. The array must be of the same size
-		 * as the number of columns, and each element be an object with the parameters
-		 * `search` and `escapeRegex` (the latter is optional). 'null' is also
-		 * accepted and the default will be used.
-		 *  @type array
-		 *  @default []
-		 *
-		 *  @dtopt Option
-		 *  @name DataTable.defaults.searchCols
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "searchCols": [
-		 *          null,
-		 *          { "search": "My filter" },
-		 *          null,
-		 *          { "search": "^[0-9]", "escapeRegex": false }
-		 *        ]
-		 *      } );
-		 *    } )
-		 */
-		"aoSearchCols": [],
-	
-	
-		/**
-		 * An array of CSS classes that should be applied to displayed rows. This
-		 * array may be of any length, and DataTables will apply each class
-		 * sequentially, looping when required.
-		 *  @type array
-		 *  @default null <i>Will take the values determined by the `oClasses.stripe*`
-		 *    options</i>
-		 *
-		 *  @dtopt Option
-		 *  @name DataTable.defaults.stripeClasses
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "stripeClasses": [ 'strip1', 'strip2', 'strip3' ]
-		 *      } );
-		 *    } )
-		 */
-		"asStripeClasses": null,
-	
-	
-		/**
-		 * Enable or disable automatic column width calculation. This can be disabled
-		 * as an optimisation (it takes some time to calculate the widths) if the
-		 * tables widths are passed in using `columns`.
-		 *  @type boolean
-		 *  @default true
-		 *
-		 *  @dtopt Features
-		 *  @name DataTable.defaults.autoWidth
-		 *
-		 *  @example
-		 *    $(document).ready( function () {
-		 *      $('#example').dataTable( {
-		 *        "autoWidth": false
-		 *      } );
-		 *    } );
-		 */
-		"bAutoWidth": true,
-	
-	
-		/**
-		 * Deferred rendering can provide DataTables with a huge speed boost when you
-		 * are using an Ajax or JS data source for the table. This option, when set to
-		 * true, will cause DataTables to defer the creation of the table elements for
-		 * each row until they are needed for a draw - saving a significant amount of
-		 * time.
-		 *  @type boolean
-		 *  @default false
-		 *
-		 *  @dtopt Features
-		 *  @name DataTable.defaults.deferRender
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "ajax": "sources/arrays.txt",
-		 *        "deferRender": true
-		 *      } );
-		 *    } );
-		 */
-		"bDeferRender": false,
-	
-	
-		/**
-		 * Replace a DataTable which matches the given selector and replace it with
-		 * one which has the properties of the new initialisation object passed. If no
-		 * table matches the selector, then the new DataTable will be constructed as
-		 * per normal.
-		 *  @type boolean
-		 *  @default false
-		 *
-		 *  @dtopt Options
-		 *  @name DataTable.defaults.destroy
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "srollY": "200px",
-		 *        "paginate": false
-		 *      } );
-		 *
-		 *      // Some time later....
-		 *      $('#example').dataTable( {
-		 *        "filter": false,
-		 *        "destroy": true
-		 *      } );
-		 *    } );
-		 */
-		"bDestroy": false,
-	
-	
-		/**
-		 * Enable or disable filtering of data. Filtering in DataTables is "smart" in
-		 * that it allows the end user to input multiple words (space separated) and
-		 * will match a row containing those words, even if not in the order that was
-		 * specified (this allow matching across multiple columns). Note that if you
-		 * wish to use filtering in DataTables this must remain 'true' - to remove the
-		 * default filtering input box and retain filtering abilities, please use
-		 * {@link DataTable.defaults.dom}.
-		 *  @type boolean
-		 *  @default true
-		 *
-		 *  @dtopt Features
-		 *  @name DataTable.defaults.searching
-		 *
-		 *  @example
-		 *    $(document).ready( function () {
-		 *      $('#example').dataTable( {
-		 *        "searching": false
-		 *      } );
-		 *    } );
-		 */
-		"bFilter": true,
-	
-	
-		/**
-		 * Enable or disable the table information display. This shows information
-		 * about the data that is currently visible on the page, including information
-		 * about filtered data if that action is being performed.
-		 *  @type boolean
-		 *  @default true
-		 *
-		 *  @dtopt Features
-		 *  @name DataTable.defaults.info
-		 *
-		 *  @example
-		 *    $(document).ready( function () {
-		 *      $('#example').dataTable( {
-		 *        "info": false
-		 *      } );
-		 *    } );
-		 */
-		"bInfo": true,
-	
-	
-		/**
-		 * Allows the end user to select the size of a formatted page from a select
-		 * menu (sizes are 10, 25, 50 and 100). Requires pagination (`paginate`).
-		 *  @type boolean
-		 *  @default true
-		 *
-		 *  @dtopt Features
-		 *  @name DataTable.defaults.lengthChange
-		 *
-		 *  @example
-		 *    $(document).ready( function () {
-		 *      $('#example').dataTable( {
-		 *        "lengthChange": false
-		 *      } );
-		 *    } );
-		 */
-		"bLengthChange": true,
-	
-	
-		/**
-		 * Enable or disable pagination.
-		 *  @type boolean
-		 *  @default true
-		 *
-		 *  @dtopt Features
-		 *  @name DataTable.defaults.paging
-		 *
-		 *  @example
-		 *    $(document).ready( function () {
-		 *      $('#example').dataTable( {
-		 *        "paging": false
-		 *      } );
-		 *    } );
-		 */
-		"bPaginate": true,
-	
-	
-		/**
-		 * Enable or disable the display of a 'processing' indicator when the table is
-		 * being processed (e.g. a sort). This is particularly useful for tables with
-		 * large amounts of data where it can take a noticeable amount of time to sort
-		 * the entries.
-		 *  @type boolean
-		 *  @default false
-		 *
-		 *  @dtopt Features
-		 *  @name DataTable.defaults.processing
-		 *
-		 *  @example
-		 *    $(document).ready( function () {
-		 *      $('#example').dataTable( {
-		 *        "processing": true
-		 *      } );
-		 *    } );
-		 */
-		"bProcessing": false,
-	
-	
-		/**
-		 * Retrieve the DataTables object for the given selector. Note that if the
-		 * table has already been initialised, this parameter will cause DataTables
-		 * to simply return the object that has already been set up - it will not take
-		 * account of any changes you might have made to the initialisation object
-		 * passed to DataTables (setting this parameter to true is an acknowledgement
-		 * that you understand this). `destroy` can be used to reinitialise a table if
-		 * you need.
-		 *  @type boolean
-		 *  @default false
-		 *
-		 *  @dtopt Options
-		 *  @name DataTable.defaults.retrieve
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      initTable();
-		 *      tableActions();
-		 *    } );
-		 *
-		 *    function initTable ()
-		 *    {
-		 *      return $('#example').dataTable( {
-		 *        "scrollY": "200px",
-		 *        "paginate": false,
-		 *        "retrieve": true
-		 *      } );
-		 *    }
-		 *
-		 *    function tableActions ()
-		 *    {
-		 *      var table = initTable();
-		 *      // perform API operations with oTable
-		 *    }
-		 */
-		"bRetrieve": false,
-	
-	
-		/**
-		 * When vertical (y) scrolling is enabled, DataTables will force the height of
-		 * the table's viewport to the given height at all times (useful for layout).
-		 * However, this can look odd when filtering data down to a small data set,
-		 * and the footer is left "floating" further down. This parameter (when
-		 * enabled) will cause DataTables to collapse the table's viewport down when
-		 * the result set will fit within the given Y height.
-		 *  @type boolean
-		 *  @default false
-		 *
-		 *  @dtopt Options
-		 *  @name DataTable.defaults.scrollCollapse
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "scrollY": "200",
-		 *        "scrollCollapse": true
-		 *      } );
-		 *    } );
-		 */
-		"bScrollCollapse": false,
-	
-	
-		/**
-		 * Configure DataTables to use server-side processing. Note that the
-		 * `ajax` parameter must also be given in order to give DataTables a
-		 * source to obtain the required data for each draw.
-		 *  @type boolean
-		 *  @default false
-		 *
-		 *  @dtopt Features
-		 *  @dtopt Server-side
-		 *  @name DataTable.defaults.serverSide
-		 *
-		 *  @example
-		 *    $(document).ready( function () {
-		 *      $('#example').dataTable( {
-		 *        "serverSide": true,
-		 *        "ajax": "xhr.php"
-		 *      } );
-		 *    } );
-		 */
-		"bServerSide": false,
-	
-	
-		/**
-		 * Enable or disable sorting of columns. Sorting of individual columns can be
-		 * disabled by the `sortable` option for each column.
-		 *  @type boolean
-		 *  @default true
-		 *
-		 *  @dtopt Features
-		 *  @name DataTable.defaults.ordering
-		 *
-		 *  @example
-		 *    $(document).ready( function () {
-		 *      $('#example').dataTable( {
-		 *        "ordering": false
-		 *      } );
-		 *    } );
-		 */
-		"bSort": true,
-	
-	
-		/**
-		 * Enable or display DataTables' ability to sort multiple columns at the
-		 * same time (activated by shift-click by the user).
-		 *  @type boolean
-		 *  @default true
-		 *
-		 *  @dtopt Options
-		 *  @name DataTable.defaults.orderMulti
-		 *
-		 *  @example
-		 *    // Disable multiple column sorting ability
-		 *    $(document).ready( function () {
-		 *      $('#example').dataTable( {
-		 *        "orderMulti": false
-		 *      } );
-		 *    } );
-		 */
-		"bSortMulti": true,
-	
-	
-		/**
-		 * Allows control over whether DataTables should use the top (true) unique
-		 * cell that is found for a single column, or the bottom (false - default).
-		 * This is useful when using complex headers.
-		 *  @type boolean
-		 *  @default false
-		 *
-		 *  @dtopt Options
-		 *  @name DataTable.defaults.orderCellsTop
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "orderCellsTop": true
-		 *      } );
-		 *    } );
-		 */
-		"bSortCellsTop": false,
-	
-	
-		/**
-		 * Enable or disable the addition of the classes `sorting\_1`, `sorting\_2` and
-		 * `sorting\_3` to the columns which are currently being sorted on. This is
-		 * presented as a feature switch as it can increase processing time (while
-		 * classes are removed and added) so for large data sets you might want to
-		 * turn this off.
-		 *  @type boolean
-		 *  @default true
-		 *
-		 *  @dtopt Features
-		 *  @name DataTable.defaults.orderClasses
-		 *
-		 *  @example
-		 *    $(document).ready( function () {
-		 *      $('#example').dataTable( {
-		 *        "orderClasses": false
-		 *      } );
-		 *    } );
-		 */
-		"bSortClasses": true,
-	
-	
-		/**
-		 * Enable or disable state saving. When enabled HTML5 `localStorage` will be
-		 * used to save table display information such as pagination information,
-		 * display length, filtering and sorting. As such when the end user reloads
-		 * the page the display display will match what thy had previously set up.
-		 *
-		 * Due to the use of `localStorage` the default state saving is not supported
-		 * in IE6 or 7. If state saving is required in those browsers, use
-		 * `stateSaveCallback` to provide a storage solution such as cookies.
-		 *  @type boolean
-		 *  @default false
-		 *
-		 *  @dtopt Features
-		 *  @name DataTable.defaults.stateSave
-		 *
-		 *  @example
-		 *    $(document).ready( function () {
-		 *      $('#example').dataTable( {
-		 *        "stateSave": true
-		 *      } );
-		 *    } );
-		 */
-		"bStateSave": false,
-	
-	
-		/**
-		 * This function is called when a TR element is created (and all TD child
-		 * elements have been inserted), or registered if using a DOM source, allowing
-		 * manipulation of the TR element (adding classes etc).
-		 *  @type function
-		 *  @param {node} row "TR" element for the current row
-		 *  @param {array} data Raw data array for this row
-		 *  @param {int} dataIndex The index of this row in the internal aoData array
-		 *
-		 *  @dtopt Callbacks
-		 *  @name DataTable.defaults.createdRow
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "createdRow": function( row, data, dataIndex ) {
-		 *          // Bold the grade for all 'A' grade browsers
-		 *          if ( data[4] == "A" )
-		 *          {
-		 *            $('td:eq(4)', row).html( '<b>A</b>' );
-		 *          }
-		 *        }
-		 *      } );
-		 *    } );
-		 */
-		"fnCreatedRow": null,
-	
-	
-		/**
-		 * This function is called on every 'draw' event, and allows you to
-		 * dynamically modify any aspect you want about the created DOM.
-		 *  @type function
-		 *  @param {object} settings DataTables settings object
-		 *
-		 *  @dtopt Callbacks
-		 *  @name DataTable.defaults.drawCallback
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "drawCallback": function( settings ) {
-		 *          alert( 'DataTables has redrawn the table' );
-		 *        }
-		 *      } );
-		 *    } );
-		 */
-		"fnDrawCallback": null,
-	
-	
-		/**
-		 * Identical to fnHeaderCallback() but for the table footer this function
-		 * allows you to modify the table footer on every 'draw' event.
-		 *  @type function
-		 *  @param {node} foot "TR" element for the footer
-		 *  @param {array} data Full table data (as derived from the original HTML)
-		 *  @param {int} start Index for the current display starting point in the
-		 *    display array
-		 *  @param {int} end Index for the current display ending point in the
-		 *    display array
-		 *  @param {array int} display Index array to translate the visual position
-		 *    to the full data array
-		 *
-		 *  @dtopt Callbacks
-		 *  @name DataTable.defaults.footerCallback
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "footerCallback": function( tfoot, data, start, end, display ) {
-		 *          tfoot.getElementsByTagName('th')[0].innerHTML = "Starting index is "+start;
-		 *        }
-		 *      } );
-		 *    } )
-		 */
-		"fnFooterCallback": null,
-	
-	
-		/**
-		 * When rendering large numbers in the information element for the table
-		 * (i.e. "Showing 1 to 10 of 57 entries") DataTables will render large numbers
-		 * to have a comma separator for the 'thousands' units (e.g. 1 million is
-		 * rendered as "1,000,000") to help readability for the end user. This
-		 * function will override the default method DataTables uses.
-		 *  @type function
-		 *  @member
-		 *  @param {int} toFormat number to be formatted
-		 *  @returns {string} formatted string for DataTables to show the number
-		 *
-		 *  @dtopt Callbacks
-		 *  @name DataTable.defaults.formatNumber
-		 *
-		 *  @example
-		 *    // Format a number using a single quote for the separator (note that
-		 *    // this can also be done with the language.thousands option)
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "formatNumber": function ( toFormat ) {
-		 *          return toFormat.toString().replace(
-		 *            /\B(?=(\d{3})+(?!\d))/g, "'"
-		 *          );
-		 *        };
-		 *      } );
-		 *    } );
-		 */
-		"fnFormatNumber": function ( toFormat ) {
-			return toFormat.toString().replace(
-				/\B(?=(\d{3})+(?!\d))/g,
-				this.oLanguage.sThousands
-			);
-		},
-	
-	
-		/**
-		 * This function is called on every 'draw' event, and allows you to
-		 * dynamically modify the header row. This can be used to calculate and
-		 * display useful information about the table.
-		 *  @type function
-		 *  @param {node} head "TR" element for the header
-		 *  @param {array} data Full table data (as derived from the original HTML)
-		 *  @param {int} start Index for the current display starting point in the
-		 *    display array
-		 *  @param {int} end Index for the current display ending point in the
-		 *    display array
-		 *  @param {array int} display Index array to translate the visual position
-		 *    to the full data array
-		 *
-		 *  @dtopt Callbacks
-		 *  @name DataTable.defaults.headerCallback
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "fheaderCallback": function( head, data, start, end, display ) {
-		 *          head.getElementsByTagName('th')[0].innerHTML = "Displaying "+(end-start)+" records";
-		 *        }
-		 *      } );
-		 *    } )
-		 */
-		"fnHeaderCallback": null,
-	
-	
-		/**
-		 * The information element can be used to convey information about the current
-		 * state of the table. Although the internationalisation options presented by
-		 * DataTables are quite capable of dealing with most customisations, there may
-		 * be times where you wish to customise the string further. This callback
-		 * allows you to do exactly that.
-		 *  @type function
-		 *  @param {object} oSettings DataTables settings object
-		 *  @param {int} start Starting position in data for the draw
-		 *  @param {int} end End position in data for the draw
-		 *  @param {int} max Total number of rows in the table (regardless of
-		 *    filtering)
-		 *  @param {int} total Total number of rows in the data set, after filtering
-		 *  @param {string} pre The string that DataTables has formatted using it's
-		 *    own rules
-		 *  @returns {string} The string to be displayed in the information element.
-		 *
-		 *  @dtopt Callbacks
-		 *  @name DataTable.defaults.infoCallback
-		 *
-		 *  @example
-		 *    $('#example').dataTable( {
-		 *      "infoCallback": function( settings, start, end, max, total, pre ) {
-		 *        return start +" to "+ end;
-		 *      }
-		 *    } );
-		 */
-		"fnInfoCallback": null,
-	
-	
-		/**
-		 * Called when the table has been initialised. Normally DataTables will
-		 * initialise sequentially and there will be no need for this function,
-		 * however, this does not hold true when using external language information
-		 * since that is obtained using an async XHR call.
-		 *  @type function
-		 *  @param {object} settings DataTables settings object
-		 *  @param {object} json The JSON object request from the server - only
-		 *    present if client-side Ajax sourced data is used
-		 *
-		 *  @dtopt Callbacks
-		 *  @name DataTable.defaults.initComplete
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "initComplete": function(settings, json) {
-		 *          alert( 'DataTables has finished its initialisation.' );
-		 *        }
-		 *      } );
-		 *    } )
-		 */
-		"fnInitComplete": null,
-	
-	
-		/**
-		 * Called at the very start of each table draw and can be used to cancel the
-		 * draw by returning false, any other return (including undefined) results in
-		 * the full draw occurring).
-		 *  @type function
-		 *  @param {object} settings DataTables settings object
-		 *  @returns {boolean} False will cancel the draw, anything else (including no
-		 *    return) will allow it to complete.
-		 *
-		 *  @dtopt Callbacks
-		 *  @name DataTable.defaults.preDrawCallback
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "preDrawCallback": function( settings ) {
-		 *          if ( $('#test').val() == 1 ) {
-		 *            return false;
-		 *          }
-		 *        }
-		 *      } );
-		 *    } );
-		 */
-		"fnPreDrawCallback": null,
-	
-	
-		/**
-		 * This function allows you to 'post process' each row after it have been
-		 * generated for each table draw, but before it is rendered on screen. This
-		 * function might be used for setting the row class name etc.
-		 *  @type function
-		 *  @param {node} row "TR" element for the current row
-		 *  @param {array} data Raw data array for this row
-		 *  @param {int} displayIndex The display index for the current table draw
-		 *  @param {int} displayIndexFull The index of the data in the full list of
-		 *    rows (after filtering)
-		 *
-		 *  @dtopt Callbacks
-		 *  @name DataTable.defaults.rowCallback
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "rowCallback": function( row, data, displayIndex, displayIndexFull ) {
-		 *          // Bold the grade for all 'A' grade browsers
-		 *          if ( data[4] == "A" ) {
-		 *            $('td:eq(4)', row).html( '<b>A</b>' );
-		 *          }
-		 *        }
-		 *      } );
-		 *    } );
-		 */
-		"fnRowCallback": null,
-	
-	
-		/**
-		 * __Deprecated__ The functionality provided by this parameter has now been
-		 * superseded by that provided through `ajax`, which should be used instead.
-		 *
-		 * This parameter allows you to override the default function which obtains
-		 * the data from the server so something more suitable for your application.
-		 * For example you could use POST data, or pull information from a Gears or
-		 * AIR database.
-		 *  @type function
-		 *  @member
-		 *  @param {string} source HTTP source to obtain the data from (`ajax`)
-		 *  @param {array} data A key/value pair object containing the data to send
-		 *    to the server
-		 *  @param {function} callback to be called on completion of the data get
-		 *    process that will draw the data on the page.
-		 *  @param {object} settings DataTables settings object
-		 *
-		 *  @dtopt Callbacks
-		 *  @dtopt Server-side
-		 *  @name DataTable.defaults.serverData
-		 *
-		 *  @deprecated 1.10. Please use `ajax` for this functionality now.
-		 */
-		"fnServerData": null,
-	
-	
-		/**
-		 * __Deprecated__ The functionality provided by this parameter has now been
-		 * superseded by that provided through `ajax`, which should be used instead.
-		 *
-		 *  It is often useful to send extra data to the server when making an Ajax
-		 * request - for example custom filtering information, and this callback
-		 * function makes it trivial to send extra information to the server. The
-		 * passed in parameter is the data set that has been constructed by
-		 * DataTables, and you can add to this or modify it as you require.
-		 *  @type function
-		 *  @param {array} data Data array (array of objects which are name/value
-		 *    pairs) that has been constructed by DataTables and will be sent to the
-		 *    server. In the case of Ajax sourced data with server-side processing
-		 *    this will be an empty array, for server-side processing there will be a
-		 *    significant number of parameters!
-		 *  @returns {undefined} Ensure that you modify the data array passed in,
-		 *    as this is passed by reference.
-		 *
-		 *  @dtopt Callbacks
-		 *  @dtopt Server-side
-		 *  @name DataTable.defaults.serverParams
-		 *
-		 *  @deprecated 1.10. Please use `ajax` for this functionality now.
-		 */
-		"fnServerParams": null,
-	
-	
-		/**
-		 * Load the table state. With this function you can define from where, and how, the
-		 * state of a table is loaded. By default DataTables will load from `localStorage`
-		 * but you might wish to use a server-side database or cookies.
-		 *  @type function
-		 *  @member
-		 *  @param {object} settings DataTables settings object
-		 *  @param {object} callback Callback that can be executed when done. It
-		 *    should be passed the loaded state object.
-		 *  @return {object} The DataTables state object to be loaded
-		 *
-		 *  @dtopt Callbacks
-		 *  @name DataTable.defaults.stateLoadCallback
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "stateSave": true,
-		 *        "stateLoadCallback": function (settings, callback) {
-		 *          $.ajax( {
-		 *            "url": "/state_load",
-		 *            "dataType": "json",
-		 *            "success": function (json) {
-		 *              callback( json );
-		 *            }
-		 *          } );
-		 *        }
-		 *      } );
-		 *    } );
-		 */
-		"fnStateLoadCallback": function ( settings ) {
-			try {
-				return JSON.parse(
-					(settings.iStateDuration === -1 ? sessionStorage : localStorage).getItem(
-						'DataTables_'+settings.sInstance+'_'+location.pathname
-					)
-				);
-			} catch (e) {
-				return {};
-			}
-		},
-	
-	
-		/**
-		 * Callback which allows modification of the saved state prior to loading that state.
-		 * This callback is called when the table is loading state from the stored data, but
-		 * prior to the settings object being modified by the saved state. Note that for
-		 * plug-in authors, you should use the `stateLoadParams` event to load parameters for
-		 * a plug-in.
-		 *  @type function
-		 *  @param {object} settings DataTables settings object
-		 *  @param {object} data The state object that is to be loaded
-		 *
-		 *  @dtopt Callbacks
-		 *  @name DataTable.defaults.stateLoadParams
-		 *
-		 *  @example
-		 *    // Remove a saved filter, so filtering is never loaded
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "stateSave": true,
-		 *        "stateLoadParams": function (settings, data) {
-		 *          data.oSearch.sSearch = "";
-		 *        }
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Disallow state loading by returning false
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "stateSave": true,
-		 *        "stateLoadParams": function (settings, data) {
-		 *          return false;
-		 *        }
-		 *      } );
-		 *    } );
-		 */
-		"fnStateLoadParams": null,
-	
-	
-		/**
-		 * Callback that is called when the state has been loaded from the state saving method
-		 * and the DataTables settings object has been modified as a result of the loaded state.
-		 *  @type function
-		 *  @param {object} settings DataTables settings object
-		 *  @param {object} data The state object that was loaded
-		 *
-		 *  @dtopt Callbacks
-		 *  @name DataTable.defaults.stateLoaded
-		 *
-		 *  @example
-		 *    // Show an alert with the filtering value that was saved
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "stateSave": true,
-		 *        "stateLoaded": function (settings, data) {
-		 *          alert( 'Saved filter was: '+data.oSearch.sSearch );
-		 *        }
-		 *      } );
-		 *    } );
-		 */
-		"fnStateLoaded": null,
-	
-	
-		/**
-		 * Save the table state. This function allows you to define where and how the state
-		 * information for the table is stored By default DataTables will use `localStorage`
-		 * but you might wish to use a server-side database or cookies.
-		 *  @type function
-		 *  @member
-		 *  @param {object} settings DataTables settings object
-		 *  @param {object} data The state object to be saved
-		 *
-		 *  @dtopt Callbacks
-		 *  @name DataTable.defaults.stateSaveCallback
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "stateSave": true,
-		 *        "stateSaveCallback": function (settings, data) {
-		 *          // Send an Ajax request to the server with the state object
-		 *          $.ajax( {
-		 *            "url": "/state_save",
-		 *            "data": data,
-		 *            "dataType": "json",
-		 *            "method": "POST"
-		 *            "success": function () {}
-		 *          } );
-		 *        }
-		 *      } );
-		 *    } );
-		 */
-		"fnStateSaveCallback": function ( settings, data ) {
-			try {
-				(settings.iStateDuration === -1 ? sessionStorage : localStorage).setItem(
-					'DataTables_'+settings.sInstance+'_'+location.pathname,
-					JSON.stringify( data )
-				);
-			} catch (e) {}
-		},
-	
-	
-		/**
-		 * Callback which allows modification of the state to be saved. Called when the table
-		 * has changed state a new state save is required. This method allows modification of
-		 * the state saving object prior to actually doing the save, including addition or
-		 * other state properties or modification. Note that for plug-in authors, you should
-		 * use the `stateSaveParams` event to save parameters for a plug-in.
-		 *  @type function
-		 *  @param {object} settings DataTables settings object
-		 *  @param {object} data The state object to be saved
-		 *
-		 *  @dtopt Callbacks
-		 *  @name DataTable.defaults.stateSaveParams
-		 *
-		 *  @example
-		 *    // Remove a saved filter, so filtering is never saved
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "stateSave": true,
-		 *        "stateSaveParams": function (settings, data) {
-		 *          data.oSearch.sSearch = "";
-		 *        }
-		 *      } );
-		 *    } );
-		 */
-		"fnStateSaveParams": null,
-	
-	
-		/**
-		 * Duration for which the saved state information is considered valid. After this period
-		 * has elapsed the state will be returned to the default.
-		 * Value is given in seconds.
-		 *  @type int
-		 *  @default 7200 <i>(2 hours)</i>
-		 *
-		 *  @dtopt Options
-		 *  @name DataTable.defaults.stateDuration
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "stateDuration": 60*60*24; // 1 day
-		 *      } );
-		 *    } )
-		 */
-		"iStateDuration": 7200,
-	
-	
-		/**
-		 * When enabled DataTables will not make a request to the server for the first
-		 * page draw - rather it will use the data already on the page (no sorting etc
-		 * will be applied to it), thus saving on an XHR at load time. `deferLoading`
-		 * is used to indicate that deferred loading is required, but it is also used
-		 * to tell DataTables how many records there are in the full table (allowing
-		 * the information element and pagination to be displayed correctly). In the case
-		 * where a filtering is applied to the table on initial load, this can be
-		 * indicated by giving the parameter as an array, where the first element is
-		 * the number of records available after filtering and the second element is the
-		 * number of records without filtering (allowing the table information element
-		 * to be shown correctly).
-		 *  @type int | array
-		 *  @default null
-		 *
-		 *  @dtopt Options
-		 *  @name DataTable.defaults.deferLoading
-		 *
-		 *  @example
-		 *    // 57 records available in the table, no filtering applied
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "serverSide": true,
-		 *        "ajax": "scripts/server_processing.php",
-		 *        "deferLoading": 57
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // 57 records after filtering, 100 without filtering (an initial filter applied)
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "serverSide": true,
-		 *        "ajax": "scripts/server_processing.php",
-		 *        "deferLoading": [ 57, 100 ],
-		 *        "search": {
-		 *          "search": "my_filter"
-		 *        }
-		 *      } );
-		 *    } );
-		 */
-		"iDeferLoading": null,
-	
-	
-		/**
-		 * Number of rows to display on a single page when using pagination. If
-		 * feature enabled (`lengthChange`) then the end user will be able to override
-		 * this to a custom setting using a pop-up menu.
-		 *  @type int
-		 *  @default 10
-		 *
-		 *  @dtopt Options
-		 *  @name DataTable.defaults.pageLength
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "pageLength": 50
-		 *      } );
-		 *    } )
-		 */
-		"iDisplayLength": 10,
-	
-	
-		/**
-		 * Define the starting point for data display when using DataTables with
-		 * pagination. Note that this parameter is the number of records, rather than
-		 * the page number, so if you have 10 records per page and want to start on
-		 * the third page, it should be "20".
-		 *  @type int
-		 *  @default 0
-		 *
-		 *  @dtopt Options
-		 *  @name DataTable.defaults.displayStart
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "displayStart": 20
-		 *      } );
-		 *    } )
-		 */
-		"iDisplayStart": 0,
-	
-	
-		/**
-		 * By default DataTables allows keyboard navigation of the table (sorting, paging,
-		 * and filtering) by adding a `tabindex` attribute to the required elements. This
-		 * allows you to tab through the controls and press the enter key to activate them.
-		 * The tabindex is default 0, meaning that the tab follows the flow of the document.
-		 * You can overrule this using this parameter if you wish. Use a value of -1 to
-		 * disable built-in keyboard navigation.
-		 *  @type int
-		 *  @default 0
-		 *
-		 *  @dtopt Options
-		 *  @name DataTable.defaults.tabIndex
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "tabIndex": 1
-		 *      } );
-		 *    } );
-		 */
-		"iTabIndex": 0,
-	
-	
-		/**
-		 * Classes that DataTables assigns to the various components and features
-		 * that it adds to the HTML table. This allows classes to be configured
-		 * during initialisation in addition to through the static
-		 * {@link DataTable.ext.oStdClasses} object).
-		 *  @namespace
-		 *  @name DataTable.defaults.classes
-		 */
-		"oClasses": {},
-	
-	
-		/**
-		 * All strings that DataTables uses in the user interface that it creates
-		 * are defined in this object, allowing you to modified them individually or
-		 * completely replace them all as required.
-		 *  @namespace
-		 *  @name DataTable.defaults.language
-		 */
-		"oLanguage": {
-			/**
-			 * Strings that are used for WAI-ARIA labels and controls only (these are not
-			 * actually visible on the page, but will be read by screenreaders, and thus
-			 * must be internationalised as well).
-			 *  @namespace
-			 *  @name DataTable.defaults.language.aria
-			 */
-			"oAria": {
-				/**
-				 * ARIA label that is added to the table headers when the column may be
-				 * sorted ascending by activing the column (click or return when focused).
-				 * Note that the column header is prefixed to this string.
-				 *  @type string
-				 *  @default : activate to sort column ascending
-				 *
-				 *  @dtopt Language
-				 *  @name DataTable.defaults.language.aria.sortAscending
-				 *
-				 *  @example
-				 *    $(document).ready( function() {
-				 *      $('#example').dataTable( {
-				 *        "language": {
-				 *          "aria": {
-				 *            "sortAscending": " - click/return to sort ascending"
-				 *          }
-				 *        }
-				 *      } );
-				 *    } );
-				 */
-				"sSortAscending": ": activate to sort column ascending",
-	
-				/**
-				 * ARIA label that is added to the table headers when the column may be
-				 * sorted descending by activing the column (click or return when focused).
-				 * Note that the column header is prefixed to this string.
-				 *  @type string
-				 *  @default : activate to sort column ascending
-				 *
-				 *  @dtopt Language
-				 *  @name DataTable.defaults.language.aria.sortDescending
-				 *
-				 *  @example
-				 *    $(document).ready( function() {
-				 *      $('#example').dataTable( {
-				 *        "language": {
-				 *          "aria": {
-				 *            "sortDescending": " - click/return to sort descending"
-				 *          }
-				 *        }
-				 *      } );
-				 *    } );
-				 */
-				"sSortDescending": ": activate to sort column descending"
-			},
-	
-			/**
-			 * Pagination string used by DataTables for the built-in pagination
-			 * control types.
-			 *  @namespace
-			 *  @name DataTable.defaults.language.paginate
-			 */
-			"oPaginate": {
-				/**
-				 * Text to use when using the 'full_numbers' type of pagination for the
-				 * button to take the user to the first page.
-				 *  @type string
-				 *  @default First
-				 *
-				 *  @dtopt Language
-				 *  @name DataTable.defaults.language.paginate.first
-				 *
-				 *  @example
-				 *    $(document).ready( function() {
-				 *      $('#example').dataTable( {
-				 *        "language": {
-				 *          "paginate": {
-				 *            "first": "First page"
-				 *          }
-				 *        }
-				 *      } );
-				 *    } );
-				 */
-				"sFirst": "First",
-	
-	
-				/**
-				 * Text to use when using the 'full_numbers' type of pagination for the
-				 * button to take the user to the last page.
-				 *  @type string
-				 *  @default Last
-				 *
-				 *  @dtopt Language
-				 *  @name DataTable.defaults.language.paginate.last
-				 *
-				 *  @example
-				 *    $(document).ready( function() {
-				 *      $('#example').dataTable( {
-				 *        "language": {
-				 *          "paginate": {
-				 *            "last": "Last page"
-				 *          }
-				 *        }
-				 *      } );
-				 *    } );
-				 */
-				"sLast": "Last",
-	
-	
-				/**
-				 * Text to use for the 'next' pagination button (to take the user to the
-				 * next page).
-				 *  @type string
-				 *  @default Next
-				 *
-				 *  @dtopt Language
-				 *  @name DataTable.defaults.language.paginate.next
-				 *
-				 *  @example
-				 *    $(document).ready( function() {
-				 *      $('#example').dataTable( {
-				 *        "language": {
-				 *          "paginate": {
-				 *            "next": "Next page"
-				 *          }
-				 *        }
-				 *      } );
-				 *    } );
-				 */
-				"sNext": "Next",
-	
-	
-				/**
-				 * Text to use for the 'previous' pagination button (to take the user to
-				 * the previous page).
-				 *  @type string
-				 *  @default Previous
-				 *
-				 *  @dtopt Language
-				 *  @name DataTable.defaults.language.paginate.previous
-				 *
-				 *  @example
-				 *    $(document).ready( function() {
-				 *      $('#example').dataTable( {
-				 *        "language": {
-				 *          "paginate": {
-				 *            "previous": "Previous page"
-				 *          }
-				 *        }
-				 *      } );
-				 *    } );
-				 */
-				"sPrevious": "Previous"
-			},
-	
-			/**
-			 * This string is shown in preference to `zeroRecords` when the table is
-			 * empty of data (regardless of filtering). Note that this is an optional
-			 * parameter - if it is not given, the value of `zeroRecords` will be used
-			 * instead (either the default or given value).
-			 *  @type string
-			 *  @default No data available in table
-			 *
-			 *  @dtopt Language
-			 *  @name DataTable.defaults.language.emptyTable
-			 *
-			 *  @example
-			 *    $(document).ready( function() {
-			 *      $('#example').dataTable( {
-			 *        "language": {
-			 *          "emptyTable": "No data available in table"
-			 *        }
-			 *      } );
-			 *    } );
-			 */
-			"sEmptyTable": "No data available in table",
-	
-	
-			/**
-			 * This string gives information to the end user about the information
-			 * that is current on display on the page. The following tokens can be
-			 * used in the string and will be dynamically replaced as the table
-			 * display updates. This tokens can be placed anywhere in the string, or
-			 * removed as needed by the language requires:
-			 *
-			 * * `\_START\_` - Display index of the first record on the current page
-			 * * `\_END\_` - Display index of the last record on the current page
-			 * * `\_TOTAL\_` - Number of records in the table after filtering
-			 * * `\_MAX\_` - Number of records in the table without filtering
-			 * * `\_PAGE\_` - Current page number
-			 * * `\_PAGES\_` - Total number of pages of data in the table
-			 *
-			 *  @type string
-			 *  @default Showing _START_ to _END_ of _TOTAL_ entries
-			 *
-			 *  @dtopt Language
-			 *  @name DataTable.defaults.language.info
-			 *
-			 *  @example
-			 *    $(document).ready( function() {
-			 *      $('#example').dataTable( {
-			 *        "language": {
-			 *          "info": "Showing page _PAGE_ of _PAGES_"
-			 *        }
-			 *      } );
-			 *    } );
-			 */
-			"sInfo": "Showing _START_ to _END_ of _TOTAL_ entries",
-	
-	
-			/**
-			 * Display information string for when the table is empty. Typically the
-			 * format of this string should match `info`.
-			 *  @type string
-			 *  @default Showing 0 to 0 of 0 entries
-			 *
-			 *  @dtopt Language
-			 *  @name DataTable.defaults.language.infoEmpty
-			 *
-			 *  @example
-			 *    $(document).ready( function() {
-			 *      $('#example').dataTable( {
-			 *        "language": {
-			 *          "infoEmpty": "No entries to show"
-			 *        }
-			 *      } );
-			 *    } );
-			 */
-			"sInfoEmpty": "Showing 0 to 0 of 0 entries",
-	
-	
-			/**
-			 * When a user filters the information in a table, this string is appended
-			 * to the information (`info`) to give an idea of how strong the filtering
-			 * is. The variable _MAX_ is dynamically updated.
-			 *  @type string
-			 *  @default (filtered from _MAX_ total entries)
-			 *
-			 *  @dtopt Language
-			 *  @name DataTable.defaults.language.infoFiltered
-			 *
-			 *  @example
-			 *    $(document).ready( function() {
-			 *      $('#example').dataTable( {
-			 *        "language": {
-			 *          "infoFiltered": " - filtering from _MAX_ records"
-			 *        }
-			 *      } );
-			 *    } );
-			 */
-			"sInfoFiltered": "(filtered from _MAX_ total entries)",
-	
-	
-			/**
-			 * If can be useful to append extra information to the info string at times,
-			 * and this variable does exactly that. This information will be appended to
-			 * the `info` (`infoEmpty` and `infoFiltered` in whatever combination they are
-			 * being used) at all times.
-			 *  @type string
-			 *  @default <i>Empty string</i>
-			 *
-			 *  @dtopt Language
-			 *  @name DataTable.defaults.language.infoPostFix
-			 *
-			 *  @example
-			 *    $(document).ready( function() {
-			 *      $('#example').dataTable( {
-			 *        "language": {
-			 *          "infoPostFix": "All records shown are derived from real information."
-			 *        }
-			 *      } );
-			 *    } );
-			 */
-			"sInfoPostFix": "",
-	
-	
-			/**
-			 * This decimal place operator is a little different from the other
-			 * language options since DataTables doesn't output floating point
-			 * numbers, so it won't ever use this for display of a number. Rather,
-			 * what this parameter does is modify the sort methods of the table so
-			 * that numbers which are in a format which has a character other than
-			 * a period (`.`) as a decimal place will be sorted numerically.
-			 *
-			 * Note that numbers with different decimal places cannot be shown in
-			 * the same table and still be sortable, the table must be consistent.
-			 * However, multiple different tables on the page can use different
-			 * decimal place characters.
-			 *  @type string
-			 *  @default 
-			 *
-			 *  @dtopt Language
-			 *  @name DataTable.defaults.language.decimal
-			 *
-			 *  @example
-			 *    $(document).ready( function() {
-			 *      $('#example').dataTable( {
-			 *        "language": {
-			 *          "decimal": ","
-			 *          "thousands": "."
-			 *        }
-			 *      } );
-			 *    } );
-			 */
-			"sDecimal": "",
-	
-	
-			/**
-			 * DataTables has a build in number formatter (`formatNumber`) which is
-			 * used to format large numbers that are used in the table information.
-			 * By default a comma is used, but this can be trivially changed to any
-			 * character you wish with this parameter.
-			 *  @type string
-			 *  @default ,
-			 *
-			 *  @dtopt Language
-			 *  @name DataTable.defaults.language.thousands
-			 *
-			 *  @example
-			 *    $(document).ready( function() {
-			 *      $('#example').dataTable( {
-			 *        "language": {
-			 *          "thousands": "'"
-			 *        }
-			 *      } );
-			 *    } );
-			 */
-			"sThousands": ",",
-	
-	
-			/**
-			 * Detail the action that will be taken when the drop down menu for the
-			 * pagination length option is changed. The '_MENU_' variable is replaced
-			 * with a default select list of 10, 25, 50 and 100, and can be replaced
-			 * with a custom select box if required.
-			 *  @type string
-			 *  @default Show _MENU_ entries
-			 *
-			 *  @dtopt Language
-			 *  @name DataTable.defaults.language.lengthMenu
-			 *
-			 *  @example
-			 *    // Language change only
-			 *    $(document).ready( function() {
-			 *      $('#example').dataTable( {
-			 *        "language": {
-			 *          "lengthMenu": "Display _MENU_ records"
-			 *        }
-			 *      } );
-			 *    } );
-			 *
-			 *  @example
-			 *    // Language and options change
-			 *    $(document).ready( function() {
-			 *      $('#example').dataTable( {
-			 *        "language": {
-			 *          "lengthMenu": 'Display <select>'+
-			 *            '<option value="10">10</option>'+
-			 *            '<option value="20">20</option>'+
-			 *            '<option value="30">30</option>'+
-			 *            '<option value="40">40</option>'+
-			 *            '<option value="50">50</option>'+
-			 *            '<option value="-1">All</option>'+
-			 *            '</select> records'
-			 *        }
-			 *      } );
-			 *    } );
-			 */
-			"sLengthMenu": "Show _MENU_ entries",
-	
-	
-			/**
-			 * When using Ajax sourced data and during the first draw when DataTables is
-			 * gathering the data, this message is shown in an empty row in the table to
-			 * indicate to the end user the the data is being loaded. Note that this
-			 * parameter is not used when loading data by server-side processing, just
-			 * Ajax sourced data with client-side processing.
-			 *  @type string
-			 *  @default Loading...
-			 *
-			 *  @dtopt Language
-			 *  @name DataTable.defaults.language.loadingRecords
-			 *
-			 *  @example
-			 *    $(document).ready( function() {
-			 *      $('#example').dataTable( {
-			 *        "language": {
-			 *          "loadingRecords": "Please wait - loading..."
-			 *        }
-			 *      } );
-			 *    } );
-			 */
-			"sLoadingRecords": "Loading...",
-	
-	
-			/**
-			 * Text which is displayed when the table is processing a user action
-			 * (usually a sort command or similar).
-			 *  @type string
-			 *  @default Processing...
-			 *
-			 *  @dtopt Language
-			 *  @name DataTable.defaults.language.processing
-			 *
-			 *  @example
-			 *    $(document).ready( function() {
-			 *      $('#example').dataTable( {
-			 *        "language": {
-			 *          "processing": "DataTables is currently busy"
-			 *        }
-			 *      } );
-			 *    } );
-			 */
-			"sProcessing": "Processing...",
-	
-	
-			/**
-			 * Details the actions that will be taken when the user types into the
-			 * filtering input text box. The variable "_INPUT_", if used in the string,
-			 * is replaced with the HTML text box for the filtering input allowing
-			 * control over where it appears in the string. If "_INPUT_" is not given
-			 * then the input box is appended to the string automatically.
-			 *  @type string
-			 *  @default Search:
-			 *
-			 *  @dtopt Language
-			 *  @name DataTable.defaults.language.search
-			 *
-			 *  @example
-			 *    // Input text box will be appended at the end automatically
-			 *    $(document).ready( function() {
-			 *      $('#example').dataTable( {
-			 *        "language": {
-			 *          "search": "Filter records:"
-			 *        }
-			 *      } );
-			 *    } );
-			 *
-			 *  @example
-			 *    // Specify where the filter should appear
-			 *    $(document).ready( function() {
-			 *      $('#example').dataTable( {
-			 *        "language": {
-			 *          "search": "Apply filter _INPUT_ to table"
-			 *        }
-			 *      } );
-			 *    } );
-			 */
-			"sSearch": "Search:",
-	
-	
-			/**
-			 * Assign a `placeholder` attribute to the search `input` element
-			 *  @type string
-			 *  @default 
-			 *
-			 *  @dtopt Language
-			 *  @name DataTable.defaults.language.searchPlaceholder
-			 */
-			"sSearchPlaceholder": "",
-	
-	
-			/**
-			 * All of the language information can be stored in a file on the
-			 * server-side, which DataTables will look up if this parameter is passed.
-			 * It must store the URL of the language file, which is in a JSON format,
-			 * and the object has the same properties as the oLanguage object in the
-			 * initialiser object (i.e. the above parameters). Please refer to one of
-			 * the example language files to see how this works in action.
-			 *  @type string
-			 *  @default <i>Empty string - i.e. disabled</i>
-			 *
-			 *  @dtopt Language
-			 *  @name DataTable.defaults.language.url
-			 *
-			 *  @example
-			 *    $(document).ready( function() {
-			 *      $('#example').dataTable( {
-			 *        "language": {
-			 *          "url": "http://www.sprymedia.co.uk/dataTables/lang.txt"
-			 *        }
-			 *      } );
-			 *    } );
-			 */
-			"sUrl": "",
-	
-	
-			/**
-			 * Text shown inside the table records when the is no information to be
-			 * displayed after filtering. `emptyTable` is shown when there is simply no
-			 * information in the table at all (regardless of filtering).
-			 *  @type string
-			 *  @default No matching records found
-			 *
-			 *  @dtopt Language
-			 *  @name DataTable.defaults.language.zeroRecords
-			 *
-			 *  @example
-			 *    $(document).ready( function() {
-			 *      $('#example').dataTable( {
-			 *        "language": {
-			 *          "zeroRecords": "No records to display"
-			 *        }
-			 *      } );
-			 *    } );
-			 */
-			"sZeroRecords": "No matching records found"
-		},
-	
-	
-		/**
-		 * This parameter allows you to have define the global filtering state at
-		 * initialisation time. As an object the `search` parameter must be
-		 * defined, but all other parameters are optional. When `regex` is true,
-		 * the search string will be treated as a regular expression, when false
-		 * (default) it will be treated as a straight string. When `smart`
-		 * DataTables will use it's smart filtering methods (to word match at
-		 * any point in the data), when false this will not be done.
-		 *  @namespace
-		 *  @extends DataTable.models.oSearch
-		 *
-		 *  @dtopt Options
-		 *  @name DataTable.defaults.search
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "search": {"search": "Initial search"}
-		 *      } );
-		 *    } )
-		 */
-		"oSearch": $.extend( {}, DataTable.models.oSearch ),
-	
-	
-		/**
-		 * __Deprecated__ The functionality provided by this parameter has now been
-		 * superseded by that provided through `ajax`, which should be used instead.
-		 *
-		 * By default DataTables will look for the property `data` (or `aaData` for
-		 * compatibility with DataTables 1.9-) when obtaining data from an Ajax
-		 * source or for server-side processing - this parameter allows that
-		 * property to be changed. You can use Javascript dotted object notation to
-		 * get a data source for multiple levels of nesting.
-		 *  @type string
-		 *  @default data
-		 *
-		 *  @dtopt Options
-		 *  @dtopt Server-side
-		 *  @name DataTable.defaults.ajaxDataProp
-		 *
-		 *  @deprecated 1.10. Please use `ajax` for this functionality now.
-		 */
-		"sAjaxDataProp": "data",
-	
-	
-		/**
-		 * __Deprecated__ The functionality provided by this parameter has now been
-		 * superseded by that provided through `ajax`, which should be used instead.
-		 *
-		 * You can instruct DataTables to load data from an external
-		 * source using this parameter (use aData if you want to pass data in you
-		 * already have). Simply provide a url a JSON object can be obtained from.
-		 *  @type string
-		 *  @default null
-		 *
-		 *  @dtopt Options
-		 *  @dtopt Server-side
-		 *  @name DataTable.defaults.ajaxSource
-		 *
-		 *  @deprecated 1.10. Please use `ajax` for this functionality now.
-		 */
-		"sAjaxSource": null,
-	
-	
-		/**
-		 * This initialisation variable allows you to specify exactly where in the
-		 * DOM you want DataTables to inject the various controls it adds to the page
-		 * (for example you might want the pagination controls at the top of the
-		 * table). DIV elements (with or without a custom class) can also be added to
-		 * aid styling. The follow syntax is used:
-		 *   <ul>
-		 *     <li>The following options are allowed:
-		 *       <ul>
-		 *         <li>'l' - Length changing</li>
-		 *         <li>'f' - Filtering input</li>
-		 *         <li>'t' - The table!</li>
-		 *         <li>'i' - Information</li>
-		 *         <li>'p' - Pagination</li>
-		 *         <li>'r' - pRocessing</li>
-		 *       </ul>
-		 *     </li>
-		 *     <li>The following constants are allowed:
-		 *       <ul>
-		 *         <li>'H' - jQueryUI theme "header" classes ('fg-toolbar ui-widget-header ui-corner-tl ui-corner-tr ui-helper-clearfix')</li>
-		 *         <li>'F' - jQueryUI theme "footer" classes ('fg-toolbar ui-widget-header ui-corner-bl ui-corner-br ui-helper-clearfix')</li>
-		 *       </ul>
-		 *     </li>
-		 *     <li>The following syntax is expected:
-		 *       <ul>
-		 *         <li>'&lt;' and '&gt;' - div elements</li>
-		 *         <li>'&lt;"class" and '&gt;' - div with a class</li>
-		 *         <li>'&lt;"#id" and '&gt;' - div with an ID</li>
-		 *       </ul>
-		 *     </li>
-		 *     <li>Examples:
-		 *       <ul>
-		 *         <li>'&lt;"wrapper"flipt&gt;'</li>
-		 *         <li>'&lt;lf&lt;t&gt;ip&gt;'</li>
-		 *       </ul>
-		 *     </li>
-		 *   </ul>
-		 *  @type string
-		 *  @default lfrtip <i>(when `jQueryUI` is false)</i> <b>or</b>
-		 *    <"H"lfr>t<"F"ip> <i>(when `jQueryUI` is true)</i>
-		 *
-		 *  @dtopt Options
-		 *  @name DataTable.defaults.dom
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "dom": '&lt;"top"i&gt;rt&lt;"bottom"flp&gt;&lt;"clear"&gt;'
-		 *      } );
-		 *    } );
-		 */
-		"sDom": "lfrtip",
-	
-	
-		/**
-		 * Search delay option. This will throttle full table searches that use the
-		 * DataTables provided search input element (it does not effect calls to
-		 * `dt-api search()`, providing a delay before the search is made.
-		 *  @type integer
-		 *  @default 0
-		 *
-		 *  @dtopt Options
-		 *  @name DataTable.defaults.searchDelay
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "searchDelay": 200
-		 *      } );
-		 *    } )
-		 */
-		"searchDelay": null,
-	
-	
-		/**
-		 * DataTables features six different built-in options for the buttons to
-		 * display for pagination control:
-		 *
-		 * * `numbers` - Page number buttons only
-		 * * `simple` - 'Previous' and 'Next' buttons only
-		 * * 'simple_numbers` - 'Previous' and 'Next' buttons, plus page numbers
-		 * * `full` - 'First', 'Previous', 'Next' and 'Last' buttons
-		 * * `full_numbers` - 'First', 'Previous', 'Next' and 'Last' buttons, plus page numbers
-		 * * `first_last_numbers` - 'First' and 'Last' buttons, plus page numbers
-		 *  
-		 * Further methods can be added using {@link DataTable.ext.oPagination}.
-		 *  @type string
-		 *  @default simple_numbers
-		 *
-		 *  @dtopt Options
-		 *  @name DataTable.defaults.pagingType
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "pagingType": "full_numbers"
-		 *      } );
-		 *    } )
-		 */
-		"sPaginationType": "simple_numbers",
-	
-	
-		/**
-		 * Enable horizontal scrolling. When a table is too wide to fit into a
-		 * certain layout, or you have a large number of columns in the table, you
-		 * can enable x-scrolling to show the table in a viewport, which can be
-		 * scrolled. This property can be `true` which will allow the table to
-		 * scroll horizontally when needed, or any CSS unit, or a number (in which
-		 * case it will be treated as a pixel measurement). Setting as simply `true`
-		 * is recommended.
-		 *  @type boolean|string
-		 *  @default <i>blank string - i.e. disabled</i>
-		 *
-		 *  @dtopt Features
-		 *  @name DataTable.defaults.scrollX
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "scrollX": true,
-		 *        "scrollCollapse": true
-		 *      } );
-		 *    } );
-		 */
-		"sScrollX": "",
-	
-	
-		/**
-		 * This property can be used to force a DataTable to use more width than it
-		 * might otherwise do when x-scrolling is enabled. For example if you have a
-		 * table which requires to be well spaced, this parameter is useful for
-		 * "over-sizing" the table, and thus forcing scrolling. This property can by
-		 * any CSS unit, or a number (in which case it will be treated as a pixel
-		 * measurement).
-		 *  @type string
-		 *  @default <i>blank string - i.e. disabled</i>
-		 *
-		 *  @dtopt Options
-		 *  @name DataTable.defaults.scrollXInner
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "scrollX": "100%",
-		 *        "scrollXInner": "110%"
-		 *      } );
-		 *    } );
-		 */
-		"sScrollXInner": "",
-	
-	
-		/**
-		 * Enable vertical scrolling. Vertical scrolling will constrain the DataTable
-		 * to the given height, and enable scrolling for any data which overflows the
-		 * current viewport. This can be used as an alternative to paging to display
-		 * a lot of data in a small area (although paging and scrolling can both be
-		 * enabled at the same time). This property can be any CSS unit, or a number
-		 * (in which case it will be treated as a pixel measurement).
-		 *  @type string
-		 *  @default <i>blank string - i.e. disabled</i>
-		 *
-		 *  @dtopt Features
-		 *  @name DataTable.defaults.scrollY
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "scrollY": "200px",
-		 *        "paginate": false
-		 *      } );
-		 *    } );
-		 */
-		"sScrollY": "",
-	
-	
-		/**
-		 * __Deprecated__ The functionality provided by this parameter has now been
-		 * superseded by that provided through `ajax`, which should be used instead.
-		 *
-		 * Set the HTTP method that is used to make the Ajax call for server-side
-		 * processing or Ajax sourced data.
-		 *  @type string
-		 *  @default GET
-		 *
-		 *  @dtopt Options
-		 *  @dtopt Server-side
-		 *  @name DataTable.defaults.serverMethod
-		 *
-		 *  @deprecated 1.10. Please use `ajax` for this functionality now.
-		 */
-		"sServerMethod": "GET",
-	
-	
-		/**
-		 * DataTables makes use of renderers when displaying HTML elements for
-		 * a table. These renderers can be added or modified by plug-ins to
-		 * generate suitable mark-up for a site. For example the Bootstrap
-		 * integration plug-in for DataTables uses a paging button renderer to
-		 * display pagination buttons in the mark-up required by Bootstrap.
-		 *
-		 * For further information about the renderers available see
-		 * DataTable.ext.renderer
-		 *  @type string|object
-		 *  @default null
-		 *
-		 *  @name DataTable.defaults.renderer
-		 *
-		 */
-		"renderer": null,
-	
-	
-		/**
-		 * Set the data property name that DataTables should use to get a row's id
-		 * to set as the `id` property in the node.
-		 *  @type string
-		 *  @default DT_RowId
-		 *
-		 *  @name DataTable.defaults.rowId
-		 */
-		"rowId": "DT_RowId"
-	};
-	
-	_fnHungarianMap( DataTable.defaults );
-	
-	
-	
-	/*
-	 * Developer note - See note in model.defaults.js about the use of Hungarian
-	 * notation and camel case.
-	 */
-	
-	/**
-	 * Column options that can be given to DataTables at initialisation time.
-	 *  @namespace
-	 */
-	DataTable.defaults.column = {
-		/**
-		 * Define which column(s) an order will occur on for this column. This
-		 * allows a column's ordering to take multiple columns into account when
-		 * doing a sort or use the data from a different column. For example first
-		 * name / last name columns make sense to do a multi-column sort over the
-		 * two columns.
-		 *  @type array|int
-		 *  @default null <i>Takes the value of the column index automatically</i>
-		 *
-		 *  @name DataTable.defaults.column.orderData
-		 *  @dtopt Columns
-		 *
-		 *  @example
-		 *    // Using `columnDefs`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columnDefs": [
-		 *          { "orderData": [ 0, 1 ], "targets": [ 0 ] },
-		 *          { "orderData": [ 1, 0 ], "targets": [ 1 ] },
-		 *          { "orderData": 2, "targets": [ 2 ] }
-		 *        ]
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Using `columns`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columns": [
-		 *          { "orderData": [ 0, 1 ] },
-		 *          { "orderData": [ 1, 0 ] },
-		 *          { "orderData": 2 },
-		 *          null,
-		 *          null
-		 *        ]
-		 *      } );
-		 *    } );
-		 */
-		"aDataSort": null,
-		"iDataSort": -1,
-	
-	
-		/**
-		 * You can control the default ordering direction, and even alter the
-		 * behaviour of the sort handler (i.e. only allow ascending ordering etc)
-		 * using this parameter.
-		 *  @type array
-		 *  @default [ 'asc', 'desc' ]
-		 *
-		 *  @name DataTable.defaults.column.orderSequence
-		 *  @dtopt Columns
-		 *
-		 *  @example
-		 *    // Using `columnDefs`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columnDefs": [
-		 *          { "orderSequence": [ "asc" ], "targets": [ 1 ] },
-		 *          { "orderSequence": [ "desc", "asc", "asc" ], "targets": [ 2 ] },
-		 *          { "orderSequence": [ "desc" ], "targets": [ 3 ] }
-		 *        ]
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Using `columns`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columns": [
-		 *          null,
-		 *          { "orderSequence": [ "asc" ] },
-		 *          { "orderSequence": [ "desc", "asc", "asc" ] },
-		 *          { "orderSequence": [ "desc" ] },
-		 *          null
-		 *        ]
-		 *      } );
-		 *    } );
-		 */
-		"asSorting": [ 'asc', 'desc' ],
-	
-	
-		/**
-		 * Enable or disable filtering on the data in this column.
-		 *  @type boolean
-		 *  @default true
-		 *
-		 *  @name DataTable.defaults.column.searchable
-		 *  @dtopt Columns
-		 *
-		 *  @example
-		 *    // Using `columnDefs`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columnDefs": [
-		 *          { "searchable": false, "targets": [ 0 ] }
-		 *        ] } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Using `columns`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columns": [
-		 *          { "searchable": false },
-		 *          null,
-		 *          null,
-		 *          null,
-		 *          null
-		 *        ] } );
-		 *    } );
-		 */
-		"bSearchable": true,
-	
-	
-		/**
-		 * Enable or disable ordering on this column.
-		 *  @type boolean
-		 *  @default true
-		 *
-		 *  @name DataTable.defaults.column.orderable
-		 *  @dtopt Columns
-		 *
-		 *  @example
-		 *    // Using `columnDefs`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columnDefs": [
-		 *          { "orderable": false, "targets": [ 0 ] }
-		 *        ] } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Using `columns`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columns": [
-		 *          { "orderable": false },
-		 *          null,
-		 *          null,
-		 *          null,
-		 *          null
-		 *        ] } );
-		 *    } );
-		 */
-		"bSortable": true,
-	
-	
-		/**
-		 * Enable or disable the display of this column.
-		 *  @type boolean
-		 *  @default true
-		 *
-		 *  @name DataTable.defaults.column.visible
-		 *  @dtopt Columns
-		 *
-		 *  @example
-		 *    // Using `columnDefs`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columnDefs": [
-		 *          { "visible": false, "targets": [ 0 ] }
-		 *        ] } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Using `columns`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columns": [
-		 *          { "visible": false },
-		 *          null,
-		 *          null,
-		 *          null,
-		 *          null
-		 *        ] } );
-		 *    } );
-		 */
-		"bVisible": true,
-	
-	
-		/**
-		 * Developer definable function that is called whenever a cell is created (Ajax source,
-		 * etc) or processed for input (DOM source). This can be used as a compliment to mRender
-		 * allowing you to modify the DOM element (add background colour for example) when the
-		 * element is available.
-		 *  @type function
-		 *  @param {element} td The TD node that has been created
-		 *  @param {*} cellData The Data for the cell
-		 *  @param {array|object} rowData The data for the whole row
-		 *  @param {int} row The row index for the aoData data store
-		 *  @param {int} col The column index for aoColumns
-		 *
-		 *  @name DataTable.defaults.column.createdCell
-		 *  @dtopt Columns
-		 *
-		 *  @example
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columnDefs": [ {
-		 *          "targets": [3],
-		 *          "createdCell": function (td, cellData, rowData, row, col) {
-		 *            if ( cellData == "1.7" ) {
-		 *              $(td).css('color', 'blue')
-		 *            }
-		 *          }
-		 *        } ]
-		 *      });
-		 *    } );
-		 */
-		"fnCreatedCell": null,
-	
-	
-		/**
-		 * This parameter has been replaced by `data` in DataTables to ensure naming
-		 * consistency. `dataProp` can still be used, as there is backwards
-		 * compatibility in DataTables for this option, but it is strongly
-		 * recommended that you use `data` in preference to `dataProp`.
-		 *  @name DataTable.defaults.column.dataProp
-		 */
-	
-	
-		/**
-		 * This property can be used to read data from any data source property,
-		 * including deeply nested objects / properties. `data` can be given in a
-		 * number of different ways which effect its behaviour:
-		 *
-		 * * `integer` - treated as an array index for the data source. This is the
-		 *   default that DataTables uses (incrementally increased for each column).
-		 * * `string` - read an object property from the data source. There are
-		 *   three 'special' options that can be used in the string to alter how
-		 *   DataTables reads the data from the source object:
-		 *    * `.` - Dotted Javascript notation. Just as you use a `.` in
-		 *      Javascript to read from nested objects, so to can the options
-		 *      specified in `data`. For example: `browser.version` or
-		 *      `browser.name`. If your object parameter name contains a period, use
-		 *      `\\` to escape it - i.e. `first\\.name`.
-		 *    * `[]` - Array notation. DataTables can automatically combine data
-		 *      from and array source, joining the data with the characters provided
-		 *      between the two brackets. For example: `name[, ]` would provide a
-		 *      comma-space separated list from the source array. If no characters
-		 *      are provided between the brackets, the original array source is
-		 *      returned.
-		 *    * `()` - Function notation. Adding `()` to the end of a parameter will
-		 *      execute a function of the name given. For example: `browser()` for a
-		 *      simple function on the data source, `browser.version()` for a
-		 *      function in a nested property or even `browser().version` to get an
-		 *      object property if the function called returns an object. Note that
-		 *      function notation is recommended for use in `render` rather than
-		 *      `data` as it is much simpler to use as a renderer.
-		 * * `null` - use the original data source for the row rather than plucking
-		 *   data directly from it. This action has effects on two other
-		 *   initialisation options:
-		 *    * `defaultContent` - When null is given as the `data` option and
-		 *      `defaultContent` is specified for the column, the value defined by
-		 *      `defaultContent` will be used for the cell.
-		 *    * `render` - When null is used for the `data` option and the `render`
-		 *      option is specified for the column, the whole data source for the
-		 *      row is used for the renderer.
-		 * * `function` - the function given will be executed whenever DataTables
-		 *   needs to set or get the data for a cell in the column. The function
-		 *   takes three parameters:
-		 *    * Parameters:
-		 *      * `{array|object}` The data source for the row
-		 *      * `{string}` The type call data requested - this will be 'set' when
-		 *        setting data or 'filter', 'display', 'type', 'sort' or undefined
-		 *        when gathering data. Note that when `undefined` is given for the
-		 *        type DataTables expects to get the raw data for the object back<
-		 *      * `{*}` Data to set when the second parameter is 'set'.
-		 *    * Return:
-		 *      * The return value from the function is not required when 'set' is
-		 *        the type of call, but otherwise the return is what will be used
-		 *        for the data requested.
-		 *
-		 * Note that `data` is a getter and setter option. If you just require
-		 * formatting of data for output, you will likely want to use `render` which
-		 * is simply a getter and thus simpler to use.
-		 *
-		 * Note that prior to DataTables 1.9.2 `data` was called `mDataProp`. The
-		 * name change reflects the flexibility of this property and is consistent
-		 * with the naming of mRender. If 'mDataProp' is given, then it will still
-		 * be used by DataTables, as it automatically maps the old name to the new
-		 * if required.
-		 *
-		 *  @type string|int|function|null
-		 *  @default null <i>Use automatically calculated column index</i>
-		 *
-		 *  @name DataTable.defaults.column.data
-		 *  @dtopt Columns
-		 *
-		 *  @example
-		 *    // Read table data from objects
-		 *    // JSON structure for each row:
-		 *    //   {
-		 *    //      "engine": {value},
-		 *    //      "browser": {value},
-		 *    //      "platform": {value},
-		 *    //      "version": {value},
-		 *    //      "grade": {value}
-		 *    //   }
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "ajaxSource": "sources/objects.txt",
-		 *        "columns": [
-		 *          { "data": "engine" },
-		 *          { "data": "browser" },
-		 *          { "data": "platform" },
-		 *          { "data": "version" },
-		 *          { "data": "grade" }
-		 *        ]
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Read information from deeply nested objects
-		 *    // JSON structure for each row:
-		 *    //   {
-		 *    //      "engine": {value},
-		 *    //      "browser": {value},
-		 *    //      "platform": {
-		 *    //         "inner": {value}
-		 *    //      },
-		 *    //      "details": [
-		 *    //         {value}, {value}
-		 *    //      ]
-		 *    //   }
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "ajaxSource": "sources/deep.txt",
-		 *        "columns": [
-		 *          { "data": "engine" },
-		 *          { "data": "browser" },
-		 *          { "data": "platform.inner" },
-		 *          { "data": "details.0" },
-		 *          { "data": "details.1" }
-		 *        ]
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Using `data` as a function to provide different information for
-		 *    // sorting, filtering and display. In this case, currency (price)
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columnDefs": [ {
-		 *          "targets": [ 0 ],
-		 *          "data": function ( source, type, val ) {
-		 *            if (type === 'set') {
-		 *              source.price = val;
-		 *              // Store the computed dislay and filter values for efficiency
-		 *              source.price_display = val=="" ? "" : "$"+numberFormat(val);
-		 *              source.price_filter  = val=="" ? "" : "$"+numberFormat(val)+" "+val;
-		 *              return;
-		 *            }
-		 *            else if (type === 'display') {
-		 *              return source.price_display;
-		 *            }
-		 *            else if (type === 'filter') {
-		 *              return source.price_filter;
-		 *            }
-		 *            // 'sort', 'type' and undefined all just use the integer
-		 *            return source.price;
-		 *          }
-		 *        } ]
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Using default content
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columnDefs": [ {
-		 *          "targets": [ 0 ],
-		 *          "data": null,
-		 *          "defaultContent": "Click to edit"
-		 *        } ]
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Using array notation - outputting a list from an array
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columnDefs": [ {
-		 *          "targets": [ 0 ],
-		 *          "data": "name[, ]"
-		 *        } ]
-		 *      } );
-		 *    } );
-		 *
-		 */
-		"mData": null,
-	
-	
-		/**
-		 * This property is the rendering partner to `data` and it is suggested that
-		 * when you want to manipulate data for display (including filtering,
-		 * sorting etc) without altering the underlying data for the table, use this
-		 * property. `render` can be considered to be the the read only companion to
-		 * `data` which is read / write (then as such more complex). Like `data`
-		 * this option can be given in a number of different ways to effect its
-		 * behaviour:
-		 *
-		 * * `integer` - treated as an array index for the data source. This is the
-		 *   default that DataTables uses (incrementally increased for each column).
-		 * * `string` - read an object property from the data source. There are
-		 *   three 'special' options that can be used in the string to alter how
-		 *   DataTables reads the data from the source object:
-		 *    * `.` - Dotted Javascript notation. Just as you use a `.` in
-		 *      Javascript to read from nested objects, so to can the options
-		 *      specified in `data`. For example: `browser.version` or
-		 *      `browser.name`. If your object parameter name contains a period, use
-		 *      `\\` to escape it - i.e. `first\\.name`.
-		 *    * `[]` - Array notation. DataTables can automatically combine data
-		 *      from and array source, joining the data with the characters provided
-		 *      between the two brackets. For example: `name[, ]` would provide a
-		 *      comma-space separated list from the source array. If no characters
-		 *      are provided between the brackets, the original array source is
-		 *      returned.
-		 *    * `()` - Function notation. Adding `()` to the end of a parameter will
-		 *      execute a function of the name given. For example: `browser()` for a
-		 *      simple function on the data source, `browser.version()` for a
-		 *      function in a nested property or even `browser().version` to get an
-		 *      object property if the function called returns an object.
-		 * * `object` - use different data for the different data types requested by
-		 *   DataTables ('filter', 'display', 'type' or 'sort'). The property names
-		 *   of the object is the data type the property refers to and the value can
-		 *   defined using an integer, string or function using the same rules as
-		 *   `render` normally does. Note that an `_` option _must_ be specified.
-		 *   This is the default value to use if you haven't specified a value for
-		 *   the data type requested by DataTables.
-		 * * `function` - the function given will be executed whenever DataTables
-		 *   needs to set or get the data for a cell in the column. The function
-		 *   takes three parameters:
-		 *    * Parameters:
-		 *      * {array|object} The data source for the row (based on `data`)
-		 *      * {string} The type call data requested - this will be 'filter',
-		 *        'display', 'type' or 'sort'.
-		 *      * {array|object} The full data source for the row (not based on
-		 *        `data`)
-		 *    * Return:
-		 *      * The return value from the function is what will be used for the
-		 *        data requested.
-		 *
-		 *  @type string|int|function|object|null
-		 *  @default null Use the data source value.
-		 *
-		 *  @name DataTable.defaults.column.render
-		 *  @dtopt Columns
-		 *
-		 *  @example
-		 *    // Create a comma separated list from an array of objects
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "ajaxSource": "sources/deep.txt",
-		 *        "columns": [
-		 *          { "data": "engine" },
-		 *          { "data": "browser" },
-		 *          {
-		 *            "data": "platform",
-		 *            "render": "[, ].name"
-		 *          }
-		 *        ]
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Execute a function to obtain data
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columnDefs": [ {
-		 *          "targets": [ 0 ],
-		 *          "data": null, // Use the full data source object for the renderer's source
-		 *          "render": "browserName()"
-		 *        } ]
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // As an object, extracting different data for the different types
-		 *    // This would be used with a data source such as:
-		 *    //   { "phone": 5552368, "phone_filter": "5552368 555-2368", "phone_display": "555-2368" }
-		 *    // Here the `phone` integer is used for sorting and type detection, while `phone_filter`
-		 *    // (which has both forms) is used for filtering for if a user inputs either format, while
-		 *    // the formatted phone number is the one that is shown in the table.
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columnDefs": [ {
-		 *          "targets": [ 0 ],
-		 *          "data": null, // Use the full data source object for the renderer's source
-		 *          "render": {
-		 *            "_": "phone",
-		 *            "filter": "phone_filter",
-		 *            "display": "phone_display"
-		 *          }
-		 *        } ]
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Use as a function to create a link from the data source
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columnDefs": [ {
-		 *          "targets": [ 0 ],
-		 *          "data": "download_link",
-		 *          "render": function ( data, type, full ) {
-		 *            return '<a href="'+data+'">Download</a>';
-		 *          }
-		 *        } ]
-		 *      } );
-		 *    } );
-		 */
-		"mRender": null,
-	
-	
-		/**
-		 * Change the cell type created for the column - either TD cells or TH cells. This
-		 * can be useful as TH cells have semantic meaning in the table body, allowing them
-		 * to act as a header for a row (you may wish to add scope='row' to the TH elements).
-		 *  @type string
-		 *  @default td
-		 *
-		 *  @name DataTable.defaults.column.cellType
-		 *  @dtopt Columns
-		 *
-		 *  @example
-		 *    // Make the first column use TH cells
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columnDefs": [ {
-		 *          "targets": [ 0 ],
-		 *          "cellType": "th"
-		 *        } ]
-		 *      } );
-		 *    } );
-		 */
-		"sCellType": "td",
-	
-	
-		/**
-		 * Class to give to each cell in this column.
-		 *  @type string
-		 *  @default <i>Empty string</i>
-		 *
-		 *  @name DataTable.defaults.column.class
-		 *  @dtopt Columns
-		 *
-		 *  @example
-		 *    // Using `columnDefs`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columnDefs": [
-		 *          { "class": "my_class", "targets": [ 0 ] }
-		 *        ]
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Using `columns`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columns": [
-		 *          { "class": "my_class" },
-		 *          null,
-		 *          null,
-		 *          null,
-		 *          null
-		 *        ]
-		 *      } );
-		 *    } );
-		 */
-		"sClass": "",
-	
-		/**
-		 * When DataTables calculates the column widths to assign to each column,
-		 * it finds the longest string in each column and then constructs a
-		 * temporary table and reads the widths from that. The problem with this
-		 * is that "mmm" is much wider then "iiii", but the latter is a longer
-		 * string - thus the calculation can go wrong (doing it properly and putting
-		 * it into an DOM object and measuring that is horribly(!) slow). Thus as
-		 * a "work around" we provide this option. It will append its value to the
-		 * text that is found to be the longest string for the column - i.e. padding.
-		 * Generally you shouldn't need this!
-		 *  @type string
-		 *  @default <i>Empty string<i>
-		 *
-		 *  @name DataTable.defaults.column.contentPadding
-		 *  @dtopt Columns
-		 *
-		 *  @example
-		 *    // Using `columns`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columns": [
-		 *          null,
-		 *          null,
-		 *          null,
-		 *          {
-		 *            "contentPadding": "mmm"
-		 *          }
-		 *        ]
-		 *      } );
-		 *    } );
-		 */
-		"sContentPadding": "",
-	
-	
-		/**
-		 * Allows a default value to be given for a column's data, and will be used
-		 * whenever a null data source is encountered (this can be because `data`
-		 * is set to null, or because the data source itself is null).
-		 *  @type string
-		 *  @default null
-		 *
-		 *  @name DataTable.defaults.column.defaultContent
-		 *  @dtopt Columns
-		 *
-		 *  @example
-		 *    // Using `columnDefs`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columnDefs": [
-		 *          {
-		 *            "data": null,
-		 *            "defaultContent": "Edit",
-		 *            "targets": [ -1 ]
-		 *          }
-		 *        ]
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Using `columns`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columns": [
-		 *          null,
-		 *          null,
-		 *          null,
-		 *          {
-		 *            "data": null,
-		 *            "defaultContent": "Edit"
-		 *          }
-		 *        ]
-		 *      } );
-		 *    } );
-		 */
-		"sDefaultContent": null,
-	
-	
-		/**
-		 * This parameter is only used in DataTables' server-side processing. It can
-		 * be exceptionally useful to know what columns are being displayed on the
-		 * client side, and to map these to database fields. When defined, the names
-		 * also allow DataTables to reorder information from the server if it comes
-		 * back in an unexpected order (i.e. if you switch your columns around on the
-		 * client-side, your server-side code does not also need updating).
-		 *  @type string
-		 *  @default <i>Empty string</i>
-		 *
-		 *  @name DataTable.defaults.column.name
-		 *  @dtopt Columns
-		 *
-		 *  @example
-		 *    // Using `columnDefs`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columnDefs": [
-		 *          { "name": "engine", "targets": [ 0 ] },
-		 *          { "name": "browser", "targets": [ 1 ] },
-		 *          { "name": "platform", "targets": [ 2 ] },
-		 *          { "name": "version", "targets": [ 3 ] },
-		 *          { "name": "grade", "targets": [ 4 ] }
-		 *        ]
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Using `columns`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columns": [
-		 *          { "name": "engine" },
-		 *          { "name": "browser" },
-		 *          { "name": "platform" },
-		 *          { "name": "version" },
-		 *          { "name": "grade" }
-		 *        ]
-		 *      } );
-		 *    } );
-		 */
-		"sName": "",
-	
-	
-		/**
-		 * Defines a data source type for the ordering which can be used to read
-		 * real-time information from the table (updating the internally cached
-		 * version) prior to ordering. This allows ordering to occur on user
-		 * editable elements such as form inputs.
-		 *  @type string
-		 *  @default std
-		 *
-		 *  @name DataTable.defaults.column.orderDataType
-		 *  @dtopt Columns
-		 *
-		 *  @example
-		 *    // Using `columnDefs`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columnDefs": [
-		 *          { "orderDataType": "dom-text", "targets": [ 2, 3 ] },
-		 *          { "type": "numeric", "targets": [ 3 ] },
-		 *          { "orderDataType": "dom-select", "targets": [ 4 ] },
-		 *          { "orderDataType": "dom-checkbox", "targets": [ 5 ] }
-		 *        ]
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Using `columns`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columns": [
-		 *          null,
-		 *          null,
-		 *          { "orderDataType": "dom-text" },
-		 *          { "orderDataType": "dom-text", "type": "numeric" },
-		 *          { "orderDataType": "dom-select" },
-		 *          { "orderDataType": "dom-checkbox" }
-		 *        ]
-		 *      } );
-		 *    } );
-		 */
-		"sSortDataType": "std",
-	
-	
-		/**
-		 * The title of this column.
-		 *  @type string
-		 *  @default null <i>Derived from the 'TH' value for this column in the
-		 *    original HTML table.</i>
-		 *
-		 *  @name DataTable.defaults.column.title
-		 *  @dtopt Columns
-		 *
-		 *  @example
-		 *    // Using `columnDefs`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columnDefs": [
-		 *          { "title": "My column title", "targets": [ 0 ] }
-		 *        ]
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Using `columns`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columns": [
-		 *          { "title": "My column title" },
-		 *          null,
-		 *          null,
-		 *          null,
-		 *          null
-		 *        ]
-		 *      } );
-		 *    } );
-		 */
-		"sTitle": null,
-	
-	
-		/**
-		 * The type allows you to specify how the data for this column will be
-		 * ordered. Four types (string, numeric, date and html (which will strip
-		 * HTML tags before ordering)) are currently available. Note that only date
-		 * formats understood by Javascript's Date() object will be accepted as type
-		 * date. For example: "Mar 26, 2008 5:03 PM". May take the values: 'string',
-		 * 'numeric', 'date' or 'html' (by default). Further types can be adding
-		 * through plug-ins.
-		 *  @type string
-		 *  @default null <i>Auto-detected from raw data</i>
-		 *
-		 *  @name DataTable.defaults.column.type
-		 *  @dtopt Columns
-		 *
-		 *  @example
-		 *    // Using `columnDefs`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columnDefs": [
-		 *          { "type": "html", "targets": [ 0 ] }
-		 *        ]
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Using `columns`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columns": [
-		 *          { "type": "html" },
-		 *          null,
-		 *          null,
-		 *          null,
-		 *          null
-		 *        ]
-		 *      } );
-		 *    } );
-		 */
-		"sType": null,
-	
-	
-		/**
-		 * Defining the width of the column, this parameter may take any CSS value
-		 * (3em, 20px etc). DataTables applies 'smart' widths to columns which have not
-		 * been given a specific width through this interface ensuring that the table
-		 * remains readable.
-		 *  @type string
-		 *  @default null <i>Automatic</i>
-		 *
-		 *  @name DataTable.defaults.column.width
-		 *  @dtopt Columns
-		 *
-		 *  @example
-		 *    // Using `columnDefs`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columnDefs": [
-		 *          { "width": "20%", "targets": [ 0 ] }
-		 *        ]
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Using `columns`
-		 *    $(document).ready( function() {
-		 *      $('#example').dataTable( {
-		 *        "columns": [
-		 *          { "width": "20%" },
-		 *          null,
-		 *          null,
-		 *          null,
-		 *          null
-		 *        ]
-		 *      } );
-		 *    } );
-		 */
-		"sWidth": null
-	};
-	
-	_fnHungarianMap( DataTable.defaults.column );
-	
-	
-	
-	/**
-	 * DataTables settings object - this holds all the information needed for a
-	 * given table, including configuration, data and current application of the
-	 * table options. DataTables does not have a single instance for each DataTable
-	 * with the settings attached to that instance, but rather instances of the
-	 * DataTable "class" are created on-the-fly as needed (typically by a
-	 * $().dataTable() call) and the settings object is then applied to that
-	 * instance.
-	 *
-	 * Note that this object is related to {@link DataTable.defaults} but this
-	 * one is the internal data store for DataTables's cache of columns. It should
-	 * NOT be manipulated outside of DataTables. Any configuration should be done
-	 * through the initialisation options.
-	 *  @namespace
-	 *  @todo Really should attach the settings object to individual instances so we
-	 *    don't need to create new instances on each $().dataTable() call (if the
-	 *    table already exists). It would also save passing oSettings around and
-	 *    into every single function. However, this is a very significant
-	 *    architecture change for DataTables and will almost certainly break
-	 *    backwards compatibility with older installations. This is something that
-	 *    will be done in 2.0.
-	 */
-	DataTable.models.oSettings = {
-		/**
-		 * Primary features of DataTables and their enablement state.
-		 *  @namespace
-		 */
-		"oFeatures": {
-	
-			/**
-			 * Flag to say if DataTables should automatically try to calculate the
-			 * optimum table and columns widths (true) or not (false).
-			 * Note that this parameter will be set by the initialisation routine. To
-			 * set a default use {@link DataTable.defaults}.
-			 *  @type boolean
-			 */
-			"bAutoWidth": null,
-	
-			/**
-			 * Delay the creation of TR and TD elements until they are actually
-			 * needed by a driven page draw. This can give a significant speed
-			 * increase for Ajax source and Javascript source data, but makes no
-			 * difference at all fro DOM and server-side processing tables.
-			 * Note that this parameter will be set by the initialisation routine. To
-			 * set a default use {@link DataTable.defaults}.
-			 *  @type boolean
-			 */
-			"bDeferRender": null,
-	
-			/**
-			 * Enable filtering on the table or not. Note that if this is disabled
-			 * then there is no filtering at all on the table, including fnFilter.
-			 * To just remove the filtering input use sDom and remove the 'f' option.
-			 * Note that this parameter will be set by the initialisation routine. To
-			 * set a default use {@link DataTable.defaults}.
-			 *  @type boolean
-			 */
-			"bFilter": null,
-	
-			/**
-			 * Table information element (the 'Showing x of y records' div) enable
-			 * flag.
-			 * Note that this parameter will be set by the initialisation routine. To
-			 * set a default use {@link DataTable.defaults}.
-			 *  @type boolean
-			 */
-			"bInfo": null,
-	
-			/**
-			 * Present a user control allowing the end user to change the page size
-			 * when pagination is enabled.
-			 * Note that this parameter will be set by the initialisation routine. To
-			 * set a default use {@link DataTable.defaults}.
-			 *  @type boolean
-			 */
-			"bLengthChange": null,
-	
-			/**
-			 * Pagination enabled or not. Note that if this is disabled then length
-			 * changing must also be disabled.
-			 * Note that this parameter will be set by the initialisation routine. To
-			 * set a default use {@link DataTable.defaults}.
-			 *  @type boolean
-			 */
-			"bPaginate": null,
-	
-			/**
-			 * Processing indicator enable flag whenever DataTables is enacting a
-			 * user request - typically an Ajax request for server-side processing.
-			 * Note that this parameter will be set by the initialisation routine. To
-			 * set a default use {@link DataTable.defaults}.
-			 *  @type boolean
-			 */
-			"bProcessing": null,
-	
-			/**
-			 * Server-side processing enabled flag - when enabled DataTables will
-			 * get all data from the server for every draw - there is no filtering,
-			 * sorting or paging done on the client-side.
-			 * Note that this parameter will be set by the initialisation routine. To
-			 * set a default use {@link DataTable.defaults}.
-			 *  @type boolean
-			 */
-			"bServerSide": null,
-	
-			/**
-			 * Sorting enablement flag.
-			 * Note that this parameter will be set by the initialisation routine. To
-			 * set a default use {@link DataTable.defaults}.
-			 *  @type boolean
-			 */
-			"bSort": null,
-	
-			/**
-			 * Multi-column sorting
-			 * Note that this parameter will be set by the initialisation routine. To
-			 * set a default use {@link DataTable.defaults}.
-			 *  @type boolean
-			 */
-			"bSortMulti": null,
-	
-			/**
-			 * Apply a class to the columns which are being sorted to provide a
-			 * visual highlight or not. This can slow things down when enabled since
-			 * there is a lot of DOM interaction.
-			 * Note that this parameter will be set by the initialisation routine. To
-			 * set a default use {@link DataTable.defaults}.
-			 *  @type boolean
-			 */
-			"bSortClasses": null,
-	
-			/**
-			 * State saving enablement flag.
-			 * Note that this parameter will be set by the initialisation routine. To
-			 * set a default use {@link DataTable.defaults}.
-			 *  @type boolean
-			 */
-			"bStateSave": null
-		},
-	
-	
-		/**
-		 * Scrolling settings for a table.
-		 *  @namespace
-		 */
-		"oScroll": {
-			/**
-			 * When the table is shorter in height than sScrollY, collapse the
-			 * table container down to the height of the table (when true).
-			 * Note that this parameter will be set by the initialisation routine. To
-			 * set a default use {@link DataTable.defaults}.
-			 *  @type boolean
-			 */
-			"bCollapse": null,
-	
-			/**
-			 * Width of the scrollbar for the web-browser's platform. Calculated
-			 * during table initialisation.
-			 *  @type int
-			 *  @default 0
-			 */
-			"iBarWidth": 0,
-	
-			/**
-			 * Viewport width for horizontal scrolling. Horizontal scrolling is
-			 * disabled if an empty string.
-			 * Note that this parameter will be set by the initialisation routine. To
-			 * set a default use {@link DataTable.defaults}.
-			 *  @type string
-			 */
-			"sX": null,
-	
-			/**
-			 * Width to expand the table to when using x-scrolling. Typically you
-			 * should not need to use this.
-			 * Note that this parameter will be set by the initialisation routine. To
-			 * set a default use {@link DataTable.defaults}.
-			 *  @type string
-			 *  @deprecated
-			 */
-			"sXInner": null,
-	
-			/**
-			 * Viewport height for vertical scrolling. Vertical scrolling is disabled
-			 * if an empty string.
-			 * Note that this parameter will be set by the initialisation routine. To
-			 * set a default use {@link DataTable.defaults}.
-			 *  @type string
-			 */
-			"sY": null
-		},
-	
-		/**
-		 * Language information for the table.
-		 *  @namespace
-		 *  @extends DataTable.defaults.oLanguage
-		 */
-		"oLanguage": {
-			/**
-			 * Information callback function. See
-			 * {@link DataTable.defaults.fnInfoCallback}
-			 *  @type function
-			 *  @default null
-			 */
-			"fnInfoCallback": null
-		},
-	
-		/**
-		 * Browser support parameters
-		 *  @namespace
-		 */
-		"oBrowser": {
-			/**
-			 * Indicate if the browser incorrectly calculates width:100% inside a
-			 * scrolling element (IE6/7)
-			 *  @type boolean
-			 *  @default false
-			 */
-			"bScrollOversize": false,
-	
-			/**
-			 * Determine if the vertical scrollbar is on the right or left of the
-			 * scrolling container - needed for rtl language layout, although not
-			 * all browsers move the scrollbar (Safari).
-			 *  @type boolean
-			 *  @default false
-			 */
-			"bScrollbarLeft": false,
-	
-			/**
-			 * Flag for if `getBoundingClientRect` is fully supported or not
-			 *  @type boolean
-			 *  @default false
-			 */
-			"bBounding": false,
-	
-			/**
-			 * Browser scrollbar width
-			 *  @type integer
-			 *  @default 0
-			 */
-			"barWidth": 0
-		},
-	
-	
-		"ajax": null,
-	
-	
-		/**
-		 * Array referencing the nodes which are used for the features. The
-		 * parameters of this object match what is allowed by sDom - i.e.
-		 *   <ul>
-		 *     <li>'l' - Length changing</li>
-		 *     <li>'f' - Filtering input</li>
-		 *     <li>'t' - The table!</li>
-		 *     <li>'i' - Information</li>
-		 *     <li>'p' - Pagination</li>
-		 *     <li>'r' - pRocessing</li>
-		 *   </ul>
-		 *  @type array
-		 *  @default []
-		 */
-		"aanFeatures": [],
-	
-		/**
-		 * Store data information - see {@link DataTable.models.oRow} for detailed
-		 * information.
-		 *  @type array
-		 *  @default []
-		 */
-		"aoData": [],
-	
-		/**
-		 * Array of indexes which are in the current display (after filtering etc)
-		 *  @type array
-		 *  @default []
-		 */
-		"aiDisplay": [],
-	
-		/**
-		 * Array of indexes for display - no filtering
-		 *  @type array
-		 *  @default []
-		 */
-		"aiDisplayMaster": [],
-	
-		/**
-		 * Map of row ids to data indexes
-		 *  @type object
-		 *  @default {}
-		 */
-		"aIds": {},
-	
-		/**
-		 * Store information about each column that is in use
-		 *  @type array
-		 *  @default []
-		 */
-		"aoColumns": [],
-	
-		/**
-		 * Store information about the table's header
-		 *  @type array
-		 *  @default []
-		 */
-		"aoHeader": [],
-	
-		/**
-		 * Store information about the table's footer
-		 *  @type array
-		 *  @default []
-		 */
-		"aoFooter": [],
-	
-		/**
-		 * Store the applied global search information in case we want to force a
-		 * research or compare the old search to a new one.
-		 * Note that this parameter will be set by the initialisation routine. To
-		 * set a default use {@link DataTable.defaults}.
-		 *  @namespace
-		 *  @extends DataTable.models.oSearch
-		 */
-		"oPreviousSearch": {},
-	
-		/**
-		 * Store the applied search for each column - see
-		 * {@link DataTable.models.oSearch} for the format that is used for the
-		 * filtering information for each column.
-		 *  @type array
-		 *  @default []
-		 */
-		"aoPreSearchCols": [],
-	
-		/**
-		 * Sorting that is applied to the table. Note that the inner arrays are
-		 * used in the following manner:
-		 * <ul>
-		 *   <li>Index 0 - column number</li>
-		 *   <li>Index 1 - current sorting direction</li>
-		 * </ul>
-		 * Note that this parameter will be set by the initialisation routine. To
-		 * set a default use {@link DataTable.defaults}.
-		 *  @type array
-		 *  @todo These inner arrays should really be objects
-		 */
-		"aaSorting": null,
-	
-		/**
-		 * Sorting that is always applied to the table (i.e. prefixed in front of
-		 * aaSorting).
-		 * Note that this parameter will be set by the initialisation routine. To
-		 * set a default use {@link DataTable.defaults}.
-		 *  @type array
-		 *  @default []
-		 */
-		"aaSortingFixed": [],
-	
-		/**
-		 * Classes to use for the striping of a table.
-		 * Note that this parameter will be set by the initialisation routine. To
-		 * set a default use {@link DataTable.defaults}.
-		 *  @type array
-		 *  @default []
-		 */
-		"asStripeClasses": null,
-	
-		/**
-		 * If restoring a table - we should restore its striping classes as well
-		 *  @type array
-		 *  @default []
-		 */
-		"asDestroyStripes": [],
-	
-		/**
-		 * If restoring a table - we should restore its width
-		 *  @type int
-		 *  @default 0
-		 */
-		"sDestroyWidth": 0,
-	
-		/**
-		 * Callback functions array for every time a row is inserted (i.e. on a draw).
-		 *  @type array
-		 *  @default []
-		 */
-		"aoRowCallback": [],
-	
-		/**
-		 * Callback functions for the header on each draw.
-		 *  @type array
-		 *  @default []
-		 */
-		"aoHeaderCallback": [],
-	
-		/**
-		 * Callback function for the footer on each draw.
-		 *  @type array
-		 *  @default []
-		 */
-		"aoFooterCallback": [],
-	
-		/**
-		 * Array of callback functions for draw callback functions
-		 *  @type array
-		 *  @default []
-		 */
-		"aoDrawCallback": [],
-	
-		/**
-		 * Array of callback functions for row created function
-		 *  @type array
-		 *  @default []
-		 */
-		"aoRowCreatedCallback": [],
-	
-		/**
-		 * Callback functions for just before the table is redrawn. A return of
-		 * false will be used to cancel the draw.
-		 *  @type array
-		 *  @default []
-		 */
-		"aoPreDrawCallback": [],
-	
-		/**
-		 * Callback functions for when the table has been initialised.
-		 *  @type array
-		 *  @default []
-		 */
-		"aoInitComplete": [],
-	
-	
-		/**
-		 * Callbacks for modifying the settings to be stored for state saving, prior to
-		 * saving state.
-		 *  @type array
-		 *  @default []
-		 */
-		"aoStateSaveParams": [],
-	
-		/**
-		 * Callbacks for modifying the settings that have been stored for state saving
-		 * prior to using the stored values to restore the state.
-		 *  @type array
-		 *  @default []
-		 */
-		"aoStateLoadParams": [],
-	
-		/**
-		 * Callbacks for operating on the settings object once the saved state has been
-		 * loaded
-		 *  @type array
-		 *  @default []
-		 */
-		"aoStateLoaded": [],
-	
-		/**
-		 * Cache the table ID for quick access
-		 *  @type string
-		 *  @default <i>Empty string</i>
-		 */
-		"sTableId": "",
-	
-		/**
-		 * The TABLE node for the main table
-		 *  @type node
-		 *  @default null
-		 */
-		"nTable": null,
-	
-		/**
-		 * Permanent ref to the thead element
-		 *  @type node
-		 *  @default null
-		 */
-		"nTHead": null,
-	
-		/**
-		 * Permanent ref to the tfoot element - if it exists
-		 *  @type node
-		 *  @default null
-		 */
-		"nTFoot": null,
-	
-		/**
-		 * Permanent ref to the tbody element
-		 *  @type node
-		 *  @default null
-		 */
-		"nTBody": null,
-	
-		/**
-		 * Cache the wrapper node (contains all DataTables controlled elements)
-		 *  @type node
-		 *  @default null
-		 */
-		"nTableWrapper": null,
-	
-		/**
-		 * Indicate if when using server-side processing the loading of data
-		 * should be deferred until the second draw.
-		 * Note that this parameter will be set by the initialisation routine. To
-		 * set a default use {@link DataTable.defaults}.
-		 *  @type boolean
-		 *  @default false
-		 */
-		"bDeferLoading": false,
-	
-		/**
-		 * Indicate if all required information has been read in
-		 *  @type boolean
-		 *  @default false
-		 */
-		"bInitialised": false,
-	
-		/**
-		 * Information about open rows. Each object in the array has the parameters
-		 * 'nTr' and 'nParent'
-		 *  @type array
-		 *  @default []
-		 */
-		"aoOpenRows": [],
-	
-		/**
-		 * Dictate the positioning of DataTables' control elements - see
-		 * {@link DataTable.model.oInit.sDom}.
-		 * Note that this parameter will be set by the initialisation routine. To
-		 * set a default use {@link DataTable.defaults}.
-		 *  @type string
-		 *  @default null
-		 */
-		"sDom": null,
-	
-		/**
-		 * Search delay (in mS)
-		 *  @type integer
-		 *  @default null
-		 */
-		"searchDelay": null,
-	
-		/**
-		 * Which type of pagination should be used.
-		 * Note that this parameter will be set by the initialisation routine. To
-		 * set a default use {@link DataTable.defaults}.
-		 *  @type string
-		 *  @default two_button
-		 */
-		"sPaginationType": "two_button",
-	
-		/**
-		 * The state duration (for `stateSave`) in seconds.
-		 * Note that this parameter will be set by the initialisation routine. To
-		 * set a default use {@link DataTable.defaults}.
-		 *  @type int
-		 *  @default 0
-		 */
-		"iStateDuration": 0,
-	
-		/**
-		 * Array of callback functions for state saving. Each array element is an
-		 * object with the following parameters:
-		 *   <ul>
-		 *     <li>function:fn - function to call. Takes two parameters, oSettings
-		 *       and the JSON string to save that has been thus far created. Returns
-		 *       a JSON string to be inserted into a json object
-		 *       (i.e. '"param": [ 0, 1, 2]')</li>
-		 *     <li>string:sName - name of callback</li>
-		 *   </ul>
-		 *  @type array
-		 *  @default []
-		 */
-		"aoStateSave": [],
-	
-		/**
-		 * Array of callback functions for state loading. Each array element is an
-		 * object with the following parameters:
-		 *   <ul>
-		 *     <li>function:fn - function to call. Takes two parameters, oSettings
-		 *       and the object stored. May return false to cancel state loading</li>
-		 *     <li>string:sName - name of callback</li>
-		 *   </ul>
-		 *  @type array
-		 *  @default []
-		 */
-		"aoStateLoad": [],
-	
-		/**
-		 * State that was saved. Useful for back reference
-		 *  @type object
-		 *  @default null
-		 */
-		"oSavedState": null,
-	
-		/**
-		 * State that was loaded. Useful for back reference
-		 *  @type object
-		 *  @default null
-		 */
-		"oLoadedState": null,
-	
-		/**
-		 * Source url for AJAX data for the table.
-		 * Note that this parameter will be set by the initialisation routine. To
-		 * set a default use {@link DataTable.defaults}.
-		 *  @type string
-		 *  @default null
-		 */
-		"sAjaxSource": null,
-	
-		/**
-		 * Property from a given object from which to read the table data from. This
-		 * can be an empty string (when not server-side processing), in which case
-		 * it is  assumed an an array is given directly.
-		 * Note that this parameter will be set by the initialisation routine. To
-		 * set a default use {@link DataTable.defaults}.
-		 *  @type string
-		 */
-		"sAjaxDataProp": null,
-	
-		/**
-		 * The last jQuery XHR object that was used for server-side data gathering.
-		 * This can be used for working with the XHR information in one of the
-		 * callbacks
-		 *  @type object
-		 *  @default null
-		 */
-		"jqXHR": null,
-	
-		/**
-		 * JSON returned from the server in the last Ajax request
-		 *  @type object
-		 *  @default undefined
-		 */
-		"json": undefined,
-	
-		/**
-		 * Data submitted as part of the last Ajax request
-		 *  @type object
-		 *  @default undefined
-		 */
-		"oAjaxData": undefined,
-	
-		/**
-		 * Function to get the server-side data.
-		 * Note that this parameter will be set by the initialisation routine. To
-		 * set a default use {@link DataTable.defaults}.
-		 *  @type function
-		 */
-		"fnServerData": null,
-	
-		/**
-		 * Functions which are called prior to sending an Ajax request so extra
-		 * parameters can easily be sent to the server
-		 *  @type array
-		 *  @default []
-		 */
-		"aoServerParams": [],
-	
-		/**
-		 * Send the XHR HTTP method - GET or POST (could be PUT or DELETE if
-		 * required).
-		 * Note that this parameter will be set by the initialisation routine. To
-		 * set a default use {@link DataTable.defaults}.
-		 *  @type string
-		 */
-		"sServerMethod": null,
-	
-		/**
-		 * Format numbers for display.
-		 * Note that this parameter will be set by the initialisation routine. To
-		 * set a default use {@link DataTable.defaults}.
-		 *  @type function
-		 */
-		"fnFormatNumber": null,
-	
-		/**
-		 * List of options that can be used for the user selectable length menu.
-		 * Note that this parameter will be set by the initialisation routine. To
-		 * set a default use {@link DataTable.defaults}.
-		 *  @type array
-		 *  @default []
-		 */
-		"aLengthMenu": null,
-	
-		/**
-		 * Counter for the draws that the table does. Also used as a tracker for
-		 * server-side processing
-		 *  @type int
-		 *  @default 0
-		 */
-		"iDraw": 0,
-	
-		/**
-		 * Indicate if a redraw is being done - useful for Ajax
-		 *  @type boolean
-		 *  @default false
-		 */
-		"bDrawing": false,
-	
-		/**
-		 * Draw index (iDraw) of the last error when parsing the returned data
-		 *  @type int
-		 *  @default -1
-		 */
-		"iDrawError": -1,
-	
-		/**
-		 * Paging display length
-		 *  @type int
-		 *  @default 10
-		 */
-		"_iDisplayLength": 10,
-	
-		/**
-		 * Paging start point - aiDisplay index
-		 *  @type int
-		 *  @default 0
-		 */
-		"_iDisplayStart": 0,
-	
-		/**
-		 * Server-side processing - number of records in the result set
-		 * (i.e. before filtering), Use fnRecordsTotal rather than
-		 * this property to get the value of the number of records, regardless of
-		 * the server-side processing setting.
-		 *  @type int
-		 *  @default 0
-		 *  @private
-		 */
-		"_iRecordsTotal": 0,
-	
-		/**
-		 * Server-side processing - number of records in the current display set
-		 * (i.e. after filtering). Use fnRecordsDisplay rather than
-		 * this property to get the value of the number of records, regardless of
-		 * the server-side processing setting.
-		 *  @type boolean
-		 *  @default 0
-		 *  @private
-		 */
-		"_iRecordsDisplay": 0,
-	
-		/**
-		 * The classes to use for the table
-		 *  @type object
-		 *  @default {}
-		 */
-		"oClasses": {},
-	
-		/**
-		 * Flag attached to the settings object so you can check in the draw
-		 * callback if filtering has been done in the draw. Deprecated in favour of
-		 * events.
-		 *  @type boolean
-		 *  @default false
-		 *  @deprecated
-		 */
-		"bFiltered": false,
-	
-		/**
-		 * Flag attached to the settings object so you can check in the draw
-		 * callback if sorting has been done in the draw. Deprecated in favour of
-		 * events.
-		 *  @type boolean
-		 *  @default false
-		 *  @deprecated
-		 */
-		"bSorted": false,
-	
-		/**
-		 * Indicate that if multiple rows are in the header and there is more than
-		 * one unique cell per column, if the top one (true) or bottom one (false)
-		 * should be used for sorting / title by DataTables.
-		 * Note that this parameter will be set by the initialisation routine. To
-		 * set a default use {@link DataTable.defaults}.
-		 *  @type boolean
-		 */
-		"bSortCellsTop": null,
-	
-		/**
-		 * Initialisation object that is used for the table
-		 *  @type object
-		 *  @default null
-		 */
-		"oInit": null,
-	
-		/**
-		 * Destroy callback functions - for plug-ins to attach themselves to the
-		 * destroy so they can clean up markup and events.
-		 *  @type array
-		 *  @default []
-		 */
-		"aoDestroyCallback": [],
-	
-	
-		/**
-		 * Get the number of records in the current record set, before filtering
-		 *  @type function
-		 */
-		"fnRecordsTotal": function ()
-		{
-			return _fnDataSource( this ) == 'ssp' ?
-				this._iRecordsTotal * 1 :
-				this.aiDisplayMaster.length;
-		},
-	
-		/**
-		 * Get the number of records in the current record set, after filtering
-		 *  @type function
-		 */
-		"fnRecordsDisplay": function ()
-		{
-			return _fnDataSource( this ) == 'ssp' ?
-				this._iRecordsDisplay * 1 :
-				this.aiDisplay.length;
-		},
-	
-		/**
-		 * Get the display end point - aiDisplay index
-		 *  @type function
-		 */
-		"fnDisplayEnd": function ()
-		{
-			var
-				len      = this._iDisplayLength,
-				start    = this._iDisplayStart,
-				calc     = start + len,
-				records  = this.aiDisplay.length,
-				features = this.oFeatures,
-				paginate = features.bPaginate;
-	
-			if ( features.bServerSide ) {
-				return paginate === false || len === -1 ?
-					start + records :
-					Math.min( start+len, this._iRecordsDisplay );
-			}
-			else {
-				return ! paginate || calc>records || len===-1 ?
-					records :
-					calc;
-			}
-		},
-	
-		/**
-		 * The DataTables object for this table
-		 *  @type object
-		 *  @default null
-		 */
-		"oInstance": null,
-	
-		/**
-		 * Unique identifier for each instance of the DataTables object. If there
-		 * is an ID on the table node, then it takes that value, otherwise an
-		 * incrementing internal counter is used.
-		 *  @type string
-		 *  @default null
-		 */
-		"sInstance": null,
-	
-		/**
-		 * tabindex attribute value that is added to DataTables control elements, allowing
-		 * keyboard navigation of the table and its controls.
-		 */
-		"iTabIndex": 0,
-	
-		/**
-		 * DIV container for the footer scrolling table if scrolling
-		 */
-		"nScrollHead": null,
-	
-		/**
-		 * DIV container for the footer scrolling table if scrolling
-		 */
-		"nScrollFoot": null,
-	
-		/**
-		 * Last applied sort
-		 *  @type array
-		 *  @default []
-		 */
-		"aLastSort": [],
-	
-		/**
-		 * Stored plug-in instances
-		 *  @type object
-		 *  @default {}
-		 */
-		"oPlugins": {},
-	
-		/**
-		 * Function used to get a row's id from the row's data
-		 *  @type function
-		 *  @default null
-		 */
-		"rowIdFn": null,
-	
-		/**
-		 * Data location where to store a row's id
-		 *  @type string
-		 *  @default null
-		 */
-		"rowId": null
-	};
-
-	/**
-	 * Extension object for DataTables that is used to provide all extension
-	 * options.
-	 *
-	 * Note that the `DataTable.ext` object is available through
-	 * `jQuery.fn.dataTable.ext` where it may be accessed and manipulated. It is
-	 * also aliased to `jQuery.fn.dataTableExt` for historic reasons.
-	 *  @namespace
-	 *  @extends DataTable.models.ext
-	 */
-	
-	
-	/**
-	 * DataTables extensions
-	 * 
-	 * This namespace acts as a collection area for plug-ins that can be used to
-	 * extend DataTables capabilities. Indeed many of the build in methods
-	 * use this method to provide their own capabilities (sorting methods for
-	 * example).
-	 *
-	 * Note that this namespace is aliased to `jQuery.fn.dataTableExt` for legacy
-	 * reasons
-	 *
-	 *  @namespace
-	 */
-	DataTable.ext = _ext = {
-		/**
-		 * Buttons. For use with the Buttons extension for DataTables. This is
-		 * defined here so other extensions can define buttons regardless of load
-		 * order. It is _not_ used by DataTables core.
-		 *
-		 *  @type object
-		 *  @default {}
-		 */
-		buttons: {},
-	
-	
-		/**
-		 * Element class names
-		 *
-		 *  @type object
-		 *  @default {}
-		 */
-		classes: {},
-	
-	
-		/**
-		 * DataTables build type (expanded by the download builder)
-		 *
-		 *  @type string
-		 */
-		builder: "-source-",
-	
-	
-		/**
-		 * Error reporting.
-		 * 
-		 * How should DataTables report an error. Can take the value 'alert',
-		 * 'throw', 'none' or a function.
-		 *
-		 *  @type string|function
-		 *  @default alert
-		 */
-		errMode: "alert",
-	
-	
-		/**
-		 * Feature plug-ins.
-		 * 
-		 * This is an array of objects which describe the feature plug-ins that are
-		 * available to DataTables. These feature plug-ins are then available for
-		 * use through the `dom` initialisation option.
-		 * 
-		 * Each feature plug-in is described by an object which must have the
-		 * following properties:
-		 * 
-		 * * `fnInit` - function that is used to initialise the plug-in,
-		 * * `cFeature` - a character so the feature can be enabled by the `dom`
-		 *   instillation option. This is case sensitive.
-		 *
-		 * The `fnInit` function has the following input parameters:
-		 *
-		 * 1. `{object}` DataTables settings object: see
-		 *    {@link DataTable.models.oSettings}
-		 *
-		 * And the following return is expected:
-		 * 
-		 * * {node|null} The element which contains your feature. Note that the
-		 *   return may also be void if your plug-in does not require to inject any
-		 *   DOM elements into DataTables control (`dom`) - for example this might
-		 *   be useful when developing a plug-in which allows table control via
-		 *   keyboard entry
-		 *
-		 *  @type array
-		 *
-		 *  @example
-		 *    $.fn.dataTable.ext.features.push( {
-		 *      "fnInit": function( oSettings ) {
-		 *        return new TableTools( { "oDTSettings": oSettings } );
-		 *      },
-		 *      "cFeature": "T"
-		 *    } );
-		 */
-		feature: [],
-	
-	
-		/**
-		 * Row searching.
-		 * 
-		 * This method of searching is complimentary to the default type based
-		 * searching, and a lot more comprehensive as it allows you complete control
-		 * over the searching logic. Each element in this array is a function
-		 * (parameters described below) that is called for every row in the table,
-		 * and your logic decides if it should be included in the searching data set
-		 * or not.
-		 *
-		 * Searching functions have the following input parameters:
-		 *
-		 * 1. `{object}` DataTables settings object: see
-		 *    {@link DataTable.models.oSettings}
-		 * 2. `{array|object}` Data for the row to be processed (same as the
-		 *    original format that was passed in as the data source, or an array
-		 *    from a DOM data source
-		 * 3. `{int}` Row index ({@link DataTable.models.oSettings.aoData}), which
-		 *    can be useful to retrieve the `TR` element if you need DOM interaction.
-		 *
-		 * And the following return is expected:
-		 *
-		 * * {boolean} Include the row in the searched result set (true) or not
-		 *   (false)
-		 *
-		 * Note that as with the main search ability in DataTables, technically this
-		 * is "filtering", since it is subtractive. However, for consistency in
-		 * naming we call it searching here.
-		 *
-		 *  @type array
-		 *  @default []
-		 *
-		 *  @example
-		 *    // The following example shows custom search being applied to the
-		 *    // fourth column (i.e. the data[3] index) based on two input values
-		 *    // from the end-user, matching the data in a certain range.
-		 *    $.fn.dataTable.ext.search.push(
-		 *      function( settings, data, dataIndex ) {
-		 *        var min = document.getElementById('min').value * 1;
-		 *        var max = document.getElementById('max').value * 1;
-		 *        var version = data[3] == "-" ? 0 : data[3]*1;
-		 *
-		 *        if ( min == "" && max == "" ) {
-		 *          return true;
-		 *        }
-		 *        else if ( min == "" && version < max ) {
-		 *          return true;
-		 *        }
-		 *        else if ( min < version && "" == max ) {
-		 *          return true;
-		 *        }
-		 *        else if ( min < version && version < max ) {
-		 *          return true;
-		 *        }
-		 *        return false;
-		 *      }
-		 *    );
-		 */
-		search: [],
-	
-	
-		/**
-		 * Selector extensions
-		 *
-		 * The `selector` option can be used to extend the options available for the
-		 * selector modifier options (`selector-modifier` object data type) that
-		 * each of the three built in selector types offer (row, column and cell +
-		 * their plural counterparts). For example the Select extension uses this
-		 * mechanism to provide an option to select only rows, columns and cells
-		 * that have been marked as selected by the end user (`{selected: true}`),
-		 * which can be used in conjunction with the existing built in selector
-		 * options.
-		 *
-		 * Each property is an array to which functions can be pushed. The functions
-		 * take three attributes:
-		 *
-		 * * Settings object for the host table
-		 * * Options object (`selector-modifier` object type)
-		 * * Array of selected item indexes
-		 *
-		 * The return is an array of the resulting item indexes after the custom
-		 * selector has been applied.
-		 *
-		 *  @type object
-		 */
-		selector: {
-			cell: [],
-			column: [],
-			row: []
-		},
-	
-	
-		/**
-		 * Internal functions, exposed for used in plug-ins.
-		 * 
-		 * Please note that you should not need to use the internal methods for
-		 * anything other than a plug-in (and even then, try to avoid if possible).
-		 * The internal function may change between releases.
-		 *
-		 *  @type object
-		 *  @default {}
-		 */
-		internal: {},
-	
-	
-		/**
-		 * Legacy configuration options. Enable and disable legacy options that
-		 * are available in DataTables.
-		 *
-		 *  @type object
-		 */
-		legacy: {
-			/**
-			 * Enable / disable DataTables 1.9 compatible server-side processing
-			 * requests
-			 *
-			 *  @type boolean
-			 *  @default null
-			 */
-			ajax: null
-		},
-	
-	
-		/**
-		 * Pagination plug-in methods.
-		 * 
-		 * Each entry in this object is a function and defines which buttons should
-		 * be shown by the pagination rendering method that is used for the table:
-		 * {@link DataTable.ext.renderer.pageButton}. The renderer addresses how the
-		 * buttons are displayed in the document, while the functions here tell it
-		 * what buttons to display. This is done by returning an array of button
-		 * descriptions (what each button will do).
-		 *
-		 * Pagination types (the four built in options and any additional plug-in
-		 * options defined here) can be used through the `paginationType`
-		 * initialisation parameter.
-		 *
-		 * The functions defined take two parameters:
-		 *
-		 * 1. `{int} page` The current page index
-		 * 2. `{int} pages` The number of pages in the table
-		 *
-		 * Each function is expected to return an array where each element of the
-		 * array can be one of:
-		 *
-		 * * `first` - Jump to first page when activated
-		 * * `last` - Jump to last page when activated
-		 * * `previous` - Show previous page when activated
-		 * * `next` - Show next page when activated
-		 * * `{int}` - Show page of the index given
-		 * * `{array}` - A nested array containing the above elements to add a
-		 *   containing 'DIV' element (might be useful for styling).
-		 *
-		 * Note that DataTables v1.9- used this object slightly differently whereby
-		 * an object with two functions would be defined for each plug-in. That
-		 * ability is still supported by DataTables 1.10+ to provide backwards
-		 * compatibility, but this option of use is now decremented and no longer
-		 * documented in DataTables 1.10+.
-		 *
-		 *  @type object
-		 *  @default {}
-		 *
-		 *  @example
-		 *    // Show previous, next and current page buttons only
-		 *    $.fn.dataTableExt.oPagination.current = function ( page, pages ) {
-		 *      return [ 'previous', page, 'next' ];
-		 *    };
-		 */
-		pager: {},
-	
-	
-		renderer: {
-			pageButton: {},
-			header: {}
-		},
-	
-	
-		/**
-		 * Ordering plug-ins - custom data source
-		 * 
-		 * The extension options for ordering of data available here is complimentary
-		 * to the default type based ordering that DataTables typically uses. It
-		 * allows much greater control over the the data that is being used to
-		 * order a column, but is necessarily therefore more complex.
-		 * 
-		 * This type of ordering is useful if you want to do ordering based on data
-		 * live from the DOM (for example the contents of an 'input' element) rather
-		 * than just the static string that DataTables knows of.
-		 * 
-		 * The way these plug-ins work is that you create an array of the values you
-		 * wish to be ordering for the column in question and then return that
-		 * array. The data in the array much be in the index order of the rows in
-		 * the table (not the currently ordering order!). Which order data gathering
-		 * function is run here depends on the `dt-init columns.orderDataType`
-		 * parameter that is used for the column (if any).
-		 *
-		 * The functions defined take two parameters:
-		 *
-		 * 1. `{object}` DataTables settings object: see
-		 *    {@link DataTable.models.oSettings}
-		 * 2. `{int}` Target column index
-		 *
-		 * Each function is expected to return an array:
-		 *
-		 * * `{array}` Data for the column to be ordering upon
-		 *
-		 *  @type array
-		 *
-		 *  @example
-		 *    // Ordering using `input` node values
-		 *    $.fn.dataTable.ext.order['dom-text'] = function  ( settings, col )
-		 *    {
-		 *      return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
-		 *        return $('input', td).val();
-		 *      } );
-		 *    }
-		 */
-		order: {},
-	
-	
-		/**
-		 * Type based plug-ins.
-		 *
-		 * Each column in DataTables has a type assigned to it, either by automatic
-		 * detection or by direct assignment using the `type` option for the column.
-		 * The type of a column will effect how it is ordering and search (plug-ins
-		 * can also make use of the column type if required).
-		 *
-		 * @namespace
-		 */
-		type: {
-			/**
-			 * Type detection functions.
-			 *
-			 * The functions defined in this object are used to automatically detect
-			 * a column's type, making initialisation of DataTables super easy, even
-			 * when complex data is in the table.
-			 *
-			 * The functions defined take two parameters:
-			 *
-		     *  1. `{*}` Data from the column cell to be analysed
-		     *  2. `{settings}` DataTables settings object. This can be used to
-		     *     perform context specific type detection - for example detection
-		     *     based on language settings such as using a comma for a decimal
-		     *     place. Generally speaking the options from the settings will not
-		     *     be required
-			 *
-			 * Each function is expected to return:
-			 *
-			 * * `{string|null}` Data type detected, or null if unknown (and thus
-			 *   pass it on to the other type detection functions.
-			 *
-			 *  @type array
-			 *
-			 *  @example
-			 *    // Currency type detection plug-in:
-			 *    $.fn.dataTable.ext.type.detect.push(
-			 *      function ( data, settings ) {
-			 *        // Check the numeric part
-			 *        if ( ! data.substring(1).match(/[0-9]/) ) {
-			 *          return null;
-			 *        }
-			 *
-			 *        // Check prefixed by currency
-			 *        if ( data.charAt(0) == '$' || data.charAt(0) == '&pound;' ) {
-			 *          return 'currency';
-			 *        }
-			 *        return null;
-			 *      }
-			 *    );
-			 */
-			detect: [],
-	
-	
-			/**
-			 * Type based search formatting.
-			 *
-			 * The type based searching functions can be used to pre-format the
-			 * data to be search on. For example, it can be used to strip HTML
-			 * tags or to de-format telephone numbers for numeric only searching.
-			 *
-			 * Note that is a search is not defined for a column of a given type,
-			 * no search formatting will be performed.
-			 * 
-			 * Pre-processing of searching data plug-ins - When you assign the sType
-			 * for a column (or have it automatically detected for you by DataTables
-			 * or a type detection plug-in), you will typically be using this for
-			 * custom sorting, but it can also be used to provide custom searching
-			 * by allowing you to pre-processing the data and returning the data in
-			 * the format that should be searched upon. This is done by adding
-			 * functions this object with a parameter name which matches the sType
-			 * for that target column. This is the corollary of <i>afnSortData</i>
-			 * for searching data.
-			 *
-			 * The functions defined take a single parameter:
-			 *
-		     *  1. `{*}` Data from the column cell to be prepared for searching
-			 *
-			 * Each function is expected to return:
-			 *
-			 * * `{string|null}` Formatted string that will be used for the searching.
-			 *
-			 *  @type object
-			 *  @default {}
-			 *
-			 *  @example
-			 *    $.fn.dataTable.ext.type.search['title-numeric'] = function ( d ) {
-			 *      return d.replace(/\n/g," ").replace( /<.*?>/g, "" );
-			 *    }
-			 */
-			search: {},
-	
-	
-			/**
-			 * Type based ordering.
-			 *
-			 * The column type tells DataTables what ordering to apply to the table
-			 * when a column is sorted upon. The order for each type that is defined,
-			 * is defined by the functions available in this object.
-			 *
-			 * Each ordering option can be described by three properties added to
-			 * this object:
-			 *
-			 * * `{type}-pre` - Pre-formatting function
-			 * * `{type}-asc` - Ascending order function
-			 * * `{type}-desc` - Descending order function
-			 *
-			 * All three can be used together, only `{type}-pre` or only
-			 * `{type}-asc` and `{type}-desc` together. It is generally recommended
-			 * that only `{type}-pre` is used, as this provides the optimal
-			 * implementation in terms of speed, although the others are provided
-			 * for compatibility with existing Javascript sort functions.
-			 *
-			 * `{type}-pre`: Functions defined take a single parameter:
-			 *
-		     *  1. `{*}` Data from the column cell to be prepared for ordering
-			 *
-			 * And return:
-			 *
-			 * * `{*}` Data to be sorted upon
-			 *
-			 * `{type}-asc` and `{type}-desc`: Functions are typical Javascript sort
-			 * functions, taking two parameters:
-			 *
-		     *  1. `{*}` Data to compare to the second parameter
-		     *  2. `{*}` Data to compare to the first parameter
-			 *
-			 * And returning:
-			 *
-			 * * `{*}` Ordering match: <0 if first parameter should be sorted lower
-			 *   than the second parameter, ===0 if the two parameters are equal and
-			 *   >0 if the first parameter should be sorted height than the second
-			 *   parameter.
-			 * 
-			 *  @type object
-			 *  @default {}
-			 *
-			 *  @example
-			 *    // Numeric ordering of formatted numbers with a pre-formatter
-			 *    $.extend( $.fn.dataTable.ext.type.order, {
-			 *      "string-pre": function(x) {
-			 *        a = (a === "-" || a === "") ? 0 : a.replace( /[^\d\-\.]/g, "" );
-			 *        return parseFloat( a );
-			 *      }
-			 *    } );
-			 *
-			 *  @example
-			 *    // Case-sensitive string ordering, with no pre-formatting method
-			 *    $.extend( $.fn.dataTable.ext.order, {
-			 *      "string-case-asc": function(x,y) {
-			 *        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
-			 *      },
-			 *      "string-case-desc": function(x,y) {
-			 *        return ((x < y) ? 1 : ((x > y) ? -1 : 0));
-			 *      }
-			 *    } );
-			 */
-			order: {}
-		},
-	
-		/**
-		 * Unique DataTables instance counter
-		 *
-		 * @type int
-		 * @private
-		 */
-		_unique: 0,
-	
-	
-		//
-		// Depreciated
-		// The following properties are retained for backwards compatiblity only.
-		// The should not be used in new projects and will be removed in a future
-		// version
-		//
-	
-		/**
-		 * Version check function.
-		 *  @type function
-		 *  @depreciated Since 1.10
-		 */
-		fnVersionCheck: DataTable.fnVersionCheck,
-	
-	
-		/**
-		 * Index for what 'this' index API functions should use
-		 *  @type int
-		 *  @deprecated Since v1.10
-		 */
-		iApiIndex: 0,
-	
-	
-		/**
-		 * jQuery UI class container
-		 *  @type object
-		 *  @deprecated Since v1.10
-		 */
-		oJUIClasses: {},
-	
-	
-		/**
-		 * Software version
-		 *  @type string
-		 *  @deprecated Since v1.10
-		 */
-		sVersion: DataTable.version
-	};
-	
-	
-	//
-	// Backwards compatibility. Alias to pre 1.10 Hungarian notation counter parts
-	//
-	$.extend( _ext, {
-		afnFiltering: _ext.search,
-		aTypes:       _ext.type.detect,
-		ofnSearch:    _ext.type.search,
-		oSort:        _ext.type.order,
-		afnSortData:  _ext.order,
-		aoFeatures:   _ext.feature,
-		oApi:         _ext.internal,
-		oStdClasses:  _ext.classes,
-		oPagination:  _ext.pager
-	} );
-	
-	
-	$.extend( DataTable.ext.classes, {
-		"sTable": "dataTable",
-		"sNoFooter": "no-footer",
-	
-		/* Paging buttons */
-		"sPageButton": "paginate_button",
-		"sPageButtonActive": "current",
-		"sPageButtonDisabled": "disabled",
-	
-		/* Striping classes */
-		"sStripeOdd": "odd",
-		"sStripeEven": "even",
-	
-		/* Empty row */
-		"sRowEmpty": "dataTables_empty",
-	
-		/* Features */
-		"sWrapper": "dataTables_wrapper",
-		"sFilter": "dataTables_filter",
-		"sInfo": "dataTables_info",
-		"sPaging": "dataTables_paginate paging_", /* Note that the type is postfixed */
-		"sLength": "dataTables_length",
-		"sProcessing": "dataTables_processing",
-	
-		/* Sorting */
-		"sSortAsc": "sorting_asc",
-		"sSortDesc": "sorting_desc",
-		"sSortable": "sorting", /* Sortable in both directions */
-		"sSortableAsc": "sorting_desc_disabled",
-		"sSortableDesc": "sorting_asc_disabled",
-		"sSortableNone": "sorting_disabled",
-		"sSortColumn": "sorting_", /* Note that an int is postfixed for the sorting order */
-	
-		/* Filtering */
-		"sFilterInput": "",
-	
-		/* Page length */
-		"sLengthSelect": "",
-	
-		/* Scrolling */
-		"sScrollWrapper": "dataTables_scroll",
-		"sScrollHead": "dataTables_scrollHead",
-		"sScrollHeadInner": "dataTables_scrollHeadInner",
-		"sScrollBody": "dataTables_scrollBody",
-		"sScrollFoot": "dataTables_scrollFoot",
-		"sScrollFootInner": "dataTables_scrollFootInner",
-	
-		/* Misc */
-		"sHeaderTH": "",
-		"sFooterTH": "",
-	
-		// Deprecated
-		"sSortJUIAsc": "",
-		"sSortJUIDesc": "",
-		"sSortJUI": "",
-		"sSortJUIAscAllowed": "",
-		"sSortJUIDescAllowed": "",
-		"sSortJUIWrapper": "",
-		"sSortIcon": "",
-		"sJUIHeader": "",
-		"sJUIFooter": ""
-	} );
-	
-	
-	var extPagination = DataTable.ext.pager;
-	
-	function _numbers ( page, pages ) {
-		var
-			numbers = [],
-			buttons = extPagination.numbers_length,
-			half = Math.floor( buttons / 2 ),
-			i = 1;
-	
-		if ( pages <= buttons ) {
-			numbers = _range( 0, pages );
-		}
-		else if ( page <= half ) {
-			numbers = _range( 0, buttons-2 );
-			numbers.push( 'ellipsis' );
-			numbers.push( pages-1 );
-		}
-		else if ( page >= pages - 1 - half ) {
-			numbers = _range( pages-(buttons-2), pages );
-			numbers.splice( 0, 0, 'ellipsis' ); // no unshift in ie6
-			numbers.splice( 0, 0, 0 );
-		}
-		else {
-			numbers = _range( page-half+2, page+half-1 );
-			numbers.push( 'ellipsis' );
-			numbers.push( pages-1 );
-			numbers.splice( 0, 0, 'ellipsis' );
-			numbers.splice( 0, 0, 0 );
-		}
-	
-		numbers.DT_el = 'span';
-		return numbers;
-	}
-	
-	
-	$.extend( extPagination, {
-		simple: function ( page, pages ) {
-			return [ 'previous', 'next' ];
-		},
-	
-		full: function ( page, pages ) {
-			return [  'first', 'previous', 'next', 'last' ];
-		},
-	
-		numbers: function ( page, pages ) {
-			return [ _numbers(page, pages) ];
-		},
-	
-		simple_numbers: function ( page, pages ) {
-			return [ 'previous', _numbers(page, pages), 'next' ];
-		},
-	
-		full_numbers: function ( page, pages ) {
-			return [ 'first', 'previous', _numbers(page, pages), 'next', 'last' ];
-		},
-		
-		first_last_numbers: function (page, pages) {
-	 		return ['first', _numbers(page, pages), 'last'];
-	 	},
-	
-		// For testing and plug-ins to use
-		_numbers: _numbers,
-	
-		// Number of number buttons (including ellipsis) to show. _Must be odd!_
-		numbers_length: 7
-	} );
-	
-	
-	$.extend( true, DataTable.ext.renderer, {
-		pageButton: {
-			_: function ( settings, host, idx, buttons, page, pages ) {
-				var classes = settings.oClasses;
-				var lang = settings.oLanguage.oPaginate;
-				var aria = settings.oLanguage.oAria.paginate || {};
-				var btnDisplay, btnClass, counter=0;
-	
-				var attach = function( container, buttons ) {
-					var i, ien, node, button, tabIndex;
-					var disabledClass = classes.sPageButtonDisabled;
-					var clickHandler = function ( e ) {
-						_fnPageChange( settings, e.data.action, true );
-					};
-	
-					for ( i=0, ien=buttons.length ; i<ien ; i++ ) {
-						button = buttons[i];
-	
-						if ( Array.isArray( button ) ) {
-							var inner = $( '<'+(button.DT_el || 'div')+'/>' )
-								.appendTo( container );
-							attach( inner, button );
-						}
-						else {
-							btnDisplay = null;
-							btnClass = button;
-							tabIndex = settings.iTabIndex;
-	
-							switch ( button ) {
-								case 'ellipsis':
-									container.append('<span class="ellipsis">&#x2026;</span>');
-									break;
-	
-								case 'first':
-									btnDisplay = lang.sFirst;
-	
-									if ( page === 0 ) {
-										tabIndex = -1;
-										btnClass += ' ' + disabledClass;
-									}
-									break;
-	
-								case 'previous':
-									btnDisplay = lang.sPrevious;
-	
-									if ( page === 0 ) {
-										tabIndex = -1;
-										btnClass += ' ' + disabledClass;
-									}
-									break;
-	
-								case 'next':
-									btnDisplay = lang.sNext;
-	
-									if ( pages === 0 || page === pages-1 ) {
-										tabIndex = -1;
-										btnClass += ' ' + disabledClass;
-									}
-									break;
-	
-								case 'last':
-									btnDisplay = lang.sLast;
-	
-									if ( pages === 0 || page === pages-1 ) {
-										tabIndex = -1;
-										btnClass += ' ' + disabledClass;
-									}
-									break;
-	
-								default:
-									btnDisplay = settings.fnFormatNumber( button + 1 );
-									btnClass = page === button ?
-										classes.sPageButtonActive : '';
-									break;
-							}
-	
-							if ( btnDisplay !== null ) {
-								node = $('<a>', {
-										'class': classes.sPageButton+' '+btnClass,
-										'aria-controls': settings.sTableId,
-										'aria-label': aria[ button ],
-										'data-dt-idx': counter,
-										'tabindex': tabIndex,
-										'id': idx === 0 && typeof button === 'string' ?
-											settings.sTableId +'_'+ button :
-											null
-									} )
-									.html( btnDisplay )
-									.appendTo( container );
-	
-								_fnBindAction(
-									node, {action: button}, clickHandler
-								);
-	
-								counter++;
-							}
-						}
-					}
-				};
-	
-				// IE9 throws an 'unknown error' if document.activeElement is used
-				// inside an iframe or frame. Try / catch the error. Not good for
-				// accessibility, but neither are frames.
-				var activeEl;
-	
-				try {
-					// Because this approach is destroying and recreating the paging
-					// elements, focus is lost on the select button which is bad for
-					// accessibility. So we want to restore focus once the draw has
-					// completed
-					activeEl = $(host).find(document.activeElement).data('dt-idx');
-				}
-				catch (e) {}
-	
-				attach( $(host).empty(), buttons );
-	
-				if ( activeEl !== undefined ) {
-					$(host).find( '[data-dt-idx='+activeEl+']' ).trigger('focus');
-				}
-			}
-		}
-	} );
-	
-	
-	
-	// Built in type detection. See model.ext.aTypes for information about
-	// what is required from this methods.
-	$.extend( DataTable.ext.type.detect, [
-		// Plain numbers - first since V8 detects some plain numbers as dates
-		// e.g. Date.parse('55') (but not all, e.g. Date.parse('22')...).
-		function ( d, settings )
-		{
-			var decimal = settings.oLanguage.sDecimal;
-			return _isNumber( d, decimal ) ? 'num'+decimal : null;
-		},
-	
-		// Dates (only those recognised by the browser's Date.parse)
-		function ( d, settings )
-		{
-			// V8 tries _very_ hard to make a string passed into `Date.parse()`
-			// valid, so we need to use a regex to restrict date formats. Use a
-			// plug-in for anything other than ISO8601 style strings
-			if ( d && !(d instanceof Date) && ! _re_date.test(d) ) {
-				return null;
-			}
-			var parsed = Date.parse(d);
-			return (parsed !== null && !isNaN(parsed)) || _empty(d) ? 'date' : null;
-		},
-	
-		// Formatted numbers
-		function ( d, settings )
-		{
-			var decimal = settings.oLanguage.sDecimal;
-			return _isNumber( d, decimal, true ) ? 'num-fmt'+decimal : null;
-		},
-	
-		// HTML numeric
-		function ( d, settings )
-		{
-			var decimal = settings.oLanguage.sDecimal;
-			return _htmlNumeric( d, decimal ) ? 'html-num'+decimal : null;
-		},
-	
-		// HTML numeric, formatted
-		function ( d, settings )
-		{
-			var decimal = settings.oLanguage.sDecimal;
-			return _htmlNumeric( d, decimal, true ) ? 'html-num-fmt'+decimal : null;
-		},
-	
-		// HTML (this is strict checking - there must be html)
-		function ( d, settings )
-		{
-			return _empty( d ) || (typeof d === 'string' && d.indexOf('<') !== -1) ?
-				'html' : null;
-		}
-	] );
-	
-	
-	
-	// Filter formatting functions. See model.ext.ofnSearch for information about
-	// what is required from these methods.
-	// 
-	// Note that additional search methods are added for the html numbers and
-	// html formatted numbers by `_addNumericSort()` when we know what the decimal
-	// place is
-	
-	
-	$.extend( DataTable.ext.type.search, {
-		html: function ( data ) {
-			return _empty(data) ?
-				data :
-				typeof data === 'string' ?
-					data
-						.replace( _re_new_lines, " " )
-						.replace( _re_html, "" ) :
-					'';
-		},
-	
-		string: function ( data ) {
-			return _empty(data) ?
-				data :
-				typeof data === 'string' ?
-					data.replace( _re_new_lines, " " ) :
-					data;
-		}
-	} );
-	
-	
-	
-	var __numericReplace = function ( d, decimalPlace, re1, re2 ) {
-		if ( d !== 0 && (!d || d === '-') ) {
-			return -Infinity;
-		}
-	
-		// If a decimal place other than `.` is used, it needs to be given to the
-		// function so we can detect it and replace with a `.` which is the only
-		// decimal place Javascript recognises - it is not locale aware.
-		if ( decimalPlace ) {
-			d = _numToDecimal( d, decimalPlace );
-		}
-	
-		if ( d.replace ) {
-			if ( re1 ) {
-				d = d.replace( re1, '' );
-			}
-	
-			if ( re2 ) {
-				d = d.replace( re2, '' );
-			}
-		}
-	
-		return d * 1;
-	};
-	
-	
-	// Add the numeric 'deformatting' functions for sorting and search. This is done
-	// in a function to provide an easy ability for the language options to add
-	// additional methods if a non-period decimal place is used.
-	function _addNumericSort ( decimalPlace ) {
-		$.each(
-			{
-				// Plain numbers
-				"num": function ( d ) {
-					return __numericReplace( d, decimalPlace );
-				},
-	
-				// Formatted numbers
-				"num-fmt": function ( d ) {
-					return __numericReplace( d, decimalPlace, _re_formatted_numeric );
-				},
-	
-				// HTML numeric
-				"html-num": function ( d ) {
-					return __numericReplace( d, decimalPlace, _re_html );
-				},
-	
-				// HTML numeric, formatted
-				"html-num-fmt": function ( d ) {
-					return __numericReplace( d, decimalPlace, _re_html, _re_formatted_numeric );
-				}
-			},
-			function ( key, fn ) {
-				// Add the ordering method
-				_ext.type.order[ key+decimalPlace+'-pre' ] = fn;
-	
-				// For HTML types add a search formatter that will strip the HTML
-				if ( key.match(/^html\-/) ) {
-					_ext.type.search[ key+decimalPlace ] = _ext.type.search.html;
-				}
-			}
-		);
-	}
-	
-	
-	// Default sort methods
-	$.extend( _ext.type.order, {
-		// Dates
-		"date-pre": function ( d ) {
-			var ts = Date.parse( d );
-			return isNaN(ts) ? -Infinity : ts;
-		},
-	
-		// html
-		"html-pre": function ( a ) {
-			return _empty(a) ?
-				'' :
-				a.replace ?
-					a.replace( /<.*?>/g, "" ).toLowerCase() :
-					a+'';
-		},
-	
-		// string
-		"string-pre": function ( a ) {
-			// This is a little complex, but faster than always calling toString,
-			// http://jsperf.com/tostring-v-check
-			return _empty(a) ?
-				'' :
-				typeof a === 'string' ?
-					a.toLowerCase() :
-					! a.toString ?
-						'' :
-						a.toString();
-		},
-	
-		// string-asc and -desc are retained only for compatibility with the old
-		// sort methods
-		"string-asc": function ( x, y ) {
-			return ((x < y) ? -1 : ((x > y) ? 1 : 0));
-		},
-	
-		"string-desc": function ( x, y ) {
-			return ((x < y) ? 1 : ((x > y) ? -1 : 0));
-		}
-	} );
-	
-	
-	// Numeric sorting types - order doesn't matter here
-	_addNumericSort( '' );
-	
-	
-	$.extend( true, DataTable.ext.renderer, {
-		header: {
-			_: function ( settings, cell, column, classes ) {
-				// No additional mark-up required
-				// Attach a sort listener to update on sort - note that using the
-				// `DT` namespace will allow the event to be removed automatically
-				// on destroy, while the `dt` namespaced event is the one we are
-				// listening for
-				$(settings.nTable).on( 'order.dt.DT', function ( e, ctx, sorting, columns ) {
-					if ( settings !== ctx ) { // need to check this this is the host
-						return;               // table, not a nested one
-					}
-	
-					var colIdx = column.idx;
-	
-					cell
-						.removeClass(
-							classes.sSortAsc +' '+
-							classes.sSortDesc
-						)
-						.addClass( columns[ colIdx ] == 'asc' ?
-							classes.sSortAsc : columns[ colIdx ] == 'desc' ?
-								classes.sSortDesc :
-								column.sSortingClass
-						);
-				} );
-			},
-	
-			jqueryui: function ( settings, cell, column, classes ) {
-				$('<div/>')
-					.addClass( classes.sSortJUIWrapper )
-					.append( cell.contents() )
-					.append( $('<span/>')
-						.addClass( classes.sSortIcon+' '+column.sSortingClassJUI )
-					)
-					.appendTo( cell );
-	
-				// Attach a sort listener to update on sort
-				$(settings.nTable).on( 'order.dt.DT', function ( e, ctx, sorting, columns ) {
-					if ( settings !== ctx ) {
-						return;
-					}
-	
-					var colIdx = column.idx;
-	
-					cell
-						.removeClass( classes.sSortAsc +" "+classes.sSortDesc )
-						.addClass( columns[ colIdx ] == 'asc' ?
-							classes.sSortAsc : columns[ colIdx ] == 'desc' ?
-								classes.sSortDesc :
-								column.sSortingClass
-						);
-	
-					cell
-						.find( 'span.'+classes.sSortIcon )
-						.removeClass(
-							classes.sSortJUIAsc +" "+
-							classes.sSortJUIDesc +" "+
-							classes.sSortJUI +" "+
-							classes.sSortJUIAscAllowed +" "+
-							classes.sSortJUIDescAllowed
-						)
-						.addClass( columns[ colIdx ] == 'asc' ?
-							classes.sSortJUIAsc : columns[ colIdx ] == 'desc' ?
-								classes.sSortJUIDesc :
-								column.sSortingClassJUI
-						);
-				} );
-			}
-		}
-	} );
-	
-	/*
-	 * Public helper functions. These aren't used internally by DataTables, or
-	 * called by any of the options passed into DataTables, but they can be used
-	 * externally by developers working with DataTables. They are helper functions
-	 * to make working with DataTables a little bit easier.
-	 */
-	
-	var __htmlEscapeEntities = function ( d ) {
-		return typeof d === 'string' ?
-			d
-				.replace(/&/g, '&amp;')
-				.replace(/</g, '&lt;')
-				.replace(/>/g, '&gt;')
-				.replace(/"/g, '&quot;') :
-			d;
-	};
-	
-	/**
-	 * Helpers for `columns.render`.
-	 *
-	 * The options defined here can be used with the `columns.render` initialisation
-	 * option to provide a display renderer. The following functions are defined:
-	 *
-	 * * `number` - Will format numeric data (defined by `columns.data`) for
-	 *   display, retaining the original unformatted data for sorting and filtering.
-	 *   It takes 5 parameters:
-	 *   * `string` - Thousands grouping separator
-	 *   * `string` - Decimal point indicator
-	 *   * `integer` - Number of decimal points to show
-	 *   * `string` (optional) - Prefix.
-	 *   * `string` (optional) - Postfix (/suffix).
-	 * * `text` - Escape HTML to help prevent XSS attacks. It has no optional
-	 *   parameters.
-	 *
-	 * @example
-	 *   // Column definition using the number renderer
-	 *   {
-	 *     data: "salary",
-	 *     render: $.fn.dataTable.render.number( '\'', '.', 0, '$' )
-	 *   }
-	 *
-	 * @namespace
-	 */
-	DataTable.render = {
-		number: function ( thousands, decimal, precision, prefix, postfix ) {
-			return {
-				display: function ( d ) {
-					if ( typeof d !== 'number' && typeof d !== 'string' ) {
-						return d;
-					}
-	
-					var negative = d < 0 ? '-' : '';
-					var flo = parseFloat( d );
-	
-					// If NaN then there isn't much formatting that we can do - just
-					// return immediately, escaping any HTML (this was supposed to
-					// be a number after all)
-					if ( isNaN( flo ) ) {
-						return __htmlEscapeEntities( d );
-					}
-	
-					flo = flo.toFixed( precision );
-					d = Math.abs( flo );
-	
-					var intPart = parseInt( d, 10 );
-					var floatPart = precision ?
-						decimal+(d - intPart).toFixed( precision ).substring( 2 ):
-						'';
-	
-					// If zero, then can't have a negative prefix
-					if (intPart === 0 && parseFloat(floatPart) === 0) {
-						negative = '';
-					}
-	
-					return negative + (prefix||'') +
-						intPart.toString().replace(
-							/\B(?=(\d{3})+(?!\d))/g, thousands
-						) +
-						floatPart +
-						(postfix||'');
-				}
-			};
-		},
-	
-		text: function () {
-			return {
-				display: __htmlEscapeEntities,
-				filter: __htmlEscapeEntities
-			};
-		}
-	};
-	
-	
-	/*
-	 * This is really a good bit rubbish this method of exposing the internal methods
-	 * publicly... - To be fixed in 2.0 using methods on the prototype
-	 */
-	
-	
-	/**
-	 * Create a wrapper function for exporting an internal functions to an external API.
-	 *  @param {string} fn API function name
-	 *  @returns {function} wrapped function
-	 *  @memberof DataTable#internal
-	 */
-	function _fnExternApiFunc (fn)
-	{
-		return function() {
-			var args = [_fnSettingsFromNode( this[DataTable.ext.iApiIndex] )].concat(
-				Array.prototype.slice.call(arguments)
-			);
-			return DataTable.ext.internal[fn].apply( this, args );
-		};
-	}
-	
-	
-	/**
-	 * Reference to internal functions for use by plug-in developers. Note that
-	 * these methods are references to internal functions and are considered to be
-	 * private. If you use these methods, be aware that they are liable to change
-	 * between versions.
-	 *  @namespace
-	 */
-	$.extend( DataTable.ext.internal, {
-		_fnExternApiFunc: _fnExternApiFunc,
-		_fnBuildAjax: _fnBuildAjax,
-		_fnAjaxUpdate: _fnAjaxUpdate,
-		_fnAjaxParameters: _fnAjaxParameters,
-		_fnAjaxUpdateDraw: _fnAjaxUpdateDraw,
-		_fnAjaxDataSrc: _fnAjaxDataSrc,
-		_fnAddColumn: _fnAddColumn,
-		_fnColumnOptions: _fnColumnOptions,
-		_fnAdjustColumnSizing: _fnAdjustColumnSizing,
-		_fnVisibleToColumnIndex: _fnVisibleToColumnIndex,
-		_fnColumnIndexToVisible: _fnColumnIndexToVisible,
-		_fnVisbleColumns: _fnVisbleColumns,
-		_fnGetColumns: _fnGetColumns,
-		_fnColumnTypes: _fnColumnTypes,
-		_fnApplyColumnDefs: _fnApplyColumnDefs,
-		_fnHungarianMap: _fnHungarianMap,
-		_fnCamelToHungarian: _fnCamelToHungarian,
-		_fnLanguageCompat: _fnLanguageCompat,
-		_fnBrowserDetect: _fnBrowserDetect,
-		_fnAddData: _fnAddData,
-		_fnAddTr: _fnAddTr,
-		_fnNodeToDataIndex: _fnNodeToDataIndex,
-		_fnNodeToColumnIndex: _fnNodeToColumnIndex,
-		_fnGetCellData: _fnGetCellData,
-		_fnSetCellData: _fnSetCellData,
-		_fnSplitObjNotation: _fnSplitObjNotation,
-		_fnGetObjectDataFn: _fnGetObjectDataFn,
-		_fnSetObjectDataFn: _fnSetObjectDataFn,
-		_fnGetDataMaster: _fnGetDataMaster,
-		_fnClearTable: _fnClearTable,
-		_fnDeleteIndex: _fnDeleteIndex,
-		_fnInvalidate: _fnInvalidate,
-		_fnGetRowElements: _fnGetRowElements,
-		_fnCreateTr: _fnCreateTr,
-		_fnBuildHead: _fnBuildHead,
-		_fnDrawHead: _fnDrawHead,
-		_fnDraw: _fnDraw,
-		_fnReDraw: _fnReDraw,
-		_fnAddOptionsHtml: _fnAddOptionsHtml,
-		_fnDetectHeader: _fnDetectHeader,
-		_fnGetUniqueThs: _fnGetUniqueThs,
-		_fnFeatureHtmlFilter: _fnFeatureHtmlFilter,
-		_fnFilterComplete: _fnFilterComplete,
-		_fnFilterCustom: _fnFilterCustom,
-		_fnFilterColumn: _fnFilterColumn,
-		_fnFilter: _fnFilter,
-		_fnFilterCreateSearch: _fnFilterCreateSearch,
-		_fnEscapeRegex: _fnEscapeRegex,
-		_fnFilterData: _fnFilterData,
-		_fnFeatureHtmlInfo: _fnFeatureHtmlInfo,
-		_fnUpdateInfo: _fnUpdateInfo,
-		_fnInfoMacros: _fnInfoMacros,
-		_fnInitialise: _fnInitialise,
-		_fnInitComplete: _fnInitComplete,
-		_fnLengthChange: _fnLengthChange,
-		_fnFeatureHtmlLength: _fnFeatureHtmlLength,
-		_fnFeatureHtmlPaginate: _fnFeatureHtmlPaginate,
-		_fnPageChange: _fnPageChange,
-		_fnFeatureHtmlProcessing: _fnFeatureHtmlProcessing,
-		_fnProcessingDisplay: _fnProcessingDisplay,
-		_fnFeatureHtmlTable: _fnFeatureHtmlTable,
-		_fnScrollDraw: _fnScrollDraw,
-		_fnApplyToChildren: _fnApplyToChildren,
-		_fnCalculateColumnWidths: _fnCalculateColumnWidths,
-		_fnThrottle: _fnThrottle,
-		_fnConvertToWidth: _fnConvertToWidth,
-		_fnGetWidestNode: _fnGetWidestNode,
-		_fnGetMaxLenString: _fnGetMaxLenString,
-		_fnStringToCss: _fnStringToCss,
-		_fnSortFlatten: _fnSortFlatten,
-		_fnSort: _fnSort,
-		_fnSortAria: _fnSortAria,
-		_fnSortListener: _fnSortListener,
-		_fnSortAttachListener: _fnSortAttachListener,
-		_fnSortingClasses: _fnSortingClasses,
-		_fnSortData: _fnSortData,
-		_fnSaveState: _fnSaveState,
-		_fnLoadState: _fnLoadState,
-		_fnSettingsFromNode: _fnSettingsFromNode,
-		_fnLog: _fnLog,
-		_fnMap: _fnMap,
-		_fnBindAction: _fnBindAction,
-		_fnCallbackReg: _fnCallbackReg,
-		_fnCallbackFire: _fnCallbackFire,
-		_fnLengthOverflow: _fnLengthOverflow,
-		_fnRenderer: _fnRenderer,
-		_fnDataSource: _fnDataSource,
-		_fnRowAttributes: _fnRowAttributes,
-		_fnExtend: _fnExtend,
-		_fnCalculateEnd: function () {} // Used by a lot of plug-ins, but redundant
-		                                // in 1.10, so this dead-end function is
-		                                // added to prevent errors
-	} );
-	
-
-	// jQuery access
-	$.fn.dataTable = DataTable;
-
-	// Provide access to the host jQuery object (circular reference)
-	DataTable.$ = $;
-
-	// Legacy aliases
-	$.fn.dataTableSettings = DataTable.settings;
-	$.fn.dataTableExt = DataTable.ext;
-
-	// With a capital `D` we return a DataTables API instance rather than a
-	// jQuery object
-	$.fn.DataTable = function ( opts ) {
-		return $(this).dataTable( opts ).api();
-	};
-
-	// All properties that are available to $.fn.dataTable should also be
-	// available on $.fn.DataTable
-	$.each( DataTable, function ( prop, val ) {
-		$.fn.DataTable[ prop ] = val;
-	} );
+"use strict";
 
 
-	// Information about events fired by DataTables - for documentation.
-	/**
-	 * Draw event, fired whenever the table is redrawn on the page, at the same
-	 * point as fnDrawCallback. This may be useful for binding events or
-	 * performing calculations when the table is altered at all.
-	 *  @name DataTable#draw.dt
-	 *  @event
-	 *  @param {event} e jQuery event object
-	 *  @param {object} o DataTables settings object {@link DataTable.models.oSettings}
-	 */
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-	/**
-	 * Search event, fired when the searching applied to the table (using the
-	 * built-in global search, or column filters) is altered.
-	 *  @name DataTable#search.dt
-	 *  @event
-	 *  @param {event} e jQuery event object
-	 *  @param {object} o DataTables settings object {@link DataTable.models.oSettings}
-	 */
+var _icon = __nested_webpack_require_142349__(/*! ./icon */ "./src/icon.js");
 
-	/**
-	 * Page change event, fired when the paging of the table is altered.
-	 *  @name DataTable#page.dt
-	 *  @event
-	 *  @param {event} e jQuery event object
-	 *  @param {object} o DataTables settings object {@link DataTable.models.oSettings}
-	 */
+var _icon2 = _interopRequireDefault(_icon);
 
-	/**
-	 * Order event, fired when the ordering applied to the table is altered.
-	 *  @name DataTable#order.dt
-	 *  @event
-	 *  @param {event} e jQuery event object
-	 *  @param {object} o DataTables settings object {@link DataTable.models.oSettings}
-	 */
+var _icons = __nested_webpack_require_142349__(/*! ../dist/icons.json */ "./dist/icons.json");
 
-	/**
-	 * DataTables initialisation complete event, fired when the table is fully
-	 * drawn, including Ajax data loaded, if Ajax data is required.
-	 *  @name DataTable#init.dt
-	 *  @event
-	 *  @param {event} e jQuery event object
-	 *  @param {object} oSettings DataTables settings object
-	 *  @param {object} json The JSON object request from the server - only
-	 *    present if client-side Ajax sourced data is used</li></ol>
-	 */
+var _icons2 = _interopRequireDefault(_icons);
 
-	/**
-	 * State save event, fired when the table has changed state a new state save
-	 * is required. This event allows modification of the state saving object
-	 * prior to actually doing the save, including addition or other state
-	 * properties (for plug-ins) or modification of a DataTables core property.
-	 *  @name DataTable#stateSaveParams.dt
-	 *  @event
-	 *  @param {event} e jQuery event object
-	 *  @param {object} oSettings DataTables settings object
-	 *  @param {object} json The state information to be saved
-	 */
+var _tags = __nested_webpack_require_142349__(/*! ./tags.json */ "./src/tags.json");
 
-	/**
-	 * State load event, fired when the table is loading state from the stored
-	 * data, but prior to the settings object being modified by the saved state
-	 * - allowing modification of the saved state is required or loading of
-	 * state for a plug-in.
-	 *  @name DataTable#stateLoadParams.dt
-	 *  @event
-	 *  @param {event} e jQuery event object
-	 *  @param {object} oSettings DataTables settings object
-	 *  @param {object} json The saved state information
-	 */
+var _tags2 = _interopRequireDefault(_tags);
 
-	/**
-	 * State loaded event, fired when state has been loaded from stored data and
-	 * the settings object has been modified by the loaded data.
-	 *  @name DataTable#stateLoaded.dt
-	 *  @event
-	 *  @param {event} e jQuery event object
-	 *  @param {object} oSettings DataTables settings object
-	 *  @param {object} json The saved state information
-	 */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	/**
-	 * Processing event, fired when DataTables is doing some kind of processing
-	 * (be it, order, search or anything else). It can be used to indicate to
-	 * the end user that there is something happening, or that something has
-	 * finished.
-	 *  @name DataTable#processing.dt
-	 *  @event
-	 *  @param {event} e jQuery event object
-	 *  @param {object} oSettings DataTables settings object
-	 *  @param {boolean} bShow Flag for if DataTables is doing processing or not
-	 */
+exports.default = Object.keys(_icons2.default).map(function (key) {
+  return new _icon2.default(key, _icons2.default[key], _tags2.default[key]);
+}).reduce(function (object, icon) {
+  object[icon.name] = icon;
+  return object;
+}, {});
 
-	/**
-	 * Ajax (XHR) event, fired whenever an Ajax request is completed from a
-	 * request to made to the server for new data. This event is called before
-	 * DataTables processed the returned data, so it can also be used to pre-
-	 * process the data returned from the server, if needed.
-	 *
-	 * Note that this trigger is called in `fnServerData`, if you override
-	 * `fnServerData` and which to use this event, you need to trigger it in you
-	 * success function.
-	 *  @name DataTable#xhr.dt
-	 *  @event
-	 *  @param {event} e jQuery event object
-	 *  @param {object} o DataTables settings object {@link DataTable.models.oSettings}
-	 *  @param {object} json JSON returned from the server
-	 *
-	 *  @example
-	 *     // Use a custom property returned from the server in another DOM element
-	 *     $('#table').dataTable().on('xhr.dt', function (e, settings, json) {
-	 *       $('#status').html( json.status );
-	 *     } );
-	 *
-	 *  @example
-	 *     // Pre-process the data returned from the server
-	 *     $('#table').dataTable().on('xhr.dt', function (e, settings, json) {
-	 *       for ( var i=0, ien=json.aaData.length ; i<ien ; i++ ) {
-	 *         json.aaData[i].sum = json.aaData[i].one + json.aaData[i].two;
-	 *       }
-	 *       // Note no return - manipulate the data directly in the JSON object.
-	 *     } );
-	 */
+/***/ }),
 
-	/**
-	 * Destroy event, fired when the DataTable is destroyed by calling fnDestroy
-	 * or passing the bDestroy:true parameter in the initialisation object. This
-	 * can be used to remove bound events, added DOM nodes, etc.
-	 *  @name DataTable#destroy.dt
-	 *  @event
-	 *  @param {event} e jQuery event object
-	 *  @param {object} o DataTables settings object {@link DataTable.models.oSettings}
-	 */
+/***/ "./src/index.js":
+/*!**********************!*\
+  !*** ./src/index.js ***!
+  \**********************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_143325__) {
 
-	/**
-	 * Page length change event, fired when number of records to show on each
-	 * page (the length) is changed.
-	 *  @name DataTable#length.dt
-	 *  @event
-	 *  @param {event} e jQuery event object
-	 *  @param {object} o DataTables settings object {@link DataTable.models.oSettings}
-	 *  @param {integer} len New length
-	 */
+"use strict";
 
-	/**
-	 * Column sizing has changed.
-	 *  @name DataTable#column-sizing.dt
-	 *  @event
-	 *  @param {event} e jQuery event object
-	 *  @param {object} o DataTables settings object {@link DataTable.models.oSettings}
-	 */
 
-	/**
-	 * Column visibility has changed.
-	 *  @name DataTable#column-visibility.dt
-	 *  @event
-	 *  @param {event} e jQuery event object
-	 *  @param {object} o DataTables settings object {@link DataTable.models.oSettings}
-	 *  @param {int} column Column index
-	 *  @param {bool} vis `false` if column now hidden, or `true` if visible
-	 */
+var _icons = __nested_webpack_require_143325__(/*! ./icons */ "./src/icons.js");
 
-	return $.fn.dataTable;
-}));
+var _icons2 = _interopRequireDefault(_icons);
 
+var _toSvg = __nested_webpack_require_143325__(/*! ./to-svg */ "./src/to-svg.js");
+
+var _toSvg2 = _interopRequireDefault(_toSvg);
+
+var _replace = __nested_webpack_require_143325__(/*! ./replace */ "./src/replace.js");
+
+var _replace2 = _interopRequireDefault(_replace);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+module.exports = { icons: _icons2.default, toSvg: _toSvg2.default, replace: _replace2.default };
+
+/***/ }),
+
+/***/ "./src/replace.js":
+/*!************************!*\
+  !*** ./src/replace.js ***!
+  \************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_144107__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; /* eslint-env browser */
+
+
+var _dedupe = __nested_webpack_require_144107__(/*! classnames/dedupe */ "./node_modules/classnames/dedupe.js");
+
+var _dedupe2 = _interopRequireDefault(_dedupe);
+
+var _icons = __nested_webpack_require_144107__(/*! ./icons */ "./src/icons.js");
+
+var _icons2 = _interopRequireDefault(_icons);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Replace all HTML elements that have a `data-feather` attribute with SVG markup
+ * corresponding to the element's `data-feather` attribute value.
+ * @param {Object} attrs
+ */
+function replace() {
+  var attrs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+  if (typeof document === 'undefined') {
+    throw new Error('`feather.replace()` only works in a browser environment.');
+  }
+
+  var elementsToReplace = document.querySelectorAll('[data-feather]');
+
+  Array.from(elementsToReplace).forEach(function (element) {
+    return replaceElement(element, attrs);
+  });
+}
+
+/**
+ * Replace a single HTML element with SVG markup
+ * corresponding to the element's `data-feather` attribute value.
+ * @param {HTMLElement} element
+ * @param {Object} attrs
+ */
+function replaceElement(element) {
+  var attrs = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+  var elementAttrs = getAttrs(element);
+  var name = elementAttrs['data-feather'];
+  delete elementAttrs['data-feather'];
+
+  var svgString = _icons2.default[name].toSvg(_extends({}, attrs, elementAttrs, { class: (0, _dedupe2.default)(attrs.class, elementAttrs.class) }));
+  var svgDocument = new DOMParser().parseFromString(svgString, 'image/svg+xml');
+  var svgElement = svgDocument.querySelector('svg');
+
+  element.parentNode.replaceChild(svgElement, element);
+}
+
+/**
+ * Get the attributes of an HTML element.
+ * @param {HTMLElement} element
+ * @returns {Object}
+ */
+function getAttrs(element) {
+  return Array.from(element.attributes).reduce(function (attrs, attr) {
+    attrs[attr.name] = attr.value;
+    return attrs;
+  }, {});
+}
+
+exports.default = replace;
+
+/***/ }),
+
+/***/ "./src/tags.json":
+/*!***********************!*\
+  !*** ./src/tags.json ***!
+  \***********************/
+/*! exports provided: activity, airplay, alert-circle, alert-octagon, alert-triangle, align-center, align-justify, align-left, align-right, anchor, archive, at-sign, award, aperture, bar-chart, bar-chart-2, battery, battery-charging, bell, bell-off, bluetooth, book-open, book, bookmark, box, briefcase, calendar, camera, cast, circle, clipboard, clock, cloud-drizzle, cloud-lightning, cloud-rain, cloud-snow, cloud, codepen, codesandbox, code, coffee, columns, command, compass, copy, corner-down-left, corner-down-right, corner-left-down, corner-left-up, corner-right-down, corner-right-up, corner-up-left, corner-up-right, cpu, credit-card, crop, crosshair, database, delete, disc, dollar-sign, droplet, edit, edit-2, edit-3, eye, eye-off, external-link, facebook, fast-forward, figma, file-minus, file-plus, file-text, film, filter, flag, folder-minus, folder-plus, folder, framer, frown, gift, git-branch, git-commit, git-merge, git-pull-request, github, gitlab, globe, hard-drive, hash, headphones, heart, help-circle, hexagon, home, image, inbox, instagram, key, layers, layout, life-bouy, link, link-2, linkedin, list, lock, log-in, log-out, mail, map-pin, map, maximize, maximize-2, meh, menu, message-circle, message-square, mic-off, mic, minimize, minimize-2, minus, monitor, moon, more-horizontal, more-vertical, mouse-pointer, move, music, navigation, navigation-2, octagon, package, paperclip, pause, pause-circle, pen-tool, percent, phone-call, phone-forwarded, phone-incoming, phone-missed, phone-off, phone-outgoing, phone, play, pie-chart, play-circle, plus, plus-circle, plus-square, pocket, power, printer, radio, refresh-cw, refresh-ccw, repeat, rewind, rotate-ccw, rotate-cw, rss, save, scissors, search, send, settings, share-2, shield, shield-off, shopping-bag, shopping-cart, shuffle, skip-back, skip-forward, slack, slash, sliders, smartphone, smile, speaker, star, stop-circle, sun, sunrise, sunset, tablet, tag, target, terminal, thermometer, thumbs-down, thumbs-up, toggle-left, toggle-right, tool, trash, trash-2, triangle, truck, tv, twitch, twitter, type, umbrella, unlock, user-check, user-minus, user-plus, user-x, user, users, video-off, video, voicemail, volume, volume-1, volume-2, volume-x, watch, wifi-off, wifi, wind, x-circle, x-octagon, x-square, x, youtube, zap-off, zap, zoom-in, zoom-out, default */
+/***/ (function(module) {
+
+module.exports = {"activity":["pulse","health","action","motion"],"airplay":["stream","cast","mirroring"],"alert-circle":["warning","alert","danger"],"alert-octagon":["warning","alert","danger"],"alert-triangle":["warning","alert","danger"],"align-center":["text alignment","center"],"align-justify":["text alignment","justified"],"align-left":["text alignment","left"],"align-right":["text alignment","right"],"anchor":[],"archive":["index","box"],"at-sign":["mention","at","email","message"],"award":["achievement","badge"],"aperture":["camera","photo"],"bar-chart":["statistics","diagram","graph"],"bar-chart-2":["statistics","diagram","graph"],"battery":["power","electricity"],"battery-charging":["power","electricity"],"bell":["alarm","notification","sound"],"bell-off":["alarm","notification","silent"],"bluetooth":["wireless"],"book-open":["read","library"],"book":["read","dictionary","booklet","magazine","library"],"bookmark":["read","clip","marker","tag"],"box":["cube"],"briefcase":["work","bag","baggage","folder"],"calendar":["date"],"camera":["photo"],"cast":["chromecast","airplay"],"circle":["off","zero","record"],"clipboard":["copy"],"clock":["time","watch","alarm"],"cloud-drizzle":["weather","shower"],"cloud-lightning":["weather","bolt"],"cloud-rain":["weather"],"cloud-snow":["weather","blizzard"],"cloud":["weather"],"codepen":["logo"],"codesandbox":["logo"],"code":["source","programming"],"coffee":["drink","cup","mug","tea","cafe","hot","beverage"],"columns":["layout"],"command":["keyboard","cmd","terminal","prompt"],"compass":["navigation","safari","travel","direction"],"copy":["clone","duplicate"],"corner-down-left":["arrow","return"],"corner-down-right":["arrow"],"corner-left-down":["arrow"],"corner-left-up":["arrow"],"corner-right-down":["arrow"],"corner-right-up":["arrow"],"corner-up-left":["arrow"],"corner-up-right":["arrow"],"cpu":["processor","technology"],"credit-card":["purchase","payment","cc"],"crop":["photo","image"],"crosshair":["aim","target"],"database":["storage","memory"],"delete":["remove"],"disc":["album","cd","dvd","music"],"dollar-sign":["currency","money","payment"],"droplet":["water"],"edit":["pencil","change"],"edit-2":["pencil","change"],"edit-3":["pencil","change"],"eye":["view","watch"],"eye-off":["view","watch","hide","hidden"],"external-link":["outbound"],"facebook":["logo","social"],"fast-forward":["music"],"figma":["logo","design","tool"],"file-minus":["delete","remove","erase"],"file-plus":["add","create","new"],"file-text":["data","txt","pdf"],"film":["movie","video"],"filter":["funnel","hopper"],"flag":["report"],"folder-minus":["directory"],"folder-plus":["directory"],"folder":["directory"],"framer":["logo","design","tool"],"frown":["emoji","face","bad","sad","emotion"],"gift":["present","box","birthday","party"],"git-branch":["code","version control"],"git-commit":["code","version control"],"git-merge":["code","version control"],"git-pull-request":["code","version control"],"github":["logo","version control"],"gitlab":["logo","version control"],"globe":["world","browser","language","translate"],"hard-drive":["computer","server","memory","data"],"hash":["hashtag","number","pound"],"headphones":["music","audio","sound"],"heart":["like","love","emotion"],"help-circle":["question mark"],"hexagon":["shape","node.js","logo"],"home":["house","living"],"image":["picture"],"inbox":["email"],"instagram":["logo","camera"],"key":["password","login","authentication","secure"],"layers":["stack"],"layout":["window","webpage"],"life-bouy":["help","life ring","support"],"link":["chain","url"],"link-2":["chain","url"],"linkedin":["logo","social media"],"list":["options"],"lock":["security","password","secure"],"log-in":["sign in","arrow","enter"],"log-out":["sign out","arrow","exit"],"mail":["email","message"],"map-pin":["location","navigation","travel","marker"],"map":["location","navigation","travel"],"maximize":["fullscreen"],"maximize-2":["fullscreen","arrows","expand"],"meh":["emoji","face","neutral","emotion"],"menu":["bars","navigation","hamburger"],"message-circle":["comment","chat"],"message-square":["comment","chat"],"mic-off":["record","sound","mute"],"mic":["record","sound","listen"],"minimize":["exit fullscreen","close"],"minimize-2":["exit fullscreen","arrows","close"],"minus":["subtract"],"monitor":["tv","screen","display"],"moon":["dark","night"],"more-horizontal":["ellipsis"],"more-vertical":["ellipsis"],"mouse-pointer":["arrow","cursor"],"move":["arrows"],"music":["note"],"navigation":["location","travel"],"navigation-2":["location","travel"],"octagon":["stop"],"package":["box","container"],"paperclip":["attachment"],"pause":["music","stop"],"pause-circle":["music","audio","stop"],"pen-tool":["vector","drawing"],"percent":["discount"],"phone-call":["ring"],"phone-forwarded":["call"],"phone-incoming":["call"],"phone-missed":["call"],"phone-off":["call","mute"],"phone-outgoing":["call"],"phone":["call"],"play":["music","start"],"pie-chart":["statistics","diagram"],"play-circle":["music","start"],"plus":["add","new"],"plus-circle":["add","new"],"plus-square":["add","new"],"pocket":["logo","save"],"power":["on","off"],"printer":["fax","office","device"],"radio":["signal"],"refresh-cw":["synchronise","arrows"],"refresh-ccw":["arrows"],"repeat":["loop","arrows"],"rewind":["music"],"rotate-ccw":["arrow"],"rotate-cw":["arrow"],"rss":["feed","subscribe"],"save":["floppy disk"],"scissors":["cut"],"search":["find","magnifier","magnifying glass"],"send":["message","mail","email","paper airplane","paper aeroplane"],"settings":["cog","edit","gear","preferences"],"share-2":["network","connections"],"shield":["security","secure"],"shield-off":["security","insecure"],"shopping-bag":["ecommerce","cart","purchase","store"],"shopping-cart":["ecommerce","cart","purchase","store"],"shuffle":["music"],"skip-back":["music"],"skip-forward":["music"],"slack":["logo"],"slash":["ban","no"],"sliders":["settings","controls"],"smartphone":["cellphone","device"],"smile":["emoji","face","happy","good","emotion"],"speaker":["audio","music"],"star":["bookmark","favorite","like"],"stop-circle":["media","music"],"sun":["brightness","weather","light"],"sunrise":["weather","time","morning","day"],"sunset":["weather","time","evening","night"],"tablet":["device"],"tag":["label"],"target":["logo","bullseye"],"terminal":["code","command line","prompt"],"thermometer":["temperature","celsius","fahrenheit","weather"],"thumbs-down":["dislike","bad","emotion"],"thumbs-up":["like","good","emotion"],"toggle-left":["on","off","switch"],"toggle-right":["on","off","switch"],"tool":["settings","spanner"],"trash":["garbage","delete","remove","bin"],"trash-2":["garbage","delete","remove","bin"],"triangle":["delta"],"truck":["delivery","van","shipping","transport","lorry"],"tv":["television","stream"],"twitch":["logo"],"twitter":["logo","social"],"type":["text"],"umbrella":["rain","weather"],"unlock":["security"],"user-check":["followed","subscribed"],"user-minus":["delete","remove","unfollow","unsubscribe"],"user-plus":["new","add","create","follow","subscribe"],"user-x":["delete","remove","unfollow","unsubscribe","unavailable"],"user":["person","account"],"users":["group"],"video-off":["camera","movie","film"],"video":["camera","movie","film"],"voicemail":["phone"],"volume":["music","sound","mute"],"volume-1":["music","sound"],"volume-2":["music","sound"],"volume-x":["music","sound","mute"],"watch":["clock","time"],"wifi-off":["disabled"],"wifi":["connection","signal","wireless"],"wind":["weather","air"],"x-circle":["cancel","close","delete","remove","times","clear"],"x-octagon":["delete","stop","alert","warning","times","clear"],"x-square":["cancel","close","delete","remove","times","clear"],"x":["cancel","close","delete","remove","times","clear"],"youtube":["logo","video","play"],"zap-off":["flash","camera","lightning"],"zap":["flash","camera","lightning"],"zoom-in":["magnifying glass"],"zoom-out":["magnifying glass"]};
+
+/***/ }),
+
+/***/ "./src/to-svg.js":
+/*!***********************!*\
+  !*** ./src/to-svg.js ***!
+  \***********************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_157167__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _icons = __nested_webpack_require_157167__(/*! ./icons */ "./src/icons.js");
+
+var _icons2 = _interopRequireDefault(_icons);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Create an SVG string.
+ * @deprecated
+ * @param {string} name
+ * @param {Object} attrs
+ * @returns {string}
+ */
+function toSvg(name) {
+  var attrs = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+  console.warn('feather.toSvg() is deprecated. Please use feather.icons[name].toSvg() instead.');
+
+  if (!name) {
+    throw new Error('The required `key` (icon name) parameter is missing.');
+  }
+
+  if (!_icons2.default[name]) {
+    throw new Error('No icon matching \'' + name + '\'. See the complete list of icons at https://feathericons.com');
+  }
+
+  return _icons2.default[name].toSvg(attrs);
+}
+
+exports.default = toSvg;
+
+/***/ }),
+
+/***/ 0:
+/*!**************************************************!*\
+  !*** multi core-js/es/array/from ./src/index.js ***!
+  \**************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __nested_webpack_require_158389__) {
+
+__nested_webpack_require_158389__(/*! core-js/es/array/from */"./node_modules/core-js/es/array/from.js");
+module.exports = __nested_webpack_require_158389__(/*! /home/travis/build/feathericons/feather/src/index.js */"./src/index.js");
+
+
+/***/ })
+
+/******/ });
+});
+//# sourceMappingURL=feather.js.map
 
 /***/ }),
 
@@ -55128,6 +42496,770 @@ process.umask = function() { return 0; };
  */
 !function(t,e){ true?module.exports=e():0}(window,(function(){return function(t){var e={};function n(o){if(e[o])return e[o].exports;var r=e[o]={i:o,l:!1,exports:{}};return t[o].call(r.exports,r,r.exports,n),r.l=!0,r.exports}return n.m=t,n.c=e,n.d=function(t,e,o){n.o(t,e)||Object.defineProperty(t,e,{enumerable:!0,get:o})},n.r=function(t){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(t,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(t,"__esModule",{value:!0})},n.t=function(t,e){if(1&e&&(t=n(t)),8&e)return t;if(4&e&&"object"==typeof t&&t&&t.__esModule)return t;var o=Object.create(null);if(n.r(o),Object.defineProperty(o,"default",{enumerable:!0,value:t}),2&e&&"string"!=typeof t)for(var r in t)n.d(o,r,function(e){return t[e]}.bind(null,r));return o},n.n=function(t){var e=t&&t.__esModule?function(){return t.default}:function(){return t};return n.d(e,"a",e),e},n.o=function(t,e){return Object.prototype.hasOwnProperty.call(t,e)},n.p="",n(n.s=2)}([function(t,e,n){"use strict";var o,r=this&&this.__extends||(o=function(t,e){return(o=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,e){t.__proto__=e}||function(t,e){for(var n in e)e.hasOwnProperty(n)&&(t[n]=e[n])})(t,e)},function(t,e){function n(){this.constructor=t}o(t,e),t.prototype=null===e?Object.create(e):(n.prototype=e.prototype,new n)});Object.defineProperty(e,"__esModule",{value:!0});var i=function(){function t(t){void 0===t&&(t="="),this._paddingCharacter=t}return t.prototype.encodedLength=function(t){return this._paddingCharacter?(t+2)/3*4|0:(8*t+5)/6|0},t.prototype.encode=function(t){for(var e="",n=0;n<t.length-2;n+=3){var o=t[n]<<16|t[n+1]<<8|t[n+2];e+=this._encodeByte(o>>>18&63),e+=this._encodeByte(o>>>12&63),e+=this._encodeByte(o>>>6&63),e+=this._encodeByte(o>>>0&63)}var r=t.length-n;if(r>0){o=t[n]<<16|(2===r?t[n+1]<<8:0);e+=this._encodeByte(o>>>18&63),e+=this._encodeByte(o>>>12&63),e+=2===r?this._encodeByte(o>>>6&63):this._paddingCharacter||"",e+=this._paddingCharacter||""}return e},t.prototype.maxDecodedLength=function(t){return this._paddingCharacter?t/4*3|0:(6*t+7)/8|0},t.prototype.decodedLength=function(t){return this.maxDecodedLength(t.length-this._getPaddingLength(t))},t.prototype.decode=function(t){if(0===t.length)return new Uint8Array(0);for(var e=this._getPaddingLength(t),n=t.length-e,o=new Uint8Array(this.maxDecodedLength(n)),r=0,i=0,s=0,c=0,a=0,u=0,h=0;i<n-4;i+=4)c=this._decodeChar(t.charCodeAt(i+0)),a=this._decodeChar(t.charCodeAt(i+1)),u=this._decodeChar(t.charCodeAt(i+2)),h=this._decodeChar(t.charCodeAt(i+3)),o[r++]=c<<2|a>>>4,o[r++]=a<<4|u>>>2,o[r++]=u<<6|h,s|=256&c,s|=256&a,s|=256&u,s|=256&h;if(i<n-1&&(c=this._decodeChar(t.charCodeAt(i)),a=this._decodeChar(t.charCodeAt(i+1)),o[r++]=c<<2|a>>>4,s|=256&c,s|=256&a),i<n-2&&(u=this._decodeChar(t.charCodeAt(i+2)),o[r++]=a<<4|u>>>2,s|=256&u),i<n-3&&(h=this._decodeChar(t.charCodeAt(i+3)),o[r++]=u<<6|h,s|=256&h),0!==s)throw new Error("Base64Coder: incorrect characters for decoding");return o},t.prototype._encodeByte=function(t){var e=t;return e+=65,e+=25-t>>>8&6,e+=51-t>>>8&-75,e+=61-t>>>8&-15,e+=62-t>>>8&3,String.fromCharCode(e)},t.prototype._decodeChar=function(t){var e=256;return e+=(42-t&t-44)>>>8&-256+t-43+62,e+=(46-t&t-48)>>>8&-256+t-47+63,e+=(47-t&t-58)>>>8&-256+t-48+52,e+=(64-t&t-91)>>>8&-256+t-65+0,e+=(96-t&t-123)>>>8&-256+t-97+26},t.prototype._getPaddingLength=function(t){var e=0;if(this._paddingCharacter){for(var n=t.length-1;n>=0&&t[n]===this._paddingCharacter;n--)e++;if(t.length<4||e>2)throw new Error("Base64Coder: incorrect padding")}return e},t}();e.Coder=i;var s=new i;e.encode=function(t){return s.encode(t)},e.decode=function(t){return s.decode(t)};var c=function(t){function e(){return null!==t&&t.apply(this,arguments)||this}return r(e,t),e.prototype._encodeByte=function(t){var e=t;return e+=65,e+=25-t>>>8&6,e+=51-t>>>8&-75,e+=61-t>>>8&-13,e+=62-t>>>8&49,String.fromCharCode(e)},e.prototype._decodeChar=function(t){var e=256;return e+=(44-t&t-46)>>>8&-256+t-45+62,e+=(94-t&t-96)>>>8&-256+t-95+63,e+=(47-t&t-58)>>>8&-256+t-48+52,e+=(64-t&t-91)>>>8&-256+t-65+0,e+=(96-t&t-123)>>>8&-256+t-97+26},e}(i);e.URLSafeCoder=c;var a=new c;e.encodeURLSafe=function(t){return a.encode(t)},e.decodeURLSafe=function(t){return a.decode(t)},e.encodedLength=function(t){return s.encodedLength(t)},e.maxDecodedLength=function(t){return s.maxDecodedLength(t)},e.decodedLength=function(t){return s.decodedLength(t)}},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var o="utf8: invalid source encoding";function r(t){for(var e=0,n=0;n<t.length;n++){var o=t.charCodeAt(n);if(o<128)e+=1;else if(o<2048)e+=2;else if(o<55296)e+=3;else{if(!(o<=57343))throw new Error("utf8: invalid string");if(n>=t.length-1)throw new Error("utf8: invalid string");n++,e+=4}}return e}e.encode=function(t){for(var e=new Uint8Array(r(t)),n=0,o=0;o<t.length;o++){var i=t.charCodeAt(o);i<128?e[n++]=i:i<2048?(e[n++]=192|i>>6,e[n++]=128|63&i):i<55296?(e[n++]=224|i>>12,e[n++]=128|i>>6&63,e[n++]=128|63&i):(o++,i=(1023&i)<<10,i|=1023&t.charCodeAt(o),i+=65536,e[n++]=240|i>>18,e[n++]=128|i>>12&63,e[n++]=128|i>>6&63,e[n++]=128|63&i)}return e},e.encodedLength=r,e.decode=function(t){for(var e=[],n=0;n<t.length;n++){var r=t[n];if(128&r){var i=void 0;if(r<224){if(n>=t.length)throw new Error(o);if(128!=(192&(s=t[++n])))throw new Error(o);r=(31&r)<<6|63&s,i=128}else if(r<240){if(n>=t.length-1)throw new Error(o);var s=t[++n],c=t[++n];if(128!=(192&s)||128!=(192&c))throw new Error(o);r=(15&r)<<12|(63&s)<<6|63&c,i=2048}else{if(!(r<248))throw new Error(o);if(n>=t.length-2)throw new Error(o);s=t[++n],c=t[++n];var a=t[++n];if(128!=(192&s)||128!=(192&c)||128!=(192&a))throw new Error(o);r=(15&r)<<18|(63&s)<<12|(63&c)<<6|63&a,i=65536}if(r<i||r>=55296&&r<=57343)throw new Error(o);if(r>=65536){if(r>1114111)throw new Error(o);r-=65536,e.push(String.fromCharCode(55296|r>>10)),r=56320|1023&r}}e.push(String.fromCharCode(r))}return e.join("")}},function(t,e,n){t.exports=n(3).default},function(t,e,n){"use strict";n.r(e);var o,r=function(){function t(t,e){this.lastId=0,this.prefix=t,this.name=e}return t.prototype.create=function(t){this.lastId++;var e=this.lastId,n=this.prefix+e,o=this.name+"["+e+"]",r=!1,i=function(){r||(t.apply(null,arguments),r=!0)};return this[e]=i,{number:e,id:n,name:o,callback:i}},t.prototype.remove=function(t){delete this[t.number]},t}(),i=new r("_pusher_script_","Pusher.ScriptReceivers"),s={VERSION:"7.0.3",PROTOCOL:7,wsPort:80,wssPort:443,wsPath:"",httpHost:"sockjs.pusher.com",httpPort:80,httpsPort:443,httpPath:"/pusher",stats_host:"stats.pusher.com",authEndpoint:"/pusher/auth",authTransport:"ajax",activityTimeout:12e4,pongTimeout:3e4,unavailableTimeout:1e4,cluster:"mt1",cdn_http:"http://js.pusher.com",cdn_https:"https://js.pusher.com",dependency_suffix:""},c=function(){function t(t){this.options=t,this.receivers=t.receivers||i,this.loading={}}return t.prototype.load=function(t,e,n){var o=this;if(o.loading[t]&&o.loading[t].length>0)o.loading[t].push(n);else{o.loading[t]=[n];var r=_e.createScriptRequest(o.getPath(t,e)),i=o.receivers.create((function(e){if(o.receivers.remove(i),o.loading[t]){var n=o.loading[t];delete o.loading[t];for(var s=function(t){t||r.cleanup()},c=0;c<n.length;c++)n[c](e,s)}}));r.send(i)}},t.prototype.getRoot=function(t){var e=_e.getDocument().location.protocol;return(t&&t.useTLS||"https:"===e?this.options.cdn_https:this.options.cdn_http).replace(/\/*$/,"")+"/"+this.options.version},t.prototype.getPath=function(t,e){return this.getRoot(e)+"/"+t+this.options.suffix+".js"},t}(),a=new r("_pusher_dependencies","Pusher.DependenciesReceivers"),u=new c({cdn_http:s.cdn_http,cdn_https:s.cdn_https,version:s.VERSION,suffix:s.dependency_suffix,receivers:a}),h={baseUrl:"https://pusher.com",urls:{authenticationEndpoint:{path:"/docs/authenticating_users"},javascriptQuickStart:{path:"/docs/javascript_quick_start"},triggeringClientEvents:{path:"/docs/client_api_guide/client_events#trigger-events"},encryptedChannelSupport:{fullUrl:"https://github.com/pusher/pusher-js/tree/cc491015371a4bde5743d1c87a0fbac0feb53195#encrypted-channel-support"}}},p=function(t){var e,n=h.urls[t];return n?(n.fullUrl?e=n.fullUrl:n.path&&(e=h.baseUrl+n.path),e?"See: "+e:""):""},l=(o=function(t,e){return(o=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,e){t.__proto__=e}||function(t,e){for(var n in e)e.hasOwnProperty(n)&&(t[n]=e[n])})(t,e)},function(t,e){function n(){this.constructor=t}o(t,e),t.prototype=null===e?Object.create(e):(n.prototype=e.prototype,new n)}),f=function(t){function e(e){var n=this.constructor,o=t.call(this,e)||this;return Object.setPrototypeOf(o,n.prototype),o}return l(e,t),e}(Error),d=function(t){function e(e){var n=this.constructor,o=t.call(this,e)||this;return Object.setPrototypeOf(o,n.prototype),o}return l(e,t),e}(Error),y=function(t){function e(e){var n=this.constructor,o=t.call(this,e)||this;return Object.setPrototypeOf(o,n.prototype),o}return l(e,t),e}(Error),g=function(t){function e(e){var n=this.constructor,o=t.call(this,e)||this;return Object.setPrototypeOf(o,n.prototype),o}return l(e,t),e}(Error),v=function(t){function e(e){var n=this.constructor,o=t.call(this,e)||this;return Object.setPrototypeOf(o,n.prototype),o}return l(e,t),e}(Error),b=function(t){function e(e){var n=this.constructor,o=t.call(this,e)||this;return Object.setPrototypeOf(o,n.prototype),o}return l(e,t),e}(Error),m=function(t){function e(e){var n=this.constructor,o=t.call(this,e)||this;return Object.setPrototypeOf(o,n.prototype),o}return l(e,t),e}(Error),w=function(t){function e(e,n){var o=this.constructor,r=t.call(this,n)||this;return r.status=e,Object.setPrototypeOf(r,o.prototype),r}return l(e,t),e}(Error),_=function(t,e,n){var o,r=this;for(var i in(o=_e.createXHR()).open("POST",r.options.authEndpoint,!0),o.setRequestHeader("Content-Type","application/x-www-form-urlencoded"),this.authOptions.headers)o.setRequestHeader(i,this.authOptions.headers[i]);return o.onreadystatechange=function(){if(4===o.readyState)if(200===o.status){var t=void 0,e=!1;try{t=JSON.parse(o.responseText),e=!0}catch(t){n(new w(200,"JSON returned from auth endpoint was invalid, yet status code was 200. Data was: "+o.responseText),{auth:""})}e&&n(null,t)}else{var i=p("authenticationEndpoint");n(new w(o.status,"Unable to retrieve auth string from auth endpoint - received status: "+o.status+" from "+r.options.authEndpoint+". Clients must be authenticated to join private or presence channels. "+i),{auth:""})}},o.send(this.composeQuery(e)),o};for(var S=String.fromCharCode,k="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",C={},T=0,P=k.length;T<P;T++)C[k.charAt(T)]=T;var O=function(t){var e=t.charCodeAt(0);return e<128?t:e<2048?S(192|e>>>6)+S(128|63&e):S(224|e>>>12&15)+S(128|e>>>6&63)+S(128|63&e)},E=function(t){return t.replace(/[^\x00-\x7F]/g,O)},L=function(t){var e=[0,2,1][t.length%3],n=t.charCodeAt(0)<<16|(t.length>1?t.charCodeAt(1):0)<<8|(t.length>2?t.charCodeAt(2):0);return[k.charAt(n>>>18),k.charAt(n>>>12&63),e>=2?"=":k.charAt(n>>>6&63),e>=1?"=":k.charAt(63&n)].join("")},x=window.btoa||function(t){return t.replace(/[\s\S]{1,3}/g,L)},A=function(){function t(t,e,n,o){var r=this;this.clear=e,this.timer=t((function(){r.timer&&(r.timer=o(r.timer))}),n)}return t.prototype.isRunning=function(){return null!==this.timer},t.prototype.ensureAborted=function(){this.timer&&(this.clear(this.timer),this.timer=null)},t}(),R=function(){var t=function(e,n){return(t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,e){t.__proto__=e}||function(t,e){for(var n in e)e.hasOwnProperty(n)&&(t[n]=e[n])})(e,n)};return function(e,n){function o(){this.constructor=e}t(e,n),e.prototype=null===n?Object.create(n):(o.prototype=n.prototype,new o)}}();function j(t){window.clearTimeout(t)}function D(t){window.clearInterval(t)}var I=function(t){function e(e,n){return t.call(this,setTimeout,j,e,(function(t){return n(),null}))||this}return R(e,t),e}(A),N=function(t){function e(e,n){return t.call(this,setInterval,D,e,(function(t){return n(),t}))||this}return R(e,t),e}(A),M={now:function(){return Date.now?Date.now():(new Date).valueOf()},defer:function(t){return new I(0,t)},method:function(t){for(var e=[],n=1;n<arguments.length;n++)e[n-1]=arguments[n];var o=Array.prototype.slice.call(arguments,1);return function(e){return e[t].apply(e,o.concat(arguments))}}};function H(t){for(var e=[],n=1;n<arguments.length;n++)e[n-1]=arguments[n];for(var o=0;o<e.length;o++){var r=e[o];for(var i in r)r[i]&&r[i].constructor&&r[i].constructor===Object?t[i]=H(t[i]||{},r[i]):t[i]=r[i]}return t}function q(){for(var t=["Pusher"],e=0;e<arguments.length;e++)"string"==typeof arguments[e]?t.push(arguments[e]):t.push(Y(arguments[e]));return t.join(" : ")}function B(t,e){var n=Array.prototype.indexOf;if(null===t)return-1;if(n&&t.indexOf===n)return t.indexOf(e);for(var o=0,r=t.length;o<r;o++)if(t[o]===e)return o;return-1}function z(t,e){for(var n in t)Object.prototype.hasOwnProperty.call(t,n)&&e(t[n],n,t)}function U(t){var e=[];return z(t,(function(t,n){e.push(n)})),e}function F(t,e,n){for(var o=0;o<t.length;o++)e.call(n||window,t[o],o,t)}function X(t,e){for(var n=[],o=0;o<t.length;o++)n.push(e(t[o],o,t,n));return n}function J(t,e){e=e||function(t){return!!t};for(var n=[],o=0;o<t.length;o++)e(t[o],o,t,n)&&n.push(t[o]);return n}function W(t,e){var n={};return z(t,(function(o,r){(e&&e(o,r,t,n)||Boolean(o))&&(n[r]=o)})),n}function G(t,e){for(var n=0;n<t.length;n++)if(e(t[n],n,t))return!0;return!1}function Q(t){return e=function(t){return"object"==typeof t&&(t=Y(t)),encodeURIComponent((e=t.toString(),x(E(e))));var e},n={},z(t,(function(t,o){n[o]=e(t)})),n;var e,n}function V(t){var e,n,o=W(t,(function(t){return void 0!==t}));return X((e=Q(o),n=[],z(e,(function(t,e){n.push([e,t])})),n),M.method("join","=")).join("&")}function Y(t){try{return JSON.stringify(t)}catch(o){return JSON.stringify((e=[],n=[],function t(o,r){var i,s,c;switch(typeof o){case"object":if(!o)return null;for(i=0;i<e.length;i+=1)if(e[i]===o)return{$ref:n[i]};if(e.push(o),n.push(r),"[object Array]"===Object.prototype.toString.apply(o))for(c=[],i=0;i<o.length;i+=1)c[i]=t(o[i],r+"["+i+"]");else for(s in c={},o)Object.prototype.hasOwnProperty.call(o,s)&&(c[s]=t(o[s],r+"["+JSON.stringify(s)+"]"));return c;case"number":case"string":case"boolean":return o}}(t,"$")))}var e,n}var $=new(function(){function t(){this.globalLog=function(t){window.console&&window.console.log&&window.console.log(t)}}return t.prototype.debug=function(){for(var t=[],e=0;e<arguments.length;e++)t[e]=arguments[e];this.log(this.globalLog,t)},t.prototype.warn=function(){for(var t=[],e=0;e<arguments.length;e++)t[e]=arguments[e];this.log(this.globalLogWarn,t)},t.prototype.error=function(){for(var t=[],e=0;e<arguments.length;e++)t[e]=arguments[e];this.log(this.globalLogError,t)},t.prototype.globalLogWarn=function(t){window.console&&window.console.warn?window.console.warn(t):this.globalLog(t)},t.prototype.globalLogError=function(t){window.console&&window.console.error?window.console.error(t):this.globalLogWarn(t)},t.prototype.log=function(t){for(var e=[],n=1;n<arguments.length;n++)e[n-1]=arguments[n];var o=q.apply(this,arguments);if(Ie.log)Ie.log(o);else if(Ie.logToConsole){var r=t.bind(this);r(o)}},t}()),K=function(t,e,n){void 0!==this.authOptions.headers&&$.warn("To send headers with the auth request, you must use AJAX, rather than JSONP.");var o=t.nextAuthCallbackID.toString();t.nextAuthCallbackID++;var r=t.getDocument(),i=r.createElement("script");t.auth_callbacks[o]=function(t){n(null,t)};var s="Pusher.auth_callbacks['"+o+"']";i.src=this.options.authEndpoint+"?callback="+encodeURIComponent(s)+"&"+this.composeQuery(e);var c=r.getElementsByTagName("head")[0]||r.documentElement;c.insertBefore(i,c.firstChild)},Z=function(){function t(t){this.src=t}return t.prototype.send=function(t){var e=this,n="Error loading "+e.src;e.script=document.createElement("script"),e.script.id=t.id,e.script.src=e.src,e.script.type="text/javascript",e.script.charset="UTF-8",e.script.addEventListener?(e.script.onerror=function(){t.callback(n)},e.script.onload=function(){t.callback(null)}):e.script.onreadystatechange=function(){"loaded"!==e.script.readyState&&"complete"!==e.script.readyState||t.callback(null)},void 0===e.script.async&&document.attachEvent&&/opera/i.test(navigator.userAgent)?(e.errorScript=document.createElement("script"),e.errorScript.id=t.id+"_error",e.errorScript.text=t.name+"('"+n+"');",e.script.async=e.errorScript.async=!1):e.script.async=!0;var o=document.getElementsByTagName("head")[0];o.insertBefore(e.script,o.firstChild),e.errorScript&&o.insertBefore(e.errorScript,e.script.nextSibling)},t.prototype.cleanup=function(){this.script&&(this.script.onload=this.script.onerror=null,this.script.onreadystatechange=null),this.script&&this.script.parentNode&&this.script.parentNode.removeChild(this.script),this.errorScript&&this.errorScript.parentNode&&this.errorScript.parentNode.removeChild(this.errorScript),this.script=null,this.errorScript=null},t}(),tt=function(){function t(t,e){this.url=t,this.data=e}return t.prototype.send=function(t){if(!this.request){var e=V(this.data),n=this.url+"/"+t.number+"?"+e;this.request=_e.createScriptRequest(n),this.request.send(t)}},t.prototype.cleanup=function(){this.request&&this.request.cleanup()},t}(),et={name:"jsonp",getAgent:function(t,e){return function(n,o){var r="http"+(e?"s":"")+"://"+(t.host||t.options.host)+t.options.path,s=_e.createJSONPRequest(r,n),c=_e.ScriptReceivers.create((function(e,n){i.remove(c),s.cleanup(),n&&n.host&&(t.host=n.host),o&&o(e,n)}));s.send(c)}}};function nt(t,e,n){return t+(e.useTLS?"s":"")+"://"+(e.useTLS?e.hostTLS:e.hostNonTLS)+n}function ot(t,e){return"/app/"+t+("?protocol="+s.PROTOCOL+"&client=js&version="+s.VERSION+(e?"&"+e:""))}var rt={getInitial:function(t,e){return nt("ws",e,(e.httpPath||"")+ot(t,"flash=false"))}},it={getInitial:function(t,e){return nt("http",e,(e.httpPath||"/pusher")+ot(t))}},st={getInitial:function(t,e){return nt("http",e,e.httpPath||"/pusher")},getPath:function(t,e){return ot(t)}},ct=function(){function t(){this._callbacks={}}return t.prototype.get=function(t){return this._callbacks[at(t)]},t.prototype.add=function(t,e,n){var o=at(t);this._callbacks[o]=this._callbacks[o]||[],this._callbacks[o].push({fn:e,context:n})},t.prototype.remove=function(t,e,n){if(t||e||n){var o=t?[at(t)]:U(this._callbacks);e||n?this.removeCallback(o,e,n):this.removeAllCallbacks(o)}else this._callbacks={}},t.prototype.removeCallback=function(t,e,n){F(t,(function(t){this._callbacks[t]=J(this._callbacks[t]||[],(function(t){return e&&e!==t.fn||n&&n!==t.context})),0===this._callbacks[t].length&&delete this._callbacks[t]}),this)},t.prototype.removeAllCallbacks=function(t){F(t,(function(t){delete this._callbacks[t]}),this)},t}();function at(t){return"_"+t}var ut=function(){function t(t){this.callbacks=new ct,this.global_callbacks=[],this.failThrough=t}return t.prototype.bind=function(t,e,n){return this.callbacks.add(t,e,n),this},t.prototype.bind_global=function(t){return this.global_callbacks.push(t),this},t.prototype.unbind=function(t,e,n){return this.callbacks.remove(t,e,n),this},t.prototype.unbind_global=function(t){return t?(this.global_callbacks=J(this.global_callbacks||[],(function(e){return e!==t})),this):(this.global_callbacks=[],this)},t.prototype.unbind_all=function(){return this.unbind(),this.unbind_global(),this},t.prototype.emit=function(t,e,n){for(var o=0;o<this.global_callbacks.length;o++)this.global_callbacks[o](t,e);var r=this.callbacks.get(t),i=[];if(n?i.push(e,n):e&&i.push(e),r&&r.length>0)for(o=0;o<r.length;o++)r[o].fn.apply(r[o].context||window,i);else this.failThrough&&this.failThrough(t,e);return this},t}(),ht=function(){var t=function(e,n){return(t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,e){t.__proto__=e}||function(t,e){for(var n in e)e.hasOwnProperty(n)&&(t[n]=e[n])})(e,n)};return function(e,n){function o(){this.constructor=e}t(e,n),e.prototype=null===n?Object.create(n):(o.prototype=n.prototype,new o)}}(),pt=function(t){function e(e,n,o,r,i){var s=t.call(this)||this;return s.initialize=_e.transportConnectionInitializer,s.hooks=e,s.name=n,s.priority=o,s.key=r,s.options=i,s.state="new",s.timeline=i.timeline,s.activityTimeout=i.activityTimeout,s.id=s.timeline.generateUniqueID(),s}return ht(e,t),e.prototype.handlesActivityChecks=function(){return Boolean(this.hooks.handlesActivityChecks)},e.prototype.supportsPing=function(){return Boolean(this.hooks.supportsPing)},e.prototype.connect=function(){var t=this;if(this.socket||"initialized"!==this.state)return!1;var e=this.hooks.urls.getInitial(this.key,this.options);try{this.socket=this.hooks.getSocket(e,this.options)}catch(e){return M.defer((function(){t.onError(e),t.changeState("closed")})),!1}return this.bindListeners(),$.debug("Connecting",{transport:this.name,url:e}),this.changeState("connecting"),!0},e.prototype.close=function(){return!!this.socket&&(this.socket.close(),!0)},e.prototype.send=function(t){var e=this;return"open"===this.state&&(M.defer((function(){e.socket&&e.socket.send(t)})),!0)},e.prototype.ping=function(){"open"===this.state&&this.supportsPing()&&this.socket.ping()},e.prototype.onOpen=function(){this.hooks.beforeOpen&&this.hooks.beforeOpen(this.socket,this.hooks.urls.getPath(this.key,this.options)),this.changeState("open"),this.socket.onopen=void 0},e.prototype.onError=function(t){this.emit("error",{type:"WebSocketError",error:t}),this.timeline.error(this.buildTimelineMessage({error:t.toString()}))},e.prototype.onClose=function(t){t?this.changeState("closed",{code:t.code,reason:t.reason,wasClean:t.wasClean}):this.changeState("closed"),this.unbindListeners(),this.socket=void 0},e.prototype.onMessage=function(t){this.emit("message",t)},e.prototype.onActivity=function(){this.emit("activity")},e.prototype.bindListeners=function(){var t=this;this.socket.onopen=function(){t.onOpen()},this.socket.onerror=function(e){t.onError(e)},this.socket.onclose=function(e){t.onClose(e)},this.socket.onmessage=function(e){t.onMessage(e)},this.supportsPing()&&(this.socket.onactivity=function(){t.onActivity()})},e.prototype.unbindListeners=function(){this.socket&&(this.socket.onopen=void 0,this.socket.onerror=void 0,this.socket.onclose=void 0,this.socket.onmessage=void 0,this.supportsPing()&&(this.socket.onactivity=void 0))},e.prototype.changeState=function(t,e){this.state=t,this.timeline.info(this.buildTimelineMessage({state:t,params:e})),this.emit(t,e)},e.prototype.buildTimelineMessage=function(t){return H({cid:this.id},t)},e}(ut),lt=function(){function t(t){this.hooks=t}return t.prototype.isSupported=function(t){return this.hooks.isSupported(t)},t.prototype.createConnection=function(t,e,n,o){return new pt(this.hooks,t,e,n,o)},t}(),ft=new lt({urls:rt,handlesActivityChecks:!1,supportsPing:!1,isInitialized:function(){return Boolean(_e.getWebSocketAPI())},isSupported:function(){return Boolean(_e.getWebSocketAPI())},getSocket:function(t){return _e.createWebSocket(t)}}),dt={urls:it,handlesActivityChecks:!1,supportsPing:!0,isInitialized:function(){return!0}},yt=H({getSocket:function(t){return _e.HTTPFactory.createStreamingSocket(t)}},dt),gt=H({getSocket:function(t){return _e.HTTPFactory.createPollingSocket(t)}},dt),vt={isSupported:function(){return _e.isXHRSupported()}},bt={ws:ft,xhr_streaming:new lt(H({},yt,vt)),xhr_polling:new lt(H({},gt,vt))},mt=new lt({file:"sockjs",urls:st,handlesActivityChecks:!0,supportsPing:!1,isSupported:function(){return!0},isInitialized:function(){return void 0!==window.SockJS},getSocket:function(t,e){return new window.SockJS(t,null,{js_path:u.getPath("sockjs",{useTLS:e.useTLS}),ignore_null_origin:e.ignoreNullOrigin})},beforeOpen:function(t,e){t.send(JSON.stringify({path:e}))}}),wt={isSupported:function(t){return _e.isXDRSupported(t.useTLS)}},_t=new lt(H({},yt,wt)),St=new lt(H({},gt,wt));bt.xdr_streaming=_t,bt.xdr_polling=St,bt.sockjs=mt;var kt=bt,Ct=function(){var t=function(e,n){return(t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,e){t.__proto__=e}||function(t,e){for(var n in e)e.hasOwnProperty(n)&&(t[n]=e[n])})(e,n)};return function(e,n){function o(){this.constructor=e}t(e,n),e.prototype=null===n?Object.create(n):(o.prototype=n.prototype,new o)}}(),Tt=new(function(t){function e(){var e=t.call(this)||this,n=e;return void 0!==window.addEventListener&&(window.addEventListener("online",(function(){n.emit("online")}),!1),window.addEventListener("offline",(function(){n.emit("offline")}),!1)),e}return Ct(e,t),e.prototype.isOnline=function(){return void 0===window.navigator.onLine||window.navigator.onLine},e}(ut)),Pt=function(){function t(t,e,n){this.manager=t,this.transport=e,this.minPingDelay=n.minPingDelay,this.maxPingDelay=n.maxPingDelay,this.pingDelay=void 0}return t.prototype.createConnection=function(t,e,n,o){var r=this;o=H({},o,{activityTimeout:this.pingDelay});var i=this.transport.createConnection(t,e,n,o),s=null,c=function(){i.unbind("open",c),i.bind("closed",a),s=M.now()},a=function(t){if(i.unbind("closed",a),1002===t.code||1003===t.code)r.manager.reportDeath();else if(!t.wasClean&&s){var e=M.now()-s;e<2*r.maxPingDelay&&(r.manager.reportDeath(),r.pingDelay=Math.max(e/2,r.minPingDelay))}};return i.bind("open",c),i},t.prototype.isSupported=function(t){return this.manager.isAlive()&&this.transport.isSupported(t)},t}(),Ot={decodeMessage:function(t){try{var e=JSON.parse(t.data),n=e.data;if("string"==typeof n)try{n=JSON.parse(e.data)}catch(t){}var o={event:e.event,channel:e.channel,data:n};return e.user_id&&(o.user_id=e.user_id),o}catch(e){throw{type:"MessageParseError",error:e,data:t.data}}},encodeMessage:function(t){return JSON.stringify(t)},processHandshake:function(t){var e=Ot.decodeMessage(t);if("pusher:connection_established"===e.event){if(!e.data.activity_timeout)throw"No activity timeout specified in handshake";return{action:"connected",id:e.data.socket_id,activityTimeout:1e3*e.data.activity_timeout}}if("pusher:error"===e.event)return{action:this.getCloseAction(e.data),error:this.getCloseError(e.data)};throw"Invalid handshake"},getCloseAction:function(t){return t.code<4e3?t.code>=1002&&t.code<=1004?"backoff":null:4e3===t.code?"tls_only":t.code<4100?"refused":t.code<4200?"backoff":t.code<4300?"retry":"refused"},getCloseError:function(t){return 1e3!==t.code&&1001!==t.code?{type:"PusherError",data:{code:t.code,message:t.reason||t.message}}:null}},Et=Ot,Lt=function(){var t=function(e,n){return(t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,e){t.__proto__=e}||function(t,e){for(var n in e)e.hasOwnProperty(n)&&(t[n]=e[n])})(e,n)};return function(e,n){function o(){this.constructor=e}t(e,n),e.prototype=null===n?Object.create(n):(o.prototype=n.prototype,new o)}}(),xt=function(t){function e(e,n){var o=t.call(this)||this;return o.id=e,o.transport=n,o.activityTimeout=n.activityTimeout,o.bindListeners(),o}return Lt(e,t),e.prototype.handlesActivityChecks=function(){return this.transport.handlesActivityChecks()},e.prototype.send=function(t){return this.transport.send(t)},e.prototype.send_event=function(t,e,n){var o={event:t,data:e};return n&&(o.channel=n),$.debug("Event sent",o),this.send(Et.encodeMessage(o))},e.prototype.ping=function(){this.transport.supportsPing()?this.transport.ping():this.send_event("pusher:ping",{})},e.prototype.close=function(){this.transport.close()},e.prototype.bindListeners=function(){var t=this,e={message:function(e){var n;try{n=Et.decodeMessage(e)}catch(n){t.emit("error",{type:"MessageParseError",error:n,data:e.data})}if(void 0!==n){switch($.debug("Event recd",n),n.event){case"pusher:error":t.emit("error",{type:"PusherError",data:n.data});break;case"pusher:ping":t.emit("ping");break;case"pusher:pong":t.emit("pong")}t.emit("message",n)}},activity:function(){t.emit("activity")},error:function(e){t.emit("error",e)},closed:function(e){n(),e&&e.code&&t.handleCloseEvent(e),t.transport=null,t.emit("closed")}},n=function(){z(e,(function(e,n){t.transport.unbind(n,e)}))};z(e,(function(e,n){t.transport.bind(n,e)}))},e.prototype.handleCloseEvent=function(t){var e=Et.getCloseAction(t),n=Et.getCloseError(t);n&&this.emit("error",n),e&&this.emit(e,{action:e,error:n})},e}(ut),At=function(){function t(t,e){this.transport=t,this.callback=e,this.bindListeners()}return t.prototype.close=function(){this.unbindListeners(),this.transport.close()},t.prototype.bindListeners=function(){var t=this;this.onMessage=function(e){var n;t.unbindListeners();try{n=Et.processHandshake(e)}catch(e){return t.finish("error",{error:e}),void t.transport.close()}"connected"===n.action?t.finish("connected",{connection:new xt(n.id,t.transport),activityTimeout:n.activityTimeout}):(t.finish(n.action,{error:n.error}),t.transport.close())},this.onClosed=function(e){t.unbindListeners();var n=Et.getCloseAction(e)||"backoff",o=Et.getCloseError(e);t.finish(n,{error:o})},this.transport.bind("message",this.onMessage),this.transport.bind("closed",this.onClosed)},t.prototype.unbindListeners=function(){this.transport.unbind("message",this.onMessage),this.transport.unbind("closed",this.onClosed)},t.prototype.finish=function(t,e){this.callback(H({transport:this.transport,action:t},e))},t}(),Rt=function(){function t(t,e){this.channel=t;var n=e.authTransport;if(void 0===_e.getAuthorizers()[n])throw"'"+n+"' is not a recognized auth transport";this.type=n,this.options=e,this.authOptions=e.auth||{}}return t.prototype.composeQuery=function(t){var e="socket_id="+encodeURIComponent(t)+"&channel_name="+encodeURIComponent(this.channel.name);for(var n in this.authOptions.params)e+="&"+encodeURIComponent(n)+"="+encodeURIComponent(this.authOptions.params[n]);return e},t.prototype.authorize=function(e,n){t.authorizers=t.authorizers||_e.getAuthorizers(),t.authorizers[this.type].call(this,_e,e,n)},t}(),jt=function(){function t(t,e){this.timeline=t,this.options=e||{}}return t.prototype.send=function(t,e){this.timeline.isEmpty()||this.timeline.send(_e.TimelineTransport.getAgent(this,t),e)},t}(),Dt=function(){var t=function(e,n){return(t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,e){t.__proto__=e}||function(t,e){for(var n in e)e.hasOwnProperty(n)&&(t[n]=e[n])})(e,n)};return function(e,n){function o(){this.constructor=e}t(e,n),e.prototype=null===n?Object.create(n):(o.prototype=n.prototype,new o)}}(),It=function(t){function e(e,n){var o=t.call(this,(function(t,n){$.debug("No callbacks on "+e+" for "+t)}))||this;return o.name=e,o.pusher=n,o.subscribed=!1,o.subscriptionPending=!1,o.subscriptionCancelled=!1,o}return Dt(e,t),e.prototype.authorize=function(t,e){return e(null,{auth:""})},e.prototype.trigger=function(t,e){if(0!==t.indexOf("client-"))throw new f("Event '"+t+"' does not start with 'client-'");if(!this.subscribed){var n=p("triggeringClientEvents");$.warn("Client event triggered before channel 'subscription_succeeded' event . "+n)}return this.pusher.send_event(t,e,this.name)},e.prototype.disconnect=function(){this.subscribed=!1,this.subscriptionPending=!1},e.prototype.handleEvent=function(t){var e=t.event,n=t.data;if("pusher_internal:subscription_succeeded"===e)this.handleSubscriptionSucceededEvent(t);else if(0!==e.indexOf("pusher_internal:")){this.emit(e,n,{})}},e.prototype.handleSubscriptionSucceededEvent=function(t){this.subscriptionPending=!1,this.subscribed=!0,this.subscriptionCancelled?this.pusher.unsubscribe(this.name):this.emit("pusher:subscription_succeeded",t.data)},e.prototype.subscribe=function(){var t=this;this.subscribed||(this.subscriptionPending=!0,this.subscriptionCancelled=!1,this.authorize(this.pusher.connection.socket_id,(function(e,n){e?(t.subscriptionPending=!1,$.error(e.toString()),t.emit("pusher:subscription_error",Object.assign({},{type:"AuthError",error:e.message},e instanceof w?{status:e.status}:{}))):t.pusher.send_event("pusher:subscribe",{auth:n.auth,channel_data:n.channel_data,channel:t.name})})))},e.prototype.unsubscribe=function(){this.subscribed=!1,this.pusher.send_event("pusher:unsubscribe",{channel:this.name})},e.prototype.cancelSubscription=function(){this.subscriptionCancelled=!0},e.prototype.reinstateSubscription=function(){this.subscriptionCancelled=!1},e}(ut),Nt=function(){var t=function(e,n){return(t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,e){t.__proto__=e}||function(t,e){for(var n in e)e.hasOwnProperty(n)&&(t[n]=e[n])})(e,n)};return function(e,n){function o(){this.constructor=e}t(e,n),e.prototype=null===n?Object.create(n):(o.prototype=n.prototype,new o)}}(),Mt=function(t){function e(){return null!==t&&t.apply(this,arguments)||this}return Nt(e,t),e.prototype.authorize=function(t,e){return Qt.createAuthorizer(this,this.pusher.config).authorize(t,e)},e}(It),Ht=function(){function t(){this.reset()}return t.prototype.get=function(t){return Object.prototype.hasOwnProperty.call(this.members,t)?{id:t,info:this.members[t]}:null},t.prototype.each=function(t){var e=this;z(this.members,(function(n,o){t(e.get(o))}))},t.prototype.setMyID=function(t){this.myID=t},t.prototype.onSubscription=function(t){this.members=t.presence.hash,this.count=t.presence.count,this.me=this.get(this.myID)},t.prototype.addMember=function(t){return null===this.get(t.user_id)&&this.count++,this.members[t.user_id]=t.user_info,this.get(t.user_id)},t.prototype.removeMember=function(t){var e=this.get(t.user_id);return e&&(delete this.members[t.user_id],this.count--),e},t.prototype.reset=function(){this.members={},this.count=0,this.myID=null,this.me=null},t}(),qt=function(){var t=function(e,n){return(t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,e){t.__proto__=e}||function(t,e){for(var n in e)e.hasOwnProperty(n)&&(t[n]=e[n])})(e,n)};return function(e,n){function o(){this.constructor=e}t(e,n),e.prototype=null===n?Object.create(n):(o.prototype=n.prototype,new o)}}(),Bt=function(t){function e(e,n){var o=t.call(this,e,n)||this;return o.members=new Ht,o}return qt(e,t),e.prototype.authorize=function(e,n){var o=this;t.prototype.authorize.call(this,e,(function(t,e){if(!t){if(void 0===(e=e).channel_data){var r=p("authenticationEndpoint");return $.error("Invalid auth response for channel '"+o.name+"',expected 'channel_data' field. "+r),void n("Invalid auth response")}var i=JSON.parse(e.channel_data);o.members.setMyID(i.user_id)}n(t,e)}))},e.prototype.handleEvent=function(t){var e=t.event;if(0===e.indexOf("pusher_internal:"))this.handleInternalEvent(t);else{var n=t.data,o={};t.user_id&&(o.user_id=t.user_id),this.emit(e,n,o)}},e.prototype.handleInternalEvent=function(t){var e=t.event,n=t.data;switch(e){case"pusher_internal:subscription_succeeded":this.handleSubscriptionSucceededEvent(t);break;case"pusher_internal:member_added":var o=this.members.addMember(n);this.emit("pusher:member_added",o);break;case"pusher_internal:member_removed":var r=this.members.removeMember(n);r&&this.emit("pusher:member_removed",r)}},e.prototype.handleSubscriptionSucceededEvent=function(t){this.subscriptionPending=!1,this.subscribed=!0,this.subscriptionCancelled?this.pusher.unsubscribe(this.name):(this.members.onSubscription(t.data),this.emit("pusher:subscription_succeeded",this.members))},e.prototype.disconnect=function(){this.members.reset(),t.prototype.disconnect.call(this)},e}(Mt),zt=n(1),Ut=n(0),Ft=function(){var t=function(e,n){return(t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,e){t.__proto__=e}||function(t,e){for(var n in e)e.hasOwnProperty(n)&&(t[n]=e[n])})(e,n)};return function(e,n){function o(){this.constructor=e}t(e,n),e.prototype=null===n?Object.create(n):(o.prototype=n.prototype,new o)}}(),Xt=function(t){function e(e,n,o){var r=t.call(this,e,n)||this;return r.key=null,r.nacl=o,r}return Ft(e,t),e.prototype.authorize=function(e,n){var o=this;t.prototype.authorize.call(this,e,(function(t,e){if(t)n(t,e);else{var r=e.shared_secret;r?(o.key=Object(Ut.decode)(r),delete e.shared_secret,n(null,e)):n(new Error("No shared_secret key in auth payload for encrypted channel: "+o.name),null)}}))},e.prototype.trigger=function(t,e){throw new v("Client events are not currently supported for encrypted channels")},e.prototype.handleEvent=function(e){var n=e.event,o=e.data;0!==n.indexOf("pusher_internal:")&&0!==n.indexOf("pusher:")?this.handleEncryptedEvent(n,o):t.prototype.handleEvent.call(this,e)},e.prototype.handleEncryptedEvent=function(t,e){var n=this;if(this.key)if(e.ciphertext&&e.nonce){var o=Object(Ut.decode)(e.ciphertext);if(o.length<this.nacl.secretbox.overheadLength)$.error("Expected encrypted event ciphertext length to be "+this.nacl.secretbox.overheadLength+", got: "+o.length);else{var r=Object(Ut.decode)(e.nonce);if(r.length<this.nacl.secretbox.nonceLength)$.error("Expected encrypted event nonce length to be "+this.nacl.secretbox.nonceLength+", got: "+r.length);else{var i=this.nacl.secretbox.open(o,r,this.key);if(null===i)return $.debug("Failed to decrypt an event, probably because it was encrypted with a different key. Fetching a new key from the authEndpoint..."),void this.authorize(this.pusher.connection.socket_id,(function(e,s){e?$.error("Failed to make a request to the authEndpoint: "+s+". Unable to fetch new key, so dropping encrypted event"):null!==(i=n.nacl.secretbox.open(o,r,n.key))?n.emit(t,n.getDataToEmit(i)):$.error("Failed to decrypt event with new key. Dropping encrypted event")}));this.emit(t,this.getDataToEmit(i))}}}else $.error("Unexpected format for encrypted event, expected object with `ciphertext` and `nonce` fields, got: "+e);else $.debug("Received encrypted event before key has been retrieved from the authEndpoint")},e.prototype.getDataToEmit=function(t){var e=Object(zt.decode)(t);try{return JSON.parse(e)}catch(t){return e}},e}(Mt),Jt=function(){var t=function(e,n){return(t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,e){t.__proto__=e}||function(t,e){for(var n in e)e.hasOwnProperty(n)&&(t[n]=e[n])})(e,n)};return function(e,n){function o(){this.constructor=e}t(e,n),e.prototype=null===n?Object.create(n):(o.prototype=n.prototype,new o)}}(),Wt=function(t){function e(e,n){var o=t.call(this)||this;o.state="initialized",o.connection=null,o.key=e,o.options=n,o.timeline=o.options.timeline,o.usingTLS=o.options.useTLS,o.errorCallbacks=o.buildErrorCallbacks(),o.connectionCallbacks=o.buildConnectionCallbacks(o.errorCallbacks),o.handshakeCallbacks=o.buildHandshakeCallbacks(o.errorCallbacks);var r=_e.getNetwork();return r.bind("online",(function(){o.timeline.info({netinfo:"online"}),"connecting"!==o.state&&"unavailable"!==o.state||o.retryIn(0)})),r.bind("offline",(function(){o.timeline.info({netinfo:"offline"}),o.connection&&o.sendActivityCheck()})),o.updateStrategy(),o}return Jt(e,t),e.prototype.connect=function(){this.connection||this.runner||(this.strategy.isSupported()?(this.updateState("connecting"),this.startConnecting(),this.setUnavailableTimer()):this.updateState("failed"))},e.prototype.send=function(t){return!!this.connection&&this.connection.send(t)},e.prototype.send_event=function(t,e,n){return!!this.connection&&this.connection.send_event(t,e,n)},e.prototype.disconnect=function(){this.disconnectInternally(),this.updateState("disconnected")},e.prototype.isUsingTLS=function(){return this.usingTLS},e.prototype.startConnecting=function(){var t=this,e=function(n,o){n?t.runner=t.strategy.connect(0,e):"error"===o.action?(t.emit("error",{type:"HandshakeError",error:o.error}),t.timeline.error({handshakeError:o.error})):(t.abortConnecting(),t.handshakeCallbacks[o.action](o))};this.runner=this.strategy.connect(0,e)},e.prototype.abortConnecting=function(){this.runner&&(this.runner.abort(),this.runner=null)},e.prototype.disconnectInternally=function(){(this.abortConnecting(),this.clearRetryTimer(),this.clearUnavailableTimer(),this.connection)&&this.abandonConnection().close()},e.prototype.updateStrategy=function(){this.strategy=this.options.getStrategy({key:this.key,timeline:this.timeline,useTLS:this.usingTLS})},e.prototype.retryIn=function(t){var e=this;this.timeline.info({action:"retry",delay:t}),t>0&&this.emit("connecting_in",Math.round(t/1e3)),this.retryTimer=new I(t||0,(function(){e.disconnectInternally(),e.connect()}))},e.prototype.clearRetryTimer=function(){this.retryTimer&&(this.retryTimer.ensureAborted(),this.retryTimer=null)},e.prototype.setUnavailableTimer=function(){var t=this;this.unavailableTimer=new I(this.options.unavailableTimeout,(function(){t.updateState("unavailable")}))},e.prototype.clearUnavailableTimer=function(){this.unavailableTimer&&this.unavailableTimer.ensureAborted()},e.prototype.sendActivityCheck=function(){var t=this;this.stopActivityCheck(),this.connection.ping(),this.activityTimer=new I(this.options.pongTimeout,(function(){t.timeline.error({pong_timed_out:t.options.pongTimeout}),t.retryIn(0)}))},e.prototype.resetActivityCheck=function(){var t=this;this.stopActivityCheck(),this.connection&&!this.connection.handlesActivityChecks()&&(this.activityTimer=new I(this.activityTimeout,(function(){t.sendActivityCheck()})))},e.prototype.stopActivityCheck=function(){this.activityTimer&&this.activityTimer.ensureAborted()},e.prototype.buildConnectionCallbacks=function(t){var e=this;return H({},t,{message:function(t){e.resetActivityCheck(),e.emit("message",t)},ping:function(){e.send_event("pusher:pong",{})},activity:function(){e.resetActivityCheck()},error:function(t){e.emit("error",t)},closed:function(){e.abandonConnection(),e.shouldRetry()&&e.retryIn(1e3)}})},e.prototype.buildHandshakeCallbacks=function(t){var e=this;return H({},t,{connected:function(t){e.activityTimeout=Math.min(e.options.activityTimeout,t.activityTimeout,t.connection.activityTimeout||1/0),e.clearUnavailableTimer(),e.setConnection(t.connection),e.socket_id=e.connection.id,e.updateState("connected",{socket_id:e.socket_id})}})},e.prototype.buildErrorCallbacks=function(){var t=this,e=function(e){return function(n){n.error&&t.emit("error",{type:"WebSocketError",error:n.error}),e(n)}};return{tls_only:e((function(){t.usingTLS=!0,t.updateStrategy(),t.retryIn(0)})),refused:e((function(){t.disconnect()})),backoff:e((function(){t.retryIn(1e3)})),retry:e((function(){t.retryIn(0)}))}},e.prototype.setConnection=function(t){for(var e in this.connection=t,this.connectionCallbacks)this.connection.bind(e,this.connectionCallbacks[e]);this.resetActivityCheck()},e.prototype.abandonConnection=function(){if(this.connection){for(var t in this.stopActivityCheck(),this.connectionCallbacks)this.connection.unbind(t,this.connectionCallbacks[t]);var e=this.connection;return this.connection=null,e}},e.prototype.updateState=function(t,e){var n=this.state;if(this.state=t,n!==t){var o=t;"connected"===o&&(o+=" with new socket ID "+e.socket_id),$.debug("State changed",n+" -> "+o),this.timeline.info({state:t,params:e}),this.emit("state_change",{previous:n,current:t}),this.emit(t,e)}},e.prototype.shouldRetry=function(){return"connecting"===this.state||"connected"===this.state},e}(ut),Gt=function(){function t(){this.channels={}}return t.prototype.add=function(t,e){return this.channels[t]||(this.channels[t]=function(t,e){if(0===t.indexOf("private-encrypted-")){if(e.config.nacl)return Qt.createEncryptedChannel(t,e,e.config.nacl);var n=p("encryptedChannelSupport");throw new v("Tried to subscribe to a private-encrypted- channel but no nacl implementation available. "+n)}return 0===t.indexOf("private-")?Qt.createPrivateChannel(t,e):0===t.indexOf("presence-")?Qt.createPresenceChannel(t,e):Qt.createChannel(t,e)}(t,e)),this.channels[t]},t.prototype.all=function(){return function(t){var e=[];return z(t,(function(t){e.push(t)})),e}(this.channels)},t.prototype.find=function(t){return this.channels[t]},t.prototype.remove=function(t){var e=this.channels[t];return delete this.channels[t],e},t.prototype.disconnect=function(){z(this.channels,(function(t){t.disconnect()}))},t}();var Qt={createChannels:function(){return new Gt},createConnectionManager:function(t,e){return new Wt(t,e)},createChannel:function(t,e){return new It(t,e)},createPrivateChannel:function(t,e){return new Mt(t,e)},createPresenceChannel:function(t,e){return new Bt(t,e)},createEncryptedChannel:function(t,e,n){return new Xt(t,e,n)},createTimelineSender:function(t,e){return new jt(t,e)},createAuthorizer:function(t,e){return e.authorizer?e.authorizer(t,e):new Rt(t,e)},createHandshake:function(t,e){return new At(t,e)},createAssistantToTheTransportManager:function(t,e,n){return new Pt(t,e,n)}},Vt=function(){function t(t){this.options=t||{},this.livesLeft=this.options.lives||1/0}return t.prototype.getAssistant=function(t){return Qt.createAssistantToTheTransportManager(this,t,{minPingDelay:this.options.minPingDelay,maxPingDelay:this.options.maxPingDelay})},t.prototype.isAlive=function(){return this.livesLeft>0},t.prototype.reportDeath=function(){this.livesLeft-=1},t}(),Yt=function(){function t(t,e){this.strategies=t,this.loop=Boolean(e.loop),this.failFast=Boolean(e.failFast),this.timeout=e.timeout,this.timeoutLimit=e.timeoutLimit}return t.prototype.isSupported=function(){return G(this.strategies,M.method("isSupported"))},t.prototype.connect=function(t,e){var n=this,o=this.strategies,r=0,i=this.timeout,s=null,c=function(a,u){u?e(null,u):(r+=1,n.loop&&(r%=o.length),r<o.length?(i&&(i*=2,n.timeoutLimit&&(i=Math.min(i,n.timeoutLimit))),s=n.tryStrategy(o[r],t,{timeout:i,failFast:n.failFast},c)):e(!0))};return s=this.tryStrategy(o[r],t,{timeout:i,failFast:this.failFast},c),{abort:function(){s.abort()},forceMinPriority:function(e){t=e,s&&s.forceMinPriority(e)}}},t.prototype.tryStrategy=function(t,e,n,o){var r=null,i=null;return n.timeout>0&&(r=new I(n.timeout,(function(){i.abort(),o(!0)}))),i=t.connect(e,(function(t,e){t&&r&&r.isRunning()&&!n.failFast||(r&&r.ensureAborted(),o(t,e))})),{abort:function(){r&&r.ensureAborted(),i.abort()},forceMinPriority:function(t){i.forceMinPriority(t)}}},t}(),$t=function(){function t(t){this.strategies=t}return t.prototype.isSupported=function(){return G(this.strategies,M.method("isSupported"))},t.prototype.connect=function(t,e){return function(t,e,n){var o=X(t,(function(t,o,r,i){return t.connect(e,n(o,i))}));return{abort:function(){F(o,Kt)},forceMinPriority:function(t){F(o,(function(e){e.forceMinPriority(t)}))}}}(this.strategies,t,(function(t,n){return function(o,r){n[t].error=o,o?function(t){return function(t,e){for(var n=0;n<t.length;n++)if(!e(t[n],n,t))return!1;return!0}(t,(function(t){return Boolean(t.error)}))}(n)&&e(!0):(F(n,(function(t){t.forceMinPriority(r.transport.priority)})),e(null,r))}}))},t}();function Kt(t){t.error||t.aborted||(t.abort(),t.aborted=!0)}var Zt=function(){function t(t,e,n){this.strategy=t,this.transports=e,this.ttl=n.ttl||18e5,this.usingTLS=n.useTLS,this.timeline=n.timeline}return t.prototype.isSupported=function(){return this.strategy.isSupported()},t.prototype.connect=function(t,e){var n=this.usingTLS,o=function(t){var e=_e.getLocalStorage();if(e)try{var n=e[te(t)];if(n)return JSON.parse(n)}catch(e){ee(t)}return null}(n),r=[this.strategy];if(o&&o.timestamp+this.ttl>=M.now()){var i=this.transports[o.transport];i&&(this.timeline.info({cached:!0,transport:o.transport,latency:o.latency}),r.push(new Yt([i],{timeout:2*o.latency+1e3,failFast:!0})))}var s=M.now(),c=r.pop().connect(t,(function o(i,a){i?(ee(n),r.length>0?(s=M.now(),c=r.pop().connect(t,o)):e(i)):(!function(t,e,n){var o=_e.getLocalStorage();if(o)try{o[te(t)]=Y({timestamp:M.now(),transport:e,latency:n})}catch(t){}}(n,a.transport.name,M.now()-s),e(null,a))}));return{abort:function(){c.abort()},forceMinPriority:function(e){t=e,c&&c.forceMinPriority(e)}}},t}();function te(t){return"pusherTransport"+(t?"TLS":"NonTLS")}function ee(t){var e=_e.getLocalStorage();if(e)try{delete e[te(t)]}catch(t){}}var ne=function(){function t(t,e){var n=e.delay;this.strategy=t,this.options={delay:n}}return t.prototype.isSupported=function(){return this.strategy.isSupported()},t.prototype.connect=function(t,e){var n,o=this.strategy,r=new I(this.options.delay,(function(){n=o.connect(t,e)}));return{abort:function(){r.ensureAborted(),n&&n.abort()},forceMinPriority:function(e){t=e,n&&n.forceMinPriority(e)}}},t}(),oe=function(){function t(t,e,n){this.test=t,this.trueBranch=e,this.falseBranch=n}return t.prototype.isSupported=function(){return(this.test()?this.trueBranch:this.falseBranch).isSupported()},t.prototype.connect=function(t,e){return(this.test()?this.trueBranch:this.falseBranch).connect(t,e)},t}(),re=function(){function t(t){this.strategy=t}return t.prototype.isSupported=function(){return this.strategy.isSupported()},t.prototype.connect=function(t,e){var n=this.strategy.connect(t,(function(t,o){o&&n.abort(),e(t,o)}));return n},t}();function ie(t){return function(){return t.isSupported()}}var se,ce=function(t,e,n){var o={};function r(e,r,i,s,c){var a=n(t,e,r,i,s,c);return o[e]=a,a}var i,s=Object.assign({},e,{hostNonTLS:t.wsHost+":"+t.wsPort,hostTLS:t.wsHost+":"+t.wssPort,httpPath:t.wsPath}),c=Object.assign({},s,{useTLS:!0}),a=Object.assign({},e,{hostNonTLS:t.httpHost+":"+t.httpPort,hostTLS:t.httpHost+":"+t.httpsPort,httpPath:t.httpPath}),u={loop:!0,timeout:15e3,timeoutLimit:6e4},h=new Vt({lives:2,minPingDelay:1e4,maxPingDelay:t.activityTimeout}),p=new Vt({lives:2,minPingDelay:1e4,maxPingDelay:t.activityTimeout}),l=r("ws","ws",3,s,h),f=r("wss","ws",3,c,h),d=r("sockjs","sockjs",1,a),y=r("xhr_streaming","xhr_streaming",1,a,p),g=r("xdr_streaming","xdr_streaming",1,a,p),v=r("xhr_polling","xhr_polling",1,a),b=r("xdr_polling","xdr_polling",1,a),m=new Yt([l],u),w=new Yt([f],u),_=new Yt([d],u),S=new Yt([new oe(ie(y),y,g)],u),k=new Yt([new oe(ie(v),v,b)],u),C=new Yt([new oe(ie(S),new $t([S,new ne(k,{delay:4e3})]),k)],u),T=new oe(ie(C),C,_);return i=e.useTLS?new $t([m,new ne(T,{delay:2e3})]):new $t([m,new ne(w,{delay:2e3}),new ne(T,{delay:5e3})]),new Zt(new re(new oe(ie(l),i,T)),o,{ttl:18e5,timeline:e.timeline,useTLS:e.useTLS})},ae={getRequest:function(t){var e=new window.XDomainRequest;return e.ontimeout=function(){t.emit("error",new d),t.close()},e.onerror=function(e){t.emit("error",e),t.close()},e.onprogress=function(){e.responseText&&e.responseText.length>0&&t.onChunk(200,e.responseText)},e.onload=function(){e.responseText&&e.responseText.length>0&&t.onChunk(200,e.responseText),t.emit("finished",200),t.close()},e},abortRequest:function(t){t.ontimeout=t.onerror=t.onprogress=t.onload=null,t.abort()}},ue=function(){var t=function(e,n){return(t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,e){t.__proto__=e}||function(t,e){for(var n in e)e.hasOwnProperty(n)&&(t[n]=e[n])})(e,n)};return function(e,n){function o(){this.constructor=e}t(e,n),e.prototype=null===n?Object.create(n):(o.prototype=n.prototype,new o)}}(),he=function(t){function e(e,n,o){var r=t.call(this)||this;return r.hooks=e,r.method=n,r.url=o,r}return ue(e,t),e.prototype.start=function(t){var e=this;this.position=0,this.xhr=this.hooks.getRequest(this),this.unloader=function(){e.close()},_e.addUnloadListener(this.unloader),this.xhr.open(this.method,this.url,!0),this.xhr.setRequestHeader&&this.xhr.setRequestHeader("Content-Type","application/json"),this.xhr.send(t)},e.prototype.close=function(){this.unloader&&(_e.removeUnloadListener(this.unloader),this.unloader=null),this.xhr&&(this.hooks.abortRequest(this.xhr),this.xhr=null)},e.prototype.onChunk=function(t,e){for(;;){var n=this.advanceBuffer(e);if(!n)break;this.emit("chunk",{status:t,data:n})}this.isBufferTooLong(e)&&this.emit("buffer_too_long")},e.prototype.advanceBuffer=function(t){var e=t.slice(this.position),n=e.indexOf("\n");return-1!==n?(this.position+=n+1,e.slice(0,n)):null},e.prototype.isBufferTooLong=function(t){return this.position===t.length&&t.length>262144},e}(ut);!function(t){t[t.CONNECTING=0]="CONNECTING",t[t.OPEN=1]="OPEN",t[t.CLOSED=3]="CLOSED"}(se||(se={}));var pe=se,le=1;function fe(t){var e=-1===t.indexOf("?")?"?":"&";return t+e+"t="+ +new Date+"&n="+le++}function de(t){return Math.floor(Math.random()*t)}var ye,ge=function(){function t(t,e){this.hooks=t,this.session=de(1e3)+"/"+function(t){for(var e=[],n=0;n<t;n++)e.push(de(32).toString(32));return e.join("")}(8),this.location=function(t){var e=/([^\?]*)\/*(\??.*)/.exec(t);return{base:e[1],queryString:e[2]}}(e),this.readyState=pe.CONNECTING,this.openStream()}return t.prototype.send=function(t){return this.sendRaw(JSON.stringify([t]))},t.prototype.ping=function(){this.hooks.sendHeartbeat(this)},t.prototype.close=function(t,e){this.onClose(t,e,!0)},t.prototype.sendRaw=function(t){if(this.readyState!==pe.OPEN)return!1;try{return _e.createSocketRequest("POST",fe((e=this.location,n=this.session,e.base+"/"+n+"/xhr_send"))).start(t),!0}catch(t){return!1}var e,n},t.prototype.reconnect=function(){this.closeStream(),this.openStream()},t.prototype.onClose=function(t,e,n){this.closeStream(),this.readyState=pe.CLOSED,this.onclose&&this.onclose({code:t,reason:e,wasClean:n})},t.prototype.onChunk=function(t){var e;if(200===t.status)switch(this.readyState===pe.OPEN&&this.onActivity(),t.data.slice(0,1)){case"o":e=JSON.parse(t.data.slice(1)||"{}"),this.onOpen(e);break;case"a":e=JSON.parse(t.data.slice(1)||"[]");for(var n=0;n<e.length;n++)this.onEvent(e[n]);break;case"m":e=JSON.parse(t.data.slice(1)||"null"),this.onEvent(e);break;case"h":this.hooks.onHeartbeat(this);break;case"c":e=JSON.parse(t.data.slice(1)||"[]"),this.onClose(e[0],e[1],!0)}},t.prototype.onOpen=function(t){var e,n,o;this.readyState===pe.CONNECTING?(t&&t.hostname&&(this.location.base=(e=this.location.base,n=t.hostname,(o=/(https?:\/\/)([^\/:]+)((\/|:)?.*)/.exec(e))[1]+n+o[3])),this.readyState=pe.OPEN,this.onopen&&this.onopen()):this.onClose(1006,"Server lost session",!0)},t.prototype.onEvent=function(t){this.readyState===pe.OPEN&&this.onmessage&&this.onmessage({data:t})},t.prototype.onActivity=function(){this.onactivity&&this.onactivity()},t.prototype.onError=function(t){this.onerror&&this.onerror(t)},t.prototype.openStream=function(){var t=this;this.stream=_e.createSocketRequest("POST",fe(this.hooks.getReceiveURL(this.location,this.session))),this.stream.bind("chunk",(function(e){t.onChunk(e)})),this.stream.bind("finished",(function(e){t.hooks.onFinished(t,e)})),this.stream.bind("buffer_too_long",(function(){t.reconnect()}));try{this.stream.start()}catch(e){M.defer((function(){t.onError(e),t.onClose(1006,"Could not start streaming",!1)}))}},t.prototype.closeStream=function(){this.stream&&(this.stream.unbind_all(),this.stream.close(),this.stream=null)},t}(),ve={getReceiveURL:function(t,e){return t.base+"/"+e+"/xhr_streaming"+t.queryString},onHeartbeat:function(t){t.sendRaw("[]")},sendHeartbeat:function(t){t.sendRaw("[]")},onFinished:function(t,e){t.onClose(1006,"Connection interrupted ("+e+")",!1)}},be={getReceiveURL:function(t,e){return t.base+"/"+e+"/xhr"+t.queryString},onHeartbeat:function(){},sendHeartbeat:function(t){t.sendRaw("[]")},onFinished:function(t,e){200===e?t.reconnect():t.onClose(1006,"Connection interrupted ("+e+")",!1)}},me={getRequest:function(t){var e=new(_e.getXHRAPI());return e.onreadystatechange=e.onprogress=function(){switch(e.readyState){case 3:e.responseText&&e.responseText.length>0&&t.onChunk(e.status,e.responseText);break;case 4:e.responseText&&e.responseText.length>0&&t.onChunk(e.status,e.responseText),t.emit("finished",e.status),t.close()}},e},abortRequest:function(t){t.onreadystatechange=null,t.abort()}},we={createStreamingSocket:function(t){return this.createSocket(ve,t)},createPollingSocket:function(t){return this.createSocket(be,t)},createSocket:function(t,e){return new ge(t,e)},createXHR:function(t,e){return this.createRequest(me,t,e)},createRequest:function(t,e,n){return new he(t,e,n)},createXDR:function(t,e){return this.createRequest(ae,t,e)}},_e={nextAuthCallbackID:1,auth_callbacks:{},ScriptReceivers:i,DependenciesReceivers:a,getDefaultStrategy:ce,Transports:kt,transportConnectionInitializer:function(){var t=this;t.timeline.info(t.buildTimelineMessage({transport:t.name+(t.options.useTLS?"s":"")})),t.hooks.isInitialized()?t.changeState("initialized"):t.hooks.file?(t.changeState("initializing"),u.load(t.hooks.file,{useTLS:t.options.useTLS},(function(e,n){t.hooks.isInitialized()?(t.changeState("initialized"),n(!0)):(e&&t.onError(e),t.onClose(),n(!1))}))):t.onClose()},HTTPFactory:we,TimelineTransport:et,getXHRAPI:function(){return window.XMLHttpRequest},getWebSocketAPI:function(){return window.WebSocket||window.MozWebSocket},setup:function(t){var e=this;window.Pusher=t;var n=function(){e.onDocumentBody(t.ready)};window.JSON?n():u.load("json2",{},n)},getDocument:function(){return document},getProtocol:function(){return this.getDocument().location.protocol},getAuthorizers:function(){return{ajax:_,jsonp:K}},onDocumentBody:function(t){var e=this;document.body?t():setTimeout((function(){e.onDocumentBody(t)}),0)},createJSONPRequest:function(t,e){return new tt(t,e)},createScriptRequest:function(t){return new Z(t)},getLocalStorage:function(){try{return window.localStorage}catch(t){return}},createXHR:function(){return this.getXHRAPI()?this.createXMLHttpRequest():this.createMicrosoftXHR()},createXMLHttpRequest:function(){return new(this.getXHRAPI())},createMicrosoftXHR:function(){return new ActiveXObject("Microsoft.XMLHTTP")},getNetwork:function(){return Tt},createWebSocket:function(t){return new(this.getWebSocketAPI())(t)},createSocketRequest:function(t,e){if(this.isXHRSupported())return this.HTTPFactory.createXHR(t,e);if(this.isXDRSupported(0===e.indexOf("https:")))return this.HTTPFactory.createXDR(t,e);throw"Cross-origin HTTP requests are not supported"},isXHRSupported:function(){var t=this.getXHRAPI();return Boolean(t)&&void 0!==(new t).withCredentials},isXDRSupported:function(t){var e=t?"https:":"http:",n=this.getProtocol();return Boolean(window.XDomainRequest)&&n===e},addUnloadListener:function(t){void 0!==window.addEventListener?window.addEventListener("unload",t,!1):void 0!==window.attachEvent&&window.attachEvent("onunload",t)},removeUnloadListener:function(t){void 0!==window.addEventListener?window.removeEventListener("unload",t,!1):void 0!==window.detachEvent&&window.detachEvent("onunload",t)}};!function(t){t[t.ERROR=3]="ERROR",t[t.INFO=6]="INFO",t[t.DEBUG=7]="DEBUG"}(ye||(ye={}));var Se=ye,ke=function(){function t(t,e,n){this.key=t,this.session=e,this.events=[],this.options=n||{},this.sent=0,this.uniqueID=0}return t.prototype.log=function(t,e){t<=this.options.level&&(this.events.push(H({},e,{timestamp:M.now()})),this.options.limit&&this.events.length>this.options.limit&&this.events.shift())},t.prototype.error=function(t){this.log(Se.ERROR,t)},t.prototype.info=function(t){this.log(Se.INFO,t)},t.prototype.debug=function(t){this.log(Se.DEBUG,t)},t.prototype.isEmpty=function(){return 0===this.events.length},t.prototype.send=function(t,e){var n=this,o=H({session:this.session,bundle:this.sent+1,key:this.key,lib:"js",version:this.options.version,cluster:this.options.cluster,features:this.options.features,timeline:this.events},this.options.params);return this.events=[],t(o,(function(t,o){t||n.sent++,e&&e(t,o)})),!0},t.prototype.generateUniqueID=function(){return this.uniqueID++,this.uniqueID},t}(),Ce=function(){function t(t,e,n,o){this.name=t,this.priority=e,this.transport=n,this.options=o||{}}return t.prototype.isSupported=function(){return this.transport.isSupported({useTLS:this.options.useTLS})},t.prototype.connect=function(t,e){var n=this;if(!this.isSupported())return Te(new m,e);if(this.priority<t)return Te(new y,e);var o=!1,r=this.transport.createConnection(this.name,this.priority,this.options.key,this.options),i=null,s=function(){r.unbind("initialized",s),r.connect()},c=function(){i=Qt.createHandshake(r,(function(t){o=!0,h(),e(null,t)}))},a=function(t){h(),e(t)},u=function(){var t;h(),t=Y(r),e(new g(t))},h=function(){r.unbind("initialized",s),r.unbind("open",c),r.unbind("error",a),r.unbind("closed",u)};return r.bind("initialized",s),r.bind("open",c),r.bind("error",a),r.bind("closed",u),r.initialize(),{abort:function(){o||(h(),i?i.close():r.close())},forceMinPriority:function(t){o||n.priority<t&&(i?i.close():r.close())}}},t}();function Te(t,e){return M.defer((function(){e(t)})),{abort:function(){},forceMinPriority:function(){}}}var Pe=_e.Transports,Oe=function(t,e,n,o,r,i){var s,c=Pe[n];if(!c)throw new b(n);return!(t.enabledTransports&&-1===B(t.enabledTransports,e)||t.disabledTransports&&-1!==B(t.disabledTransports,e))?(r=Object.assign({ignoreNullOrigin:t.ignoreNullOrigin},r),s=new Ce(e,o,i?i.getAssistant(c):c,r)):s=Ee,s},Ee={isSupported:function(){return!1},connect:function(t,e){var n=M.defer((function(){e(new m)}));return{abort:function(){n.ensureAborted()},forceMinPriority:function(){}}}};function Le(t){return t.httpHost?t.httpHost:t.cluster?"sockjs-"+t.cluster+".pusher.com":s.httpHost}function xe(t){return t.wsHost?t.wsHost:t.cluster?Ae(t.cluster):Ae(s.cluster)}function Ae(t){return"ws-"+t+".pusher.com"}function Re(t){return"https:"===_e.getProtocol()||!1!==t.forceTLS}function je(t){return"enableStats"in t?t.enableStats:"disableStats"in t&&!t.disableStats}var De=function(){function t(e,n){var o,r,i=this;if(function(t){if(null==t)throw"You must pass your app key when you instantiate Pusher."}(e),!(n=n||{}).cluster&&!n.wsHost&&!n.httpHost){var c=p("javascriptQuickStart");$.warn("You should always specify a cluster when connecting. "+c)}"disableStats"in n&&$.warn("The disableStats option is deprecated in favor of enableStats"),this.key=e,this.config=(r={activityTimeout:(o=n).activityTimeout||s.activityTimeout,authEndpoint:o.authEndpoint||s.authEndpoint,authTransport:o.authTransport||s.authTransport,cluster:o.cluster||s.cluster,httpPath:o.httpPath||s.httpPath,httpPort:o.httpPort||s.httpPort,httpsPort:o.httpsPort||s.httpsPort,pongTimeout:o.pongTimeout||s.pongTimeout,statsHost:o.statsHost||s.stats_host,unavailableTimeout:o.unavailableTimeout||s.unavailableTimeout,wsPath:o.wsPath||s.wsPath,wsPort:o.wsPort||s.wsPort,wssPort:o.wssPort||s.wssPort,enableStats:je(o),httpHost:Le(o),useTLS:Re(o),wsHost:xe(o)},"auth"in o&&(r.auth=o.auth),"authorizer"in o&&(r.authorizer=o.authorizer),"disabledTransports"in o&&(r.disabledTransports=o.disabledTransports),"enabledTransports"in o&&(r.enabledTransports=o.enabledTransports),"ignoreNullOrigin"in o&&(r.ignoreNullOrigin=o.ignoreNullOrigin),"timelineParams"in o&&(r.timelineParams=o.timelineParams),"nacl"in o&&(r.nacl=o.nacl),r),this.channels=Qt.createChannels(),this.global_emitter=new ut,this.sessionID=Math.floor(1e9*Math.random()),this.timeline=new ke(this.key,this.sessionID,{cluster:this.config.cluster,features:t.getClientFeatures(),params:this.config.timelineParams||{},limit:50,level:Se.INFO,version:s.VERSION}),this.config.enableStats&&(this.timelineSender=Qt.createTimelineSender(this.timeline,{host:this.config.statsHost,path:"/timeline/v2/"+_e.TimelineTransport.name}));this.connection=Qt.createConnectionManager(this.key,{getStrategy:function(t){return _e.getDefaultStrategy(i.config,t,Oe)},timeline:this.timeline,activityTimeout:this.config.activityTimeout,pongTimeout:this.config.pongTimeout,unavailableTimeout:this.config.unavailableTimeout,useTLS:Boolean(this.config.useTLS)}),this.connection.bind("connected",(function(){i.subscribeAll(),i.timelineSender&&i.timelineSender.send(i.connection.isUsingTLS())})),this.connection.bind("message",(function(t){var e=0===t.event.indexOf("pusher_internal:");if(t.channel){var n=i.channel(t.channel);n&&n.handleEvent(t)}e||i.global_emitter.emit(t.event,t.data)})),this.connection.bind("connecting",(function(){i.channels.disconnect()})),this.connection.bind("disconnected",(function(){i.channels.disconnect()})),this.connection.bind("error",(function(t){$.warn(t)})),t.instances.push(this),this.timeline.info({instances:t.instances.length}),t.isReady&&this.connect()}return t.ready=function(){t.isReady=!0;for(var e=0,n=t.instances.length;e<n;e++)t.instances[e].connect()},t.getClientFeatures=function(){return U(W({ws:_e.Transports.ws},(function(t){return t.isSupported({})})))},t.prototype.channel=function(t){return this.channels.find(t)},t.prototype.allChannels=function(){return this.channels.all()},t.prototype.connect=function(){if(this.connection.connect(),this.timelineSender&&!this.timelineSenderTimer){var t=this.connection.isUsingTLS(),e=this.timelineSender;this.timelineSenderTimer=new N(6e4,(function(){e.send(t)}))}},t.prototype.disconnect=function(){this.connection.disconnect(),this.timelineSenderTimer&&(this.timelineSenderTimer.ensureAborted(),this.timelineSenderTimer=null)},t.prototype.bind=function(t,e,n){return this.global_emitter.bind(t,e,n),this},t.prototype.unbind=function(t,e,n){return this.global_emitter.unbind(t,e,n),this},t.prototype.bind_global=function(t){return this.global_emitter.bind_global(t),this},t.prototype.unbind_global=function(t){return this.global_emitter.unbind_global(t),this},t.prototype.unbind_all=function(t){return this.global_emitter.unbind_all(),this},t.prototype.subscribeAll=function(){var t;for(t in this.channels.channels)this.channels.channels.hasOwnProperty(t)&&this.subscribe(t)},t.prototype.subscribe=function(t){var e=this.channels.add(t,this);return e.subscriptionPending&&e.subscriptionCancelled?e.reinstateSubscription():e.subscriptionPending||"connected"!==this.connection.state||e.subscribe(),e},t.prototype.unsubscribe=function(t){var e=this.channels.find(t);e&&e.subscriptionPending?e.cancelSubscription():(e=this.channels.remove(t))&&e.subscribed&&e.unsubscribe()},t.prototype.send_event=function(t,e,n){return this.connection.send_event(t,e,n)},t.prototype.shouldUseTLS=function(){return this.config.useTLS},t.instances=[],t.isReady=!1,t.logToConsole=!1,t.Runtime=_e,t.ScriptReceivers=_e.ScriptReceivers,t.DependenciesReceivers=_e.DependenciesReceivers,t.auth_callbacks=_e.auth_callbacks,t}(),Ie=e.default=De;_e.setup(De)}])}));
 
+/***/ }),
+
+/***/ "./node_modules/regenerator-runtime/runtime.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/regenerator-runtime/runtime.js ***!
+  \*****************************************************/
+/***/ (function(module) {
+
+/**
+ * Copyright (c) 2014-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+var runtime = (function (exports) {
+  "use strict";
+
+  var Op = Object.prototype;
+  var hasOwn = Op.hasOwnProperty;
+  var undefined; // More compressible than void 0.
+  var $Symbol = typeof Symbol === "function" ? Symbol : {};
+  var iteratorSymbol = $Symbol.iterator || "@@iterator";
+  var asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator";
+  var toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag";
+
+  function define(obj, key, value) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+    return obj[key];
+  }
+  try {
+    // IE 8 has a broken Object.defineProperty that only works on DOM objects.
+    define({}, "");
+  } catch (err) {
+    define = function(obj, key, value) {
+      return obj[key] = value;
+    };
+  }
+
+  function wrap(innerFn, outerFn, self, tryLocsList) {
+    // If outerFn provided and outerFn.prototype is a Generator, then outerFn.prototype instanceof Generator.
+    var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator;
+    var generator = Object.create(protoGenerator.prototype);
+    var context = new Context(tryLocsList || []);
+
+    // The ._invoke method unifies the implementations of the .next,
+    // .throw, and .return methods.
+    generator._invoke = makeInvokeMethod(innerFn, self, context);
+
+    return generator;
+  }
+  exports.wrap = wrap;
+
+  // Try/catch helper to minimize deoptimizations. Returns a completion
+  // record like context.tryEntries[i].completion. This interface could
+  // have been (and was previously) designed to take a closure to be
+  // invoked without arguments, but in all the cases we care about we
+  // already have an existing method we want to call, so there's no need
+  // to create a new function object. We can even get away with assuming
+  // the method takes exactly one argument, since that happens to be true
+  // in every case, so we don't have to touch the arguments object. The
+  // only additional allocation required is the completion record, which
+  // has a stable shape and so hopefully should be cheap to allocate.
+  function tryCatch(fn, obj, arg) {
+    try {
+      return { type: "normal", arg: fn.call(obj, arg) };
+    } catch (err) {
+      return { type: "throw", arg: err };
+    }
+  }
+
+  var GenStateSuspendedStart = "suspendedStart";
+  var GenStateSuspendedYield = "suspendedYield";
+  var GenStateExecuting = "executing";
+  var GenStateCompleted = "completed";
+
+  // Returning this object from the innerFn has the same effect as
+  // breaking out of the dispatch switch statement.
+  var ContinueSentinel = {};
+
+  // Dummy constructor functions that we use as the .constructor and
+  // .constructor.prototype properties for functions that return Generator
+  // objects. For full spec compliance, you may wish to configure your
+  // minifier not to mangle the names of these two functions.
+  function Generator() {}
+  function GeneratorFunction() {}
+  function GeneratorFunctionPrototype() {}
+
+  // This is a polyfill for %IteratorPrototype% for environments that
+  // don't natively support it.
+  var IteratorPrototype = {};
+  define(IteratorPrototype, iteratorSymbol, function () {
+    return this;
+  });
+
+  var getProto = Object.getPrototypeOf;
+  var NativeIteratorPrototype = getProto && getProto(getProto(values([])));
+  if (NativeIteratorPrototype &&
+      NativeIteratorPrototype !== Op &&
+      hasOwn.call(NativeIteratorPrototype, iteratorSymbol)) {
+    // This environment has a native %IteratorPrototype%; use it instead
+    // of the polyfill.
+    IteratorPrototype = NativeIteratorPrototype;
+  }
+
+  var Gp = GeneratorFunctionPrototype.prototype =
+    Generator.prototype = Object.create(IteratorPrototype);
+  GeneratorFunction.prototype = GeneratorFunctionPrototype;
+  define(Gp, "constructor", GeneratorFunctionPrototype);
+  define(GeneratorFunctionPrototype, "constructor", GeneratorFunction);
+  GeneratorFunction.displayName = define(
+    GeneratorFunctionPrototype,
+    toStringTagSymbol,
+    "GeneratorFunction"
+  );
+
+  // Helper for defining the .next, .throw, and .return methods of the
+  // Iterator interface in terms of a single ._invoke method.
+  function defineIteratorMethods(prototype) {
+    ["next", "throw", "return"].forEach(function(method) {
+      define(prototype, method, function(arg) {
+        return this._invoke(method, arg);
+      });
+    });
+  }
+
+  exports.isGeneratorFunction = function(genFun) {
+    var ctor = typeof genFun === "function" && genFun.constructor;
+    return ctor
+      ? ctor === GeneratorFunction ||
+        // For the native GeneratorFunction constructor, the best we can
+        // do is to check its .name property.
+        (ctor.displayName || ctor.name) === "GeneratorFunction"
+      : false;
+  };
+
+  exports.mark = function(genFun) {
+    if (Object.setPrototypeOf) {
+      Object.setPrototypeOf(genFun, GeneratorFunctionPrototype);
+    } else {
+      genFun.__proto__ = GeneratorFunctionPrototype;
+      define(genFun, toStringTagSymbol, "GeneratorFunction");
+    }
+    genFun.prototype = Object.create(Gp);
+    return genFun;
+  };
+
+  // Within the body of any async function, `await x` is transformed to
+  // `yield regeneratorRuntime.awrap(x)`, so that the runtime can test
+  // `hasOwn.call(value, "__await")` to determine if the yielded value is
+  // meant to be awaited.
+  exports.awrap = function(arg) {
+    return { __await: arg };
+  };
+
+  function AsyncIterator(generator, PromiseImpl) {
+    function invoke(method, arg, resolve, reject) {
+      var record = tryCatch(generator[method], generator, arg);
+      if (record.type === "throw") {
+        reject(record.arg);
+      } else {
+        var result = record.arg;
+        var value = result.value;
+        if (value &&
+            typeof value === "object" &&
+            hasOwn.call(value, "__await")) {
+          return PromiseImpl.resolve(value.__await).then(function(value) {
+            invoke("next", value, resolve, reject);
+          }, function(err) {
+            invoke("throw", err, resolve, reject);
+          });
+        }
+
+        return PromiseImpl.resolve(value).then(function(unwrapped) {
+          // When a yielded Promise is resolved, its final value becomes
+          // the .value of the Promise<{value,done}> result for the
+          // current iteration.
+          result.value = unwrapped;
+          resolve(result);
+        }, function(error) {
+          // If a rejected Promise was yielded, throw the rejection back
+          // into the async generator function so it can be handled there.
+          return invoke("throw", error, resolve, reject);
+        });
+      }
+    }
+
+    var previousPromise;
+
+    function enqueue(method, arg) {
+      function callInvokeWithMethodAndArg() {
+        return new PromiseImpl(function(resolve, reject) {
+          invoke(method, arg, resolve, reject);
+        });
+      }
+
+      return previousPromise =
+        // If enqueue has been called before, then we want to wait until
+        // all previous Promises have been resolved before calling invoke,
+        // so that results are always delivered in the correct order. If
+        // enqueue has not been called before, then it is important to
+        // call invoke immediately, without waiting on a callback to fire,
+        // so that the async generator function has the opportunity to do
+        // any necessary setup in a predictable way. This predictability
+        // is why the Promise constructor synchronously invokes its
+        // executor callback, and why async functions synchronously
+        // execute code before the first await. Since we implement simple
+        // async functions in terms of async generators, it is especially
+        // important to get this right, even though it requires care.
+        previousPromise ? previousPromise.then(
+          callInvokeWithMethodAndArg,
+          // Avoid propagating failures to Promises returned by later
+          // invocations of the iterator.
+          callInvokeWithMethodAndArg
+        ) : callInvokeWithMethodAndArg();
+    }
+
+    // Define the unified helper method that is used to implement .next,
+    // .throw, and .return (see defineIteratorMethods).
+    this._invoke = enqueue;
+  }
+
+  defineIteratorMethods(AsyncIterator.prototype);
+  define(AsyncIterator.prototype, asyncIteratorSymbol, function () {
+    return this;
+  });
+  exports.AsyncIterator = AsyncIterator;
+
+  // Note that simple async functions are implemented on top of
+  // AsyncIterator objects; they just return a Promise for the value of
+  // the final result produced by the iterator.
+  exports.async = function(innerFn, outerFn, self, tryLocsList, PromiseImpl) {
+    if (PromiseImpl === void 0) PromiseImpl = Promise;
+
+    var iter = new AsyncIterator(
+      wrap(innerFn, outerFn, self, tryLocsList),
+      PromiseImpl
+    );
+
+    return exports.isGeneratorFunction(outerFn)
+      ? iter // If outerFn is a generator, return the full iterator.
+      : iter.next().then(function(result) {
+          return result.done ? result.value : iter.next();
+        });
+  };
+
+  function makeInvokeMethod(innerFn, self, context) {
+    var state = GenStateSuspendedStart;
+
+    return function invoke(method, arg) {
+      if (state === GenStateExecuting) {
+        throw new Error("Generator is already running");
+      }
+
+      if (state === GenStateCompleted) {
+        if (method === "throw") {
+          throw arg;
+        }
+
+        // Be forgiving, per 25.3.3.3.3 of the spec:
+        // https://people.mozilla.org/~jorendorff/es6-draft.html#sec-generatorresume
+        return doneResult();
+      }
+
+      context.method = method;
+      context.arg = arg;
+
+      while (true) {
+        var delegate = context.delegate;
+        if (delegate) {
+          var delegateResult = maybeInvokeDelegate(delegate, context);
+          if (delegateResult) {
+            if (delegateResult === ContinueSentinel) continue;
+            return delegateResult;
+          }
+        }
+
+        if (context.method === "next") {
+          // Setting context._sent for legacy support of Babel's
+          // function.sent implementation.
+          context.sent = context._sent = context.arg;
+
+        } else if (context.method === "throw") {
+          if (state === GenStateSuspendedStart) {
+            state = GenStateCompleted;
+            throw context.arg;
+          }
+
+          context.dispatchException(context.arg);
+
+        } else if (context.method === "return") {
+          context.abrupt("return", context.arg);
+        }
+
+        state = GenStateExecuting;
+
+        var record = tryCatch(innerFn, self, context);
+        if (record.type === "normal") {
+          // If an exception is thrown from innerFn, we leave state ===
+          // GenStateExecuting and loop back for another invocation.
+          state = context.done
+            ? GenStateCompleted
+            : GenStateSuspendedYield;
+
+          if (record.arg === ContinueSentinel) {
+            continue;
+          }
+
+          return {
+            value: record.arg,
+            done: context.done
+          };
+
+        } else if (record.type === "throw") {
+          state = GenStateCompleted;
+          // Dispatch the exception by looping back around to the
+          // context.dispatchException(context.arg) call above.
+          context.method = "throw";
+          context.arg = record.arg;
+        }
+      }
+    };
+  }
+
+  // Call delegate.iterator[context.method](context.arg) and handle the
+  // result, either by returning a { value, done } result from the
+  // delegate iterator, or by modifying context.method and context.arg,
+  // setting context.delegate to null, and returning the ContinueSentinel.
+  function maybeInvokeDelegate(delegate, context) {
+    var method = delegate.iterator[context.method];
+    if (method === undefined) {
+      // A .throw or .return when the delegate iterator has no .throw
+      // method always terminates the yield* loop.
+      context.delegate = null;
+
+      if (context.method === "throw") {
+        // Note: ["return"] must be used for ES3 parsing compatibility.
+        if (delegate.iterator["return"]) {
+          // If the delegate iterator has a return method, give it a
+          // chance to clean up.
+          context.method = "return";
+          context.arg = undefined;
+          maybeInvokeDelegate(delegate, context);
+
+          if (context.method === "throw") {
+            // If maybeInvokeDelegate(context) changed context.method from
+            // "return" to "throw", let that override the TypeError below.
+            return ContinueSentinel;
+          }
+        }
+
+        context.method = "throw";
+        context.arg = new TypeError(
+          "The iterator does not provide a 'throw' method");
+      }
+
+      return ContinueSentinel;
+    }
+
+    var record = tryCatch(method, delegate.iterator, context.arg);
+
+    if (record.type === "throw") {
+      context.method = "throw";
+      context.arg = record.arg;
+      context.delegate = null;
+      return ContinueSentinel;
+    }
+
+    var info = record.arg;
+
+    if (! info) {
+      context.method = "throw";
+      context.arg = new TypeError("iterator result is not an object");
+      context.delegate = null;
+      return ContinueSentinel;
+    }
+
+    if (info.done) {
+      // Assign the result of the finished delegate to the temporary
+      // variable specified by delegate.resultName (see delegateYield).
+      context[delegate.resultName] = info.value;
+
+      // Resume execution at the desired location (see delegateYield).
+      context.next = delegate.nextLoc;
+
+      // If context.method was "throw" but the delegate handled the
+      // exception, let the outer generator proceed normally. If
+      // context.method was "next", forget context.arg since it has been
+      // "consumed" by the delegate iterator. If context.method was
+      // "return", allow the original .return call to continue in the
+      // outer generator.
+      if (context.method !== "return") {
+        context.method = "next";
+        context.arg = undefined;
+      }
+
+    } else {
+      // Re-yield the result returned by the delegate method.
+      return info;
+    }
+
+    // The delegate iterator is finished, so forget it and continue with
+    // the outer generator.
+    context.delegate = null;
+    return ContinueSentinel;
+  }
+
+  // Define Generator.prototype.{next,throw,return} in terms of the
+  // unified ._invoke helper method.
+  defineIteratorMethods(Gp);
+
+  define(Gp, toStringTagSymbol, "Generator");
+
+  // A Generator should always return itself as the iterator object when the
+  // @@iterator function is called on it. Some browsers' implementations of the
+  // iterator prototype chain incorrectly implement this, causing the Generator
+  // object to not be returned from this call. This ensures that doesn't happen.
+  // See https://github.com/facebook/regenerator/issues/274 for more details.
+  define(Gp, iteratorSymbol, function() {
+    return this;
+  });
+
+  define(Gp, "toString", function() {
+    return "[object Generator]";
+  });
+
+  function pushTryEntry(locs) {
+    var entry = { tryLoc: locs[0] };
+
+    if (1 in locs) {
+      entry.catchLoc = locs[1];
+    }
+
+    if (2 in locs) {
+      entry.finallyLoc = locs[2];
+      entry.afterLoc = locs[3];
+    }
+
+    this.tryEntries.push(entry);
+  }
+
+  function resetTryEntry(entry) {
+    var record = entry.completion || {};
+    record.type = "normal";
+    delete record.arg;
+    entry.completion = record;
+  }
+
+  function Context(tryLocsList) {
+    // The root entry object (effectively a try statement without a catch
+    // or a finally block) gives us a place to store values thrown from
+    // locations where there is no enclosing try statement.
+    this.tryEntries = [{ tryLoc: "root" }];
+    tryLocsList.forEach(pushTryEntry, this);
+    this.reset(true);
+  }
+
+  exports.keys = function(object) {
+    var keys = [];
+    for (var key in object) {
+      keys.push(key);
+    }
+    keys.reverse();
+
+    // Rather than returning an object with a next method, we keep
+    // things simple and return the next function itself.
+    return function next() {
+      while (keys.length) {
+        var key = keys.pop();
+        if (key in object) {
+          next.value = key;
+          next.done = false;
+          return next;
+        }
+      }
+
+      // To avoid creating an additional object, we just hang the .value
+      // and .done properties off the next function object itself. This
+      // also ensures that the minifier will not anonymize the function.
+      next.done = true;
+      return next;
+    };
+  };
+
+  function values(iterable) {
+    if (iterable) {
+      var iteratorMethod = iterable[iteratorSymbol];
+      if (iteratorMethod) {
+        return iteratorMethod.call(iterable);
+      }
+
+      if (typeof iterable.next === "function") {
+        return iterable;
+      }
+
+      if (!isNaN(iterable.length)) {
+        var i = -1, next = function next() {
+          while (++i < iterable.length) {
+            if (hasOwn.call(iterable, i)) {
+              next.value = iterable[i];
+              next.done = false;
+              return next;
+            }
+          }
+
+          next.value = undefined;
+          next.done = true;
+
+          return next;
+        };
+
+        return next.next = next;
+      }
+    }
+
+    // Return an iterator with no values.
+    return { next: doneResult };
+  }
+  exports.values = values;
+
+  function doneResult() {
+    return { value: undefined, done: true };
+  }
+
+  Context.prototype = {
+    constructor: Context,
+
+    reset: function(skipTempReset) {
+      this.prev = 0;
+      this.next = 0;
+      // Resetting context._sent for legacy support of Babel's
+      // function.sent implementation.
+      this.sent = this._sent = undefined;
+      this.done = false;
+      this.delegate = null;
+
+      this.method = "next";
+      this.arg = undefined;
+
+      this.tryEntries.forEach(resetTryEntry);
+
+      if (!skipTempReset) {
+        for (var name in this) {
+          // Not sure about the optimal order of these conditions:
+          if (name.charAt(0) === "t" &&
+              hasOwn.call(this, name) &&
+              !isNaN(+name.slice(1))) {
+            this[name] = undefined;
+          }
+        }
+      }
+    },
+
+    stop: function() {
+      this.done = true;
+
+      var rootEntry = this.tryEntries[0];
+      var rootRecord = rootEntry.completion;
+      if (rootRecord.type === "throw") {
+        throw rootRecord.arg;
+      }
+
+      return this.rval;
+    },
+
+    dispatchException: function(exception) {
+      if (this.done) {
+        throw exception;
+      }
+
+      var context = this;
+      function handle(loc, caught) {
+        record.type = "throw";
+        record.arg = exception;
+        context.next = loc;
+
+        if (caught) {
+          // If the dispatched exception was caught by a catch block,
+          // then let that catch block handle the exception normally.
+          context.method = "next";
+          context.arg = undefined;
+        }
+
+        return !! caught;
+      }
+
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        var record = entry.completion;
+
+        if (entry.tryLoc === "root") {
+          // Exception thrown outside of any try block that could handle
+          // it, so set the completion value of the entire function to
+          // throw the exception.
+          return handle("end");
+        }
+
+        if (entry.tryLoc <= this.prev) {
+          var hasCatch = hasOwn.call(entry, "catchLoc");
+          var hasFinally = hasOwn.call(entry, "finallyLoc");
+
+          if (hasCatch && hasFinally) {
+            if (this.prev < entry.catchLoc) {
+              return handle(entry.catchLoc, true);
+            } else if (this.prev < entry.finallyLoc) {
+              return handle(entry.finallyLoc);
+            }
+
+          } else if (hasCatch) {
+            if (this.prev < entry.catchLoc) {
+              return handle(entry.catchLoc, true);
+            }
+
+          } else if (hasFinally) {
+            if (this.prev < entry.finallyLoc) {
+              return handle(entry.finallyLoc);
+            }
+
+          } else {
+            throw new Error("try statement without catch or finally");
+          }
+        }
+      }
+    },
+
+    abrupt: function(type, arg) {
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        if (entry.tryLoc <= this.prev &&
+            hasOwn.call(entry, "finallyLoc") &&
+            this.prev < entry.finallyLoc) {
+          var finallyEntry = entry;
+          break;
+        }
+      }
+
+      if (finallyEntry &&
+          (type === "break" ||
+           type === "continue") &&
+          finallyEntry.tryLoc <= arg &&
+          arg <= finallyEntry.finallyLoc) {
+        // Ignore the finally entry if control is not jumping to a
+        // location outside the try/catch block.
+        finallyEntry = null;
+      }
+
+      var record = finallyEntry ? finallyEntry.completion : {};
+      record.type = type;
+      record.arg = arg;
+
+      if (finallyEntry) {
+        this.method = "next";
+        this.next = finallyEntry.finallyLoc;
+        return ContinueSentinel;
+      }
+
+      return this.complete(record);
+    },
+
+    complete: function(record, afterLoc) {
+      if (record.type === "throw") {
+        throw record.arg;
+      }
+
+      if (record.type === "break" ||
+          record.type === "continue") {
+        this.next = record.arg;
+      } else if (record.type === "return") {
+        this.rval = this.arg = record.arg;
+        this.method = "return";
+        this.next = "end";
+      } else if (record.type === "normal" && afterLoc) {
+        this.next = afterLoc;
+      }
+
+      return ContinueSentinel;
+    },
+
+    finish: function(finallyLoc) {
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        if (entry.finallyLoc === finallyLoc) {
+          this.complete(entry.completion, entry.afterLoc);
+          resetTryEntry(entry);
+          return ContinueSentinel;
+        }
+      }
+    },
+
+    "catch": function(tryLoc) {
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        if (entry.tryLoc === tryLoc) {
+          var record = entry.completion;
+          if (record.type === "throw") {
+            var thrown = record.arg;
+            resetTryEntry(entry);
+          }
+          return thrown;
+        }
+      }
+
+      // The context.catch method must only be called with a location
+      // argument that corresponds to a known catch block.
+      throw new Error("illegal catch attempt");
+    },
+
+    delegateYield: function(iterable, resultName, nextLoc) {
+      this.delegate = {
+        iterator: values(iterable),
+        resultName: resultName,
+        nextLoc: nextLoc
+      };
+
+      if (this.method === "next") {
+        // Deliberately forget the last sent value so that we don't
+        // accidentally pass it on to the delegate.
+        this.arg = undefined;
+      }
+
+      return ContinueSentinel;
+    }
+  };
+
+  // Regardless of whether this script is executing as a CommonJS module
+  // or not, return the runtime object so that we can declare the variable
+  // regeneratorRuntime in the outer scope, which allows this module to be
+  // injected easily by `bin/regenerator --include-runtime script.js`.
+  return exports;
+
+}(
+  // If this script is executing as a CommonJS module, use module.exports
+  // as the regeneratorRuntime namespace. Otherwise create a new empty
+  // object. Either way, the resulting object will be used to initialize
+  // the regeneratorRuntime variable at the top of this file.
+   true ? module.exports : 0
+));
+
+try {
+  regeneratorRuntime = runtime;
+} catch (accidentalStrictMode) {
+  // This module should not be running in strict mode, so the above
+  // assignment should always work unless something is misconfigured. Just
+  // in case runtime.js accidentally runs in strict mode, in modern engines
+  // we can explicitly access globalThis. In older engines we can escape
+  // strict mode using a global Function call. This could conceivably fail
+  // if a Content Security Policy forbids using Function, but in that case
+  // the proper solution is to fix the accidental strict mode problem. If
+  // you've misconfigured your bundler to force strict mode and applied a
+  // CSP to forbid Function, and you're not willing to fix either of those
+  // problems, please detail your unique predicament in a GitHub issue.
+  if (typeof globalThis === "object") {
+    globalThis.regeneratorRuntime = runtime;
+  } else {
+    Function("r", "regeneratorRuntime = r")(runtime);
+  }
+}
+
+
 /***/ })
 
 /******/ 	});
@@ -55191,6 +43323,30 @@ process.umask = function() { return 0; };
 /******/ 				}
 /******/ 			}
 /******/ 			return result;
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	!function() {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__webpack_require__.n = function(module) {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				function() { return module['default']; } :
+/******/ 				function() { return module; };
+/******/ 			__webpack_require__.d(getter, { a: getter });
+/******/ 			return getter;
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	!function() {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = function(exports, definition) {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
 /******/ 		};
 /******/ 	}();
 /******/ 	

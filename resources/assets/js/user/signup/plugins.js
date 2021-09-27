@@ -1,6 +1,7 @@
 (function () {
     "use strict";
     window.app.user.signup.plugins = function () {
+        console.log('hi im in plugins ');
         let profileFormEl = $('#profile-form');
         let signupFormEl = $('#signup-form');
         let signupFormComplete = $('#signup-form-complete');

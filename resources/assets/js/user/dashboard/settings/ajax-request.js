@@ -4,17 +4,21 @@
 
 
         /*vars*/
+        // forms
         const profileDataFormEl = $('#profile-data-form');
         const securityDataFormEl = $('#security-data-form');
 
+        // btn
         const saveUserSecurityData = $('#save-user-security-data');
+        const saveUserInfos = $('#save-user-infos');
 
+        // radios
         let notifyUserFeedbackCheckboxEl = $('#notify-feedback')
         let toggleSidebarCheckboxEl = $('#toggle-sidebar')
         let hideNotificationsCheckboxEl = $('#hide-notifications')
         let notifySelfSendCheckboxEl = $('#notify-self-send')
         let notifyPasswordChangeCheckboxEl = $('#notify-password-change')
-
+        let notifyAccountChange = $('#notify-account-change');
 
         let saveAvatarEl = $('#save-user-avatar')
         let token = $('body').attr('page-token');
@@ -25,6 +29,7 @@
         // update user profile info
         profileDataFormEl.on('submit', function (e) {
             e.preventDefault();
+            saveUserInfos.prop('disabled' , true);
             if (profileDataFormEl.parsley().isValid()) {
                 let formData = new FormData();
                 formData.append('fullname', profileDataFormEl.find('#user-first-name').val() + ' ' + profileDataFormEl.find('#user-last-name').val());
@@ -45,16 +50,15 @@
                     }
                 })
                     .then(response => {
-                        console.log(response.data);
-                        handleProfileDataFormEl(response.data)
+                         handleProfileDataFormEl(response.data)
+
                     })
                     .catch(error => console.log(error));
 
             }
         });
         function handleProfileDataFormEl({title, body}) {
-            console.log(title);
-            console.log(body);
+            saveUserInfos.prop('disabled' , false);
             let errorMessagesEl = profileDataFormEl.find('.errors-messages');
             let messageTitleEl = errorMessagesEl.children('.modal-error-title');
             let messageBodyEl = errorMessagesEl.children('.modal-error-body');
@@ -81,7 +85,7 @@
                     break;
                 case 'validation':
                     errorMessagesEl.removeClass('d-none');
-                    func.setClassAdvanced(errorMessagesEl, 'alert-dark');
+                    func.setClassAdvanced(errorMessagesEl, 'alert-info');
                     let arrays = Object.values(body);
                     if (arrays.find(x => x !== undefined) !== undefined) {
                         let firstArray = arrays.find(x => x !== undefined);
@@ -224,7 +228,9 @@
                         }
                     }
                 })
-                    .then(res => HandleAjaxSecurityReturnData(res.data))
+                    .then(res => {
+                        HandleAjaxSecurityReturnData(res.data)
+                    })
                     .catch(error => console.log(error));
             }
         });
@@ -358,12 +364,35 @@
                     .catch(error => console.log(error));
 
         })
+        notifyAccountChange.on('change' , function (e) {
+            e.preventDefault();
+            console.log('fdf');
+            window.axios({
+                method: 'POST',
+                url: '/user/dashboard/settings/edit/notifications',
+                headers: {
+                    'Accept': 'Application/Json',
+                    'Authorization': token
+                },
+                data: {
+                    'action': 'edit',
+                    'data': {
+                        'prefrences_data' : notifyAccountChange.get(0).checked,
+                        'prefrences_name' : 'notify_when_account_change'
+                    }
+                }
+            })
+                .then(res => {
 
+                    window.location.reload()
+                })
+                .catch(error => console.log(error));
+
+        })
 
         // change notification settings ui
         toggleSidebarCheckboxEl.on('change' , function (e) {
             e.preventDefault();
-
                 window.axios({
                     method: 'POST',
                     url: '/user/dashboard/settings/edit/notifications',
@@ -381,7 +410,9 @@
                         }
                     }
                 })
-                    .then(res => window.location.reload())
+                    .then(res => {
+                        window.location.reload()
+                    })
                     .catch(error => console.log(error));
 
         })
@@ -407,6 +438,7 @@
                     .catch(error => console.log(error));
 
         })
+
 
 
 

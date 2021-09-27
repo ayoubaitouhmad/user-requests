@@ -14,7 +14,7 @@
 <div class="container d-flex flex-column justify-content-center align-items-center h-100">
     <div class="container-header">
         <div class="logo d-flex  justify-content-center align-items-center ">
-            <img style="height: 5rem " class="img-fluid preload-img" data-src="/img/logo2.png" alt="">
+            <img style="height: 5rem " class="img-fluid preload-img" data-src="/img/logo.svg" alt="">
         </div>
         <p class="d-block">
             welcomme back <strong>{{$currentUser['name'] ?? ''}}</strong> , please complete your your profile.
@@ -23,24 +23,20 @@
 
     <form id="profile-form" class="profile-form flex-column d-flex justify-content-center align-items-center">
         <div  class="alert alert-dismissible  errors-messages w-100 d-none"  role="alert">
-            <strong class="modal-error-title">error</strong>
-            <span class="modal-error-body">fuck you </span>
+            <strong class="modal-error-title"></strong>
+            <span class="modal-error-body"></span>
         </div>
         <div class="profile-form__header row shadow">
 
             <div class="d-flex justify-content-center row col-sm-12 col-md-4 left-side">
-                <div class="card col-12 d-flex justify-content-center align-items-center">
-                    <img id="card-image" data-src="/img/unknown.png" class="shadow img-thumbnail" alt="">
+                <div class="card image-shower col-12 d-flex justify-content-center align-items-center">
+                    <img id="image-preview" data-src="/img/unknown.png" class="shadow preload-img img-thumbnail" alt="">
                     <div class="custom-file shadow">
                         <input
                                 type="file"
                                 class="custom-file-input"
                                 id="user-signup-photo"
-                                required
                                 accept="image/*"
-                                data-parsley-check-image="4"
-                                data-parsley-trigger="focusout"
-                                data-parsley-required-message="photo is required."
                         >
                         <label class="custom-file-label" for="validatedCustomFile"></label>
                     </div>
@@ -306,12 +302,12 @@
         </div>
 
         <div class="footer d-flex justify-content-between align-items-center ">
-            <input type="submit" class="custom-form__control shadow" value="SAVE">
+            <input type="submit" id="submit-form" class="base-button shadow" value="SAVE">
         </div>
     </form>
 </div>
 
 
-<script src="/js/app.js"></script>
+<script src="/js/app.js?v=<?php echo time()?>"></script>
 </body>
 </html>

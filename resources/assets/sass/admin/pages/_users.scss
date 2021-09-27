@@ -20,21 +20,26 @@
 
       .material-icons {
         &.ico-edit {
-          background-color: #EBAE4F;
+          color: #FEB748;
+          background-color: #FFF0D7;
         }
 
         &.ico-delete {
-          background-color: #DC5657;
+          background-color: #FDF4F7;
+          color: #D15776;
         }
 
-        &.ico-valid {
-          background-color: #5CBEDA;
-        }
+
       }
 
       & > span {
         margin: 0 .2rem;
       }
+    }
+    td{
+      color: rgb(15,15,15);
+      font-size: 14.4px;
+
     }
   }
 
@@ -169,8 +174,10 @@
         }
 
         .summary-requests__title {
-          color: rgba(0, 0, 0, .5);
-          font-weight: 300;
+          color: rgba(0, 0, 0, .6);
+          font-weight: 500;
+          font-size: 1rem;
+
         }
       }
 
@@ -193,9 +200,7 @@
           font-weight: 500;
           color: rgba(0, 0, 0, .5);
 
-          :not(:last-child) {
-            border-bottom: 1px solid $text-muted;
-          }
+
 
           .right,
           .left {
@@ -299,7 +304,10 @@
 
     }
   }
-
+  .card-title {
+    font-size: 16px;
+    font-weight: 500;
+  }
 
 }
 

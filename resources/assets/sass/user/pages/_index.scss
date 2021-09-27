@@ -13,6 +13,7 @@
   .navbar {
     .navbar-brand-wrapper{
       border-bottom: 0;
+      box-shadow: none !important;
     }
     @media (max-width: 991px) {
       .navbar-brand.brand-logo {

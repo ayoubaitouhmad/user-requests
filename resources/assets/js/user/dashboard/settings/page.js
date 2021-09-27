@@ -71,18 +71,7 @@
         });
 
 
-        // show button (save new avatar)
-        $('.custom-file-uploader-input').on('change', function () {
 
-            let $this = $(this);
-           $this.closest('.profile-content__avatar').find('#save-user-avatar').addClass('active-btn');
-            let imgShower = $this.closest('.custom-uploader').find('.custom-uploader__img');
-            if (func.isValidImageExt(func.getFileExt($this))) {
-                imgShower.attr('data-src', URL.createObjectURL($this.get(0).files[0]));
-                func.lazy();
-            }
-
-        });
 
         // show button (save new profile infos)
         $('#profile-data-form .custom-form__control').on('keyup change', function () {
@@ -141,14 +130,17 @@
         $("#user-first-city option").each(function () {
             let city = $("#user-first-city").attr('data-src');
             if (city === $(this).text()) {
-                console.log(city);
                 $("#user-first-city").val($(this).val())
             }
         });
 
 
 
+        //  TODO : prevant user from write inside inputs when user account is inactive
 
+        $('.settings-items.hide input, .settings-items.hide select').on('focus' , function (event){
+            $(this).prop('disabled' , true);
+        });
 
 
 

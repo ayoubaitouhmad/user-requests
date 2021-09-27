@@ -6,6 +6,7 @@
 	use App\classes\base\Controller;
 	use App\classes\CSRF;
 	use App\classes\ErrorHandler;
+	use App\classes\Mailer;
 	use App\classes\PushNotification;
 	use App\classes\Redirect;
 	use App\classes\Session;
@@ -19,6 +20,7 @@
 	use App\models\User;
 	use App\models\UserNotification;
 	use Exception;
+	use Illuminate\Support\Facades\Mail;
 	
 	/**
 	 *
@@ -27,14 +29,16 @@
 	{
 		
 		protected $currentUser;
+		
+		
+		
 		public function __construct()
 		{
-
-
+			
+			
 			if (!Session::has('user-connected')) {
 				Redirect::To('/');
 			}
-			
 			
 			
 			
@@ -44,16 +48,15 @@
 			
 			// TODO : get current user infos
 			$this->currentUser = $this->model->getByEmail(Session::get('user-connected'));
-			if (!$this->currentUser  === false) {
-				$this->currentUser ->user_photo = getFileFromDirByName($this->currentUser ->user_photo);
-				$this->currentUser ->user_password = enc($this->currentUser ->user_password);
+			if (!$this->currentUser === false) {
+				$this->currentUser->user_photo = getFileFromDirByName($this->currentUser->user_photo);
+				$this->currentUser->user_password = enc($this->currentUser->user_password);
 			} else {
 				Session::remove('user-connected');
 			}
 			
 			
 			
-		
 		}
 		
 		
@@ -78,8 +81,8 @@
 			// TODO : get user preferences
 			$setting = new UserSetting();
 			$settings = $setting->get($this->currentUser->user_id);
-		
-
+			
+			
 			// TODO / send all to view
 			return view('user/dashboard/home', compact([
 				'token',
@@ -90,18 +93,22 @@
 		}
 		
 		
-	
 		
-		
-		public function logout(){
+		public function logout()
+		{
+			
 			if (AxiosHttpRequest::has('token') && $this->tokenManager->verifyToken(AxiosHttpRequest::has('token'))) {
 				Session::remove('user-connected');
 				Session::remove('user-connected-password');
 			}
 		}
-		function resetNotification(){
+		
+		
+		
+		function resetNotification()
+		{
 			
-			if (AxiosHttpRequest::getAuthorizationToken() !== ''&& $this->tokenManager->verifyToken(AxiosHttpRequest::getAuthorizationToken())) {
+			if (AxiosHttpRequest::getAuthorizationToken() !== '' && $this->tokenManager->verifyToken(AxiosHttpRequest::getAuthorizationToken())) {
 				$notification = new AdminNotification();
 				$notification->updateStatus();
 			}

@@ -24,6 +24,8 @@
 		public function __construct()
 		{
 			
+			
+			
 			if (!isAuthenticated()) {
 				Redirect::To('/admin/login');
 			}
@@ -35,6 +37,8 @@
 			$username = Session::get('admin-connected');
 			$this->currentAdmin = $admin->get($username);
 			$this->currentAdmin->admin_photo = getFileFromDirByName($this->currentAdmin->admin_photo);
+			
+		
 		}
 		
 		

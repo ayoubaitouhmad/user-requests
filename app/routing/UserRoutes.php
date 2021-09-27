@@ -16,6 +16,7 @@
 	$router->map('POST', '/user/signup/email/confirm', 'App\controllers\user\signup\EmailConfermationController@confirmEmail', 'user_signup_confirm_email_check');
 	
 	
+	
 	// profile
 	$router->map('GET', '/user/signup/profile', 'App\controllers\user\signup\ProfileController@index', 'user_signup_profile');
 	$router->map('POST', '/user/signup/profile/save', 'App\controllers\user\signup\ProfileController@save', 'user_signup_profile_save');
@@ -76,7 +77,7 @@
 	
 	// log out
 	$router->map('POST', '/user/reset/notifications/count', 'App\controllers\user\dashboard\homeController@resetNotification', 'reset_user_count');
-
-
-
-
+	
+	
+	
+	

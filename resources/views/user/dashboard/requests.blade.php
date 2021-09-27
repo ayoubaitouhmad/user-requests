@@ -52,7 +52,12 @@
                     <form action="" id="new-request__form">
                         <div class="modal-body-data">
                             <h2 class="modal-body__title">Request type</h2>
-                            <select  class="w-100 modal-body__data-body  data-body__request-type" id="data-body__request-type">
+                            <select
+                                    class="w-100 modal-body__data-body  data-body__request-type"
+                                    id="data-body__request-type"
+                                    required
+                                    data-parsley-required-message="select at least one option"
+                                    data-parsley-trigger="change">
                                 <option value="" selected>type</option>
                                 <option value="change role">change role</option>
                                 <option value="vacation">vacation</option>
@@ -82,7 +87,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" id="new-request__save" class="btn btn-primary">Save</button>
+                    <button type="button" id="new-request__save"  class="btn base-button">Save</button>
                 </div>
             </div>
         </div>
@@ -98,21 +103,25 @@
 <!-- main content  -->
 @section('content')
 
-
-    <!-- page indexer -->
-    @include('inc.indexer' ,  ['page_src' => 'Dashboard /','page_index' => 'Request'])
     <div class="row">
         @php
-            echo '<pre>';
 
-            var_dump($settings);
+
+        @endphp
+    </div>
+
+    <!-- page indexer -->
+    @include('inc.indexer' ,  ['page_src' => 'Dashboard' ,'sep' => '|' ,'page_index' => '    Request'])
+    <div class="row">
+        @php
+
 
         @endphp
     </div>
     <!-- charts-->
     <div class="row">
         <div class="col-12  col-xl-6 grid-margin stretch-card">
-            <div class="card">
+            <div class="card shadow">
                 <div class="card-body">
                     <h4 class="card-title">Requests By Month chart  {{date('Y')}}</h4>
                     <canvas id="area-chart"></canvas>
@@ -121,7 +130,7 @@
         </div>
 
         <div class="col-12  col-xl-6 grid-margin grid-margin-lg-0 stretch-card">
-            <div class="card">
+            <div class="card shadow">
                 <div class="card-body">
                     <h4 class="card-title">Compare Requests By Month In {{date('Y')}}</h4>
                     <canvas id="bar-chart"></canvas>
@@ -138,10 +147,12 @@
                 <div class="card-body  requests-list ">
                     <div class="d-flex justify-content-between align-items-center requests-list__header">
                         <h4 class="card-title">users requests</h4>
+
                         <span class="material-icons header__add-request">add</span>
+
                     </div>
                     <div class="table-responsive pt-3 requests-list__content">
-                        <table class="table" id="requests-list">
+                        <table class="table custom-table" id="requests-list">
                             <thead>
                             <tr>
                                 <th></th>
@@ -152,13 +163,13 @@
                                     response
                                 </th>
                                 <th>
-                                    request date
+                                     date
                                 </th>
                                 <th>
-                                    request status
+                                     status
                                 </th>
-                                <th>
-                                    request type
+                                <th style="text-align: center">
+                                     type
                                 </th>
 
                             </tr>
@@ -170,34 +181,36 @@
                                     <tr>
                                         <td>{{++$i}}</td>
                                         <td>
+                                                <div class="d-flex justify-content-center align-items-start flex-column">
                                             @if(empty($request->request_pretext))
-                                                Empty
+                                                <span class="custom-badge custom-badge__empty">Empty</span>
                                             @else
                                                 @php($fewWord =  implode(' ', array_slice(explode(' ', $request->request_pretext), 0, 4)))
-                                                <p>
                                                     {{$fewWord}}...
                                                     <input class="requests-list__reason__hide" type="hidden"
                                                            value="{{$request->request_pretext}}">
                                                     <button class="requests-list__read-request_btn alert-link d-block ">
                                                         read more
                                                     </button>
-                                                </p>
                                             @endif
+                                                </div>
                                         </td>
                                         <td>
+                                            <div class="d-flex justify-content-center align-items-start flex-column">
                                             @if(empty($request->request_response))
-                                                <span class="badge badge-info">No response yet</span>
+                                                    <span class="custom-badge custom-badge__empty">Empty</span>
                                             @else
                                                 @php($fewWord =  implode(' ', array_slice(explode(' ', $request->request_response), 0, 4)))
-                                                <p>
+                                                <span>
                                                     {{$fewWord}}...
                                                     <input type="hidden" class="requests-list__response__hide"
                                                            value="{{$request->request_response}}">
                                                     <button class="requests-list__read-request_btn alert-link d-block ">
                                                         read more
                                                     </button>
-                                                </p>
+                                                </span>
                                             @endif
+                                            </div>
                                         </td>
                                         <td>
 
@@ -206,10 +219,14 @@
                                                    value="{{$request->request_date}}">
                                             <span class="request-time">
 
-                                                {{ date('D', strtotime($request->request_date)) }}
+                                                <div>
+                                                      {{ date('D', strtotime($request->request_date)) }}
                                                 ,
                                                 {{date('h:s' ,strtotime($request->request_date))}}
                                                 PM
+                                                </div>
+
+                                                 {{date('D M  Y' ,strtotime($request->request_date))}}
                                             </span>
                                         </td>
                                         <td>
@@ -217,48 +234,51 @@
                                                    value="{{$request->request_status}}">
                                             @switch($request->request_status)
                                                 @case('approve')
-                                                <span class="badge badge-success">approve</span>
+                                                <span class="custom-badge custom-badge__success">approve</span>
                                                 @break
 
                                                 @case('reject')
-                                                <span class="badge badge-danger">reject</span>
+                                                <span class="custom-badge custom-badge__dager">reject</span>
                                                 @break
 
                                                 @case('postpone')
-                                                <span class="badge badge-secondary">postpone</span>
+                                                <span class="custom-badge custom-badge__postpone">postpone</span>
                                                 @break
 
                                                 @case('pending')
-                                                <span class="badge badge-warning">pending</span>
+                                                <span class="custom-badge custom-badge__pending">pending</span>
                                                 @break
 
                                             @endswitch
                                         </td>
-                                        <td class="d-flex justify-content-center align-items-center">
-                                            @if(!empty($request->request_type))
-                                                <input type="hidden" class="requests-list__type__hide"
-                                                       value="{{$request->request_type}}">
-                                                @switch($request->request_type)
-                                                    @case('change role')
-                                                    <span class="material-icons" style="color: #000">work</span>
-                                                    <spna>change role</spna>
-                                                    @break
-                                                    @case('task done')
-                                                    <span class="material-icons" style="color: #E1E1EA">task_alt</span>
-                                                    <span>task done</span>
-                                                    @break
-                                                    @case('vacation')
-                                                    <span class="material-icons"
-                                                          style="color: #D0A554">free_breakfast</span>
-                                                    <span>vacation</span>
-                                                    @break
-                                                    @case('emergency')
-                                                    <span class="material-icons" style="color: #EF231C">emergency</span>
-                                                    <span>emergency</span>
-                                                    @break
+                                        <td >
+                                            <div class="d-flex justify-content-center align-items-center flex-column">
+                                                @if(!empty($request->request_type))
+                                                    <input type="hidden" class="requests-list__type__hide"
+                                                           value="{{$request->request_type}}">
+                                                    @switch($request->request_type)
+                                                        @case('change role')
+                                                        <span class="material-icons" style="color: #000">work</span>
+                                                        <span>role</span>
+                                                        @break
+                                                        @case('task done')
+                                                        <span class="material-icons" style="color: #E1E1EA">task_alt</span>
+                                                        <span>task done</span>
+                                                        @break
+                                                        @case('vacation')
+                                                        <span class="material-icons"
+                                                              style="color: #D0A554">free_breakfast</span>
+                                                        <span>vacation</span>
+                                                        @break
+                                                        @case('emergency')
+                                                        <span class="material-icons" style="color: #EF231C">emergency</span>
+                                                        <span>emergency</span>
+                                                        @break
 
-                                                @endswitch
-                                            @endif
+                                                    @endswitch
+                                                @endif
+                                            </div>
+
                                         </td>
                                     </tr>
                                 @endforeach
@@ -275,7 +295,7 @@
         <div class="col-12 col-md-4   col-xl-3 grid-margin stretch-card request-summary">
 
             <!-- short summary | request order by type -->
-            <div class="card ">
+            <div class="card shadow ">
                 <div class="card-body ">
                     <h5 class="card-title">SHORT SUMMARY</h5>
                     <div class="request-short-summary">

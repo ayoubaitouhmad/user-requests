@@ -5,7 +5,8 @@
 
 // dashboard
 	// home
-	$router->map('GET', '/admin/dashboard', 'App\controllers\admin\dashboard\HomeController@index', 'home_dashboard');
+	$router->map('GET', '/admin/dashboard', 'App\controllers\admin\dashboard\HomeController@index', 'home_one');
+	$router->map('GET', '/admin', 'App\controllers\admin\dashboard\HomeController@index', 'home_two');
 
 	
 	// users page

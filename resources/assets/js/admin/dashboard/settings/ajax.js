@@ -92,7 +92,7 @@
                     break;
                 case 'validation':
                     errorMessagesEl.removeClass('d-none');
-                    func.setClassAdvanced(errorMessagesEl, 'alert-dark');
+                    func.setClassAdvanced(errorMessagesEl, 'alert-info');
                     let arrays = Object.values(body);
                     if (arrays.find(x => x !== undefined) !== undefined) {
                         let firstArray = arrays.find(x => x !== undefined);

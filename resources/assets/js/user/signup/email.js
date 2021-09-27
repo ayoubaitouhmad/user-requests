@@ -1,6 +1,7 @@
 (function () {
     "use strict";
     window.app.user.signup.email =  () => {
+        console.log('hi im in email ');
         let signFormConfirmEl = $('#signup-form-complete');
         // conform email
         signFormConfirmEl.on('submit' , function (e){

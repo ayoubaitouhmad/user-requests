@@ -72,25 +72,10 @@ body[page-id="user-signup-profile"] {
     }
 
     input[type="submit"] {
-      @include custom-btn;
-      margin: 1rem 0;
-      color: $black;
-      background-color: $white;
-      border-color: $text-muted;
-      font-weight: 500;
-      @include transition(.8s);
-      &:hover,
-      &:focus{
-        border-color: $first-color !important;
-        color: $first-color;
-        @include transition(.8s);
-      }
 
-      &:active{
-        border-color: $black !important;
-        color: black;
-        @include transition(.8s);
-      }
+      margin: 1rem 0;
+      height: 2rem;
+      border-radius: 1px;
     }
 
 

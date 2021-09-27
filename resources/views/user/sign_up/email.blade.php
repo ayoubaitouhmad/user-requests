@@ -14,7 +14,7 @@
 <div class="container-fluid d-flex flex-column justify-content-center align-items-center h-100">
     <div class="card shadow">
         <div  class="logo d-flex  justify-content-center align-items-center ">
-            <img style="height: 5rem " class="img-fluid preload-img" data-src="/img/logo2.png" alt="">
+            <img style="height: 4rem " class="img-fluid preload-img" data-src="/img/logo.svg" alt="">
         </div>
         <div class="card-body">
             <div class="signup-container">
@@ -52,7 +52,7 @@
 
 
                         <div class="form-item text-center">
-                            <input type="submit" placeholder="submit" class="form-item__submit">
+                            <input type="submit" placeholder="submit" class="base-button form-item__submit">
                         </div>
                     </form>
 
@@ -61,6 +61,6 @@
         </div>
     </div>
 </div>
-<script src="/js/app.js?version=<?php echo time();?>"></script>
+<script src="/js/app.js?v=<?php echo time()?>"></script>
 </body>
 </html>

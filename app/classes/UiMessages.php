@@ -34,7 +34,7 @@ class UiMessages
      */
     public static function used($who) : string
     {
-        return $who . ' Already used!!, if you have problem in your login info please try login or password your password.';
+        return $who . ' Already used!!, if you have problem in your login info please try to reset password.';
     }
 	
 

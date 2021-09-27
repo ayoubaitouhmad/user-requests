@@ -3,7 +3,7 @@
 <!-- import template --->
 @extends('admin.base.org')
 <!-- page title --->
-@section('title','Admin dashboard - Setting')
+@section('title','Admin dashboard - Settings')
 <!-- page identifier --->
 @section('page-id','admin-dashboard-settings')
 
@@ -18,7 +18,12 @@
 @section('content')
     <!-- page indexer -->
 
-    @include('inc.indexer' , ['page_src' => 'Home'])
+    <div class="row m-2">
+        @php
+        var_dump(date('Y') - 18 - 40 . '-01-01'  )
+        @endphp
+    </div>
+    @include('inc.indexer' , ['page_src' => 'Dashboard' , 'sep' => '|'  , 'page_index'=>'Settings'])
 
 
 
@@ -78,7 +83,7 @@
                                 <div class="profile-content__avatar settings-content__item d-flex flex-column justify-content-start align-items-center">
                                     <div class="custom-uploader">
                                         <img class="custom-uploader__img preload-img"
-                                             data-src="{{$admin->admin_photo ?? '/img/unknown.png'}}"
+                                             data-src="{{$admin->admin_photo !== null && $admin->admin_photo !== "" ? $admin->admin_photo : '/img/unknown.png'}}"
                                              alt="">
                                         <div class="custom-uploader__file">
                                             <div class="custom-file-uploader ">

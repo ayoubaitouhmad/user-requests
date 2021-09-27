@@ -12,7 +12,7 @@
             </button>
         </div>
     </div>
-    <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+    <div class="navbar-menu-wrapper  d-flex align-items-center justify-content-end">
         <ul class="navbar-nav navbar-nav-right">
 
             <li class="nav-item dropdown mr-4">
@@ -53,7 +53,7 @@
                 <li class="nav-item nav-profile dropdown">
                     <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" id="profileDropdown">
                         <img id="user-profile-photo" class="css-transitions-only-after-page-load"
-                             src="{{  $activeUser->user_photo ?? ''}}" alt="profile"/>
+                             src="{{ $activeUser->user_photo !== '' && $activeUser->user_photo !== null ? $activeUser->user_photo : '/img/unknown.png'}}" alt="profile"/>
                         <span class="nav-profile-name">{{$activeUser->user_fullname ?? ''}}</span>
                         <span class="navbar__user-email d-none">{{$activeUser->user_email}}</span>
                     </a>

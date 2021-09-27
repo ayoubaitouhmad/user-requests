@@ -5,7 +5,6 @@
         // because submit button outside form we need to submit form manually
         $('#new-request__save').on('click' , function (){
             newRequestFormEl.submit();
-            $(this).prop('disabled' , true);
         });
 
         // submit form event
@@ -14,8 +13,7 @@
             let token = $('body').attr('page-token');
             let requestType=  $('#data-body__request-type');
             let requestPretext=  $('#data-body__request-pretext');
-            console.log(requestPretext.val());
-            console.log(requestType.val());
+            $('#new-request__save').prop('disabled' , true);
             window.axios({
                 method : 'POST',
                 url : '/user/dashboard/requests/add',
@@ -35,18 +33,17 @@
                     console.log(res.data);
                     handleNewRequestFormReturnData(res.data);
                 })
-                .catch(error=> console.log(error));
+                .catch(error=> {
+                    $('#new-request__save').prop('disabled' , false);
+                });
 
         });
         function handleNewRequestFormReturnData({header , body}){
-
-            console.log(header);
-            console.log(body);
             let parentEl = newRequestFormEl.closest('.modal-body');
             let errorMessagesEl = parentEl.find('.user-form-messages');
             let messageTitleEl = errorMessagesEl.children('.modal-error-title');
             let messageBodyEl = errorMessagesEl.children('.modal-error-body');
-                $('#new-request__save').prop('disabled' , false);
+            $('#new-request__save').prop('disabled' , false);
             switch (header) {
                 case 'done':
                     errorMessagesEl.addClass('d-none');
