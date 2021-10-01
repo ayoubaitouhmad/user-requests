@@ -48,7 +48,7 @@
 
             }
 
-            if ( notifyAccountChange.prop('checked')) {
+            if (notifyAccountChange.prop('checked')) {
                 let email = $('.navbar__user-email').html();
                 if (email !== undefined) {
                     let channelReq = pusherReq.subscribe(email + '_account_status_changed');
@@ -100,5 +100,7 @@
         });
 
         $('[data-toggle="tooltip"]').tooltip()
+
+
     }
 })();

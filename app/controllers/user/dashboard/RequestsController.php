@@ -130,7 +130,7 @@
 					$this->validator->add($post, [
 						'pretext' => [
 							'required' => true,
-							'text' => true,
+							'paragraph' => true,
 							'minLength' => 5
 						],
 						'type' => [
@@ -167,7 +167,7 @@
 							
 							// TODO : NOTIFY USER
 							$title = 'new request';
-							$description = 'You  has send new requests';
+							$description = "you hav've sent new request";
 							$notification = new AdminNotification();
 							$notification->setTitle($title);
 							$notification->setDescription($description);

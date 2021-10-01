@@ -27,7 +27,7 @@
 	
 	
 	//  settings page
-	$router->map('GET', '/admin/dashboard/setting', 'App\Controllers\admin\dashboard\SettingsController@index', 'settings');
+	$router->map('GET', '/admin/dashboard/settings', 'App\Controllers\admin\dashboard\SettingsController@index', 'settings');
 	$router->map('POST', '/admin/dashboard/settings/edit/profile', 'App\controllers\admin\dashboard\SettingsController@editProfile', 'admin_dashboard_edit_profile');
 	$router->map('POST', '/admin/dashboard/settings/edit/profile/avatar', 'App\controllers\admin\dashboard\SettingsController@editProfileAvatar', 'admin_dashboard_edit_profile_avatar');
 	$router->map('POST', '/admin/dashboard/settings/edit/profile/security', 'App\controllers\admin\dashboard\SettingsController@editPorfilePasswordAndSecurtity', 'admin_dashboard_edit_profile_security');
@@ -53,11 +53,20 @@
 	$router->map('GET', '/admin/login', 'App\Controllers\admin\login\LoginController@index', 'login_route_one');
 	$router->map('POST', '/admin/login/authorization', 'App\Controllers\admin\login\LoginController@valid', 'authorization');
 
+
+
+
+
+// page : signup
+	$router->map('GET', '/get-started/guide','App\controllers\helpers\DocController@show','docs');
+	$router->map('GET', '/get-started/admin-infos','App\controllers\Admin\signup\SignupController@index','admin_sign_up');
+	
+	$router->map('POST', '/admin/signup/admin-infos/check/infos', 'App\controllers\Admin\signup\SignupController@check', 'admin_signup_email');
+	$router->map('POST', '/admin/signup/admin-infos/check/email/confirmation-code', 'App\controllers\Admin\signup\SignupController@checkConfermationCode', 'admin_signup_email_code');
+	
+	
+
+
+
 // hellpers
 	$router->map('POST', '/admin/reset/notifications/count', 'App\controllers\admin\dashboard\HomeController@resetNotification', 'admin_reset_notification');
-	
-	
-	
-	
-	
-	

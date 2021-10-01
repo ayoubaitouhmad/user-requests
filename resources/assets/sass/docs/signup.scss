@@ -1,0 +1,92 @@
+[page-id="admin-signup"] {
+
+  font-family: Poppins , 'sans-serif';
+  .card {
+    border: none;
+    border-radius: 6px;
+  }
+
+  //.signup-wrapper[style] {
+  //  display: none !important;
+  //}
+
+
+  .base-button{
+    font-weight: 400 !important;
+    font-size: 16px;
+  }
+  input {
+    &::placeholder {
+      color: rgb(42, 42, 42);
+
+    }
+
+    padding-left: 1rem;
+  }
+
+  .errors-messages{
+    font-size: 14.5px !important;
+  }
+
+
+
+  .text {
+    color: #646d74;
+    line-height: 29px;
+    font-size: 14px;
+    font-weight: 400;
+  }
+
+  .title {
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    color: #3e348c;
+
+  }
+
+  .form-title {
+    font-size: 1.2rem;
+    color: rgb(15, 15, 15);
+    font-weight: 500;
+  }
+
+  .input-title {
+    font-weight: 400;
+    font-size: .8rem;
+    color: $text-muted;
+  }
+
+  .signup-wrapper {
+    //display: none !important;
+    visibility: visible;
+    opacity: 1;
+    &.close-wrapper {
+      transform: translateX(-200%);
+      transition: transform 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) !important;
+      position: absolute;
+      visibility: hidden;
+    }
+
+  }
+
+  .emailConfirmation-wrapper {
+    position: absolute;
+    transform: translateX(200%);
+    opacity: 1;
+    visibility: hidden;
+
+    &.close-wrapper {
+      transition: all 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) !important;
+      position: static !important;
+      transform: none !important;
+      visibility: visible;
+    }
+  }
+
+  img {
+    margin: 0 auto;
+  }
+
+
+}

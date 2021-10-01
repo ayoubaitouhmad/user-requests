@@ -5,8 +5,8 @@
         const securityDataFormEl  = $('#security-data-form')
 
 
-        securityDataFormEl.parsley();
-        profileDataFormEl.parsley();
+        // securityDataFormEl.parsley();
+        // profileDataFormEl.parsley();
         window.Parsley.on('field:error', function () {
             this.$element.addClass('parsley-error');
         });

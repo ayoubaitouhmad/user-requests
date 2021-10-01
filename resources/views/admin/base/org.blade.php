@@ -15,7 +15,7 @@
     {{-- navbar --}}
     @include('inc.admin.navbar')
     <!-- partial -->
-    <div class="container-fluid page-body-wrapper hide">
+    <div class="container-fluid page-body-wrapper ">
         <!-- partial-->
         @include('inc.admin.sidebar')
 

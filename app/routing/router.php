@@ -18,15 +18,9 @@ $router  = new AltoRouter();
 
 
 
-
+// import  admin route
 require_once __DIR__ . '/AdminRoutes.php';
-
-
-
-
-
-
-
+// import  admin route
 require_once __DIR__ . '/UserRoutes.php';
 
 

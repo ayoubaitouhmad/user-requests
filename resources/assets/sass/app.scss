@@ -72,6 +72,9 @@
 /* === Pages === */
 // helpers
 @import "global/refresh-page";
+@import "docs/guide";
+@import "docs/signup";
+
 
 // Errors
 @import "errors/404";
@@ -83,7 +86,8 @@
 @import "admin/pages/home";
 
 // user
-@import "user/pages/index";
+@import "inc/index";
+@import "user/index";
 @import "user/pages/signup/signup";
 @import "user/pages/signup/signup-profile";
 @import "user/pages/signup/email";

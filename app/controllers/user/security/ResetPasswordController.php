@@ -78,7 +78,7 @@
 						} else {
 							echo cleanJSON([
 								'title' => UiMessages::CANCEL,
-								'body' => UiMessages::notMatch("code")
+								'body' =>'error !! , invalid response'
 							]);
 						}
 						
@@ -205,7 +205,7 @@
 						$this->model = new User();
 						$user = Session::get('user-to-reset');
 						$password = password_hash($post->password, PASSWORD_DEFAULT);
-						// TODO : chnage password
+						// TODO : change password
 						if ($this->model->updateField(['user_password', $password], $user->user_id)) {
 							// TODO : redirect to home
 							Session::add('user-connected', $user->user_email);

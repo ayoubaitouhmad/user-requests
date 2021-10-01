@@ -1,4 +1,19 @@
 /*!
+   Copyright 2008-2021 SpryMedia Ltd.
+
+ This source file is free software, available under the following license:
+   MIT license - http://datatables.net/license
+
+ This source file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ or FITNESS FOR A PARTICULAR PURPOSE. See the license files for details.
+
+ For details please refer to: http://www.datatables.net
+ DataTables 1.11.3
+ ©2008-2021 SpryMedia Ltd - datatables.net/license
+*/
+
+/*!
   * Bootstrap v4.0.0 (https://getbootstrap.com)
   * Copyright 2011-2018 The Bootstrap Authors (https://github.com/twbs/bootstrap/graphs/contributors)
   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
@@ -221,10 +236,6 @@
 /*! ./to-svg */
 
 /*! /home/travis/build/feathericons/feather/src/index.js */
-
-/*! DataTables 1.10.25
- * ©2008-2021 SpryMedia Ltd - datatables.net/license
- */
 
 /*! classnames/dedupe */
 

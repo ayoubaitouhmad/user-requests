@@ -2337,6 +2337,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       var $this = $(this);
       var requestMessageContainerEl = $this.siblings('input[type="hidden"]');
       var modalTextAreEl = modalEl.find('textarea');
+      modalEl.find('.modal-body__title').text(requestMessageContainerEl.attr('modal-type'));
       modalEl.modal('show');
       modalTextAreEl.val(requestMessageContainerEl.val());
     }); // prevent scroll when modal is open
@@ -3525,7 +3526,10 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     $('#users-list').DataTable({
       "info": true,
       "pageLength": 8,
-      'scrollY': 610
+      'scrollY': 616,
+      'scrollX': 564,
+      'select': true,
+      'scrollCollapse': true
     }); // frontend validator lib
 
     $('#user_form').parsley(); //adding frm
@@ -3715,6 +3719,13 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       $('#confirm').find('input[type="hidden"]').val(id);
       $('#confirm').modal('show');
     });
+    $('.user-infos__img').on('mouseenter', function () {
+      $(this).closest('.card').addClass('preview-open');
+      console.log('fdfdg');
+    });
+    $('.user-infos__img').on('mouseleave', function () {
+      $(this).closest('.card').removeClass('preview-open');
+    });
   };
 })();
 
@@ -3824,6 +3835,200 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
 /***/ }),
 
+/***/ "./resources/assets/js/admin/signup/signip.js":
+/*!****************************************************!*\
+  !*** ./resources/assets/js/admin/signup/signip.js ***!
+  \****************************************************/
+/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+/* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+/* provided dependency */ var __webpack_provided_window_dot_axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+(function () {
+  window.app.admin.signup.signup = function () {
+    var form = $('#formData');
+    var formDataCode = $('#formDataCode');
+    var submitformSignup = $('#submit');
+    var submitFormDataCode = $('#submit-formDataCode');
+    form.parsley();
+    formDataCode.parsley(); // sign up
+
+    submitformSignup.on('click', function (e) {
+      e.preventDefault();
+      form.submit();
+    });
+    form.on('submit', function (e) {
+      e.preventDefault();
+      submitformSignup.addClass('disabled');
+      var lname = $('#input-lname');
+      var fname = $('#input-fname');
+      var username = $('#input-username');
+      var email = $('#input-email');
+      var password = $('#input-password');
+      var phone = $('#input-phone');
+      __webpack_provided_window_dot_axios({
+        method: 'POST',
+        url: '/admin/signup/admin-infos/check/infos',
+        headers: {
+          'Accept': 'Application/Json',
+          'Authorization': 'token'
+        },
+        data: {
+          'action': 'check',
+          'data': {
+            'first_name': fname.val(),
+            'last_name': lname.val(),
+            'username': username.val(),
+            'email': email.val(),
+            'password': password.val(),
+            'phone': phone.val()
+          }
+        }
+      }).then(function (res) {
+        handleSignupRequests(res.data);
+        console.log(res.data);
+      })["catch"](function (error) {
+        return console.log(error);
+      });
+    });
+
+    function handleSignupRequests(_ref) {
+      var title = _ref.title,
+          body = _ref.body;
+      submitformSignup.removeClass('disabled');
+
+      switch (title) {
+        case 'done':
+          submitformSignup.addClass('disabled');
+          showMessage(title, body, 'alert-success', form);
+          setTimeout(function () {
+            $(".signup-wrapper").addClass('close-wrapper');
+            $(".emailConfirmation-wrapper").addClass('close-wrapper');
+          }, 3000);
+          break;
+
+        case 'validation':
+          console.log('dfdsf');
+          validationMessages(body, 'alert-info', form);
+          break;
+
+        case 'used':
+          showMessage(title, body, 'alert-warning', form);
+          break;
+
+        case 'error':
+          showMessage(title, body, 'alert-danger', form);
+          break;
+      }
+    } // end sign up
+    // check code
+
+
+    submitFormDataCode.on('click', function (e) {
+      e.preventDefault();
+      formDataCode.submit();
+    });
+    formDataCode.on('submit', function (e) {
+      e.preventDefault();
+      submitFormDataCode.addClass('disabled');
+      var code = $('#input-code');
+      __webpack_provided_window_dot_axios({
+        method: 'POST',
+        url: '/admin/signup/admin-infos/check/email/confirmation-code',
+        headers: {
+          'Accept': 'Application/Json',
+          'Authorization': 'token'
+        },
+        data: {
+          'action': 'check',
+          'data': {
+            'code': code.val()
+          }
+        }
+      }).then(function (res) {
+        // handleSignupRequests(res.data);
+        console.log(res.data);
+        handleCheckCodeRequests(res.data);
+      })["catch"](function (error) {
+        return console.log(error);
+      });
+    });
+
+    function handleCheckCodeRequests(_ref2) {
+      var title = _ref2.title,
+          body = _ref2.body;
+      submitFormDataCode.removeClass('disabled');
+
+      switch (title) {
+        case 'done':
+          submitFormDataCode.add('disabled');
+          func.refreshPage();
+          setTimeout(function () {
+            func.reloadPageContent('/admin');
+          }, 3000);
+          break;
+
+        case 'validation':
+          validationMessages(body, 'alert-info', formDataCode);
+          break;
+
+        case 'cancel':
+          showMessage(title, body, 'alert-warning', formDataCode);
+          break;
+
+        case 'error':
+          showMessage(title, body, 'alert-danger', formDataCode);
+          break;
+      }
+    } // end code
+
+
+    function showMessage(title, body, className, errorsContainerParent) {
+      var errorMessagesEl = errorsContainerParent.find('.errors-messages');
+      var messageTitleEl = errorMessagesEl.children('.modal-error-title');
+      var messageBodyEl = errorMessagesEl.children('.modal-error-body');
+      errorMessagesEl.removeClass('d-none');
+      func.setClassAdvanced(errorMessagesEl, className);
+      messageTitleEl.html(body.substring(0, body.indexOf(',')) + ',');
+      messageBodyEl.html(body.substring(body.indexOf(',') + 1, body.length));
+    }
+
+    function validationMessages(body, className, errorsContainerParent) {
+      var errorMessagesEl = errorsContainerParent.find('.errors-messages');
+      var messageBodyEl = errorMessagesEl.children('.modal-error-body');
+      errorMessagesEl.removeClass('d-none');
+      func.setClassAdvanced(errorMessagesEl, className);
+
+      if (body === "") {
+        errorMessagesEl.addClass('d-none');
+      } else {
+        var arrays = Object.values(body);
+
+        if (arrays.find(function (x) {
+          return x !== undefined;
+        }) !== undefined) {
+          var firstArray = arrays.find(function (x) {
+            return x !== undefined;
+          });
+
+          if (arrays.find(function (x) {
+            return x !== undefined;
+          }) !== undefined) {
+            if (firstArray.find(function (x) {
+              return x !== undefined;
+            }) !== undefined) {
+              messageBodyEl.text(firstArray.find(function (x) {
+                return x !== undefined;
+              }));
+            }
+          }
+        }
+      }
+    }
+  };
+})();
+
+/***/ }),
+
 /***/ "./resources/assets/js/app.js":
 /*!************************************!*\
   !*** ./resources/assets/js/app.js ***!
@@ -3872,6 +4077,8 @@ __webpack_require__(/*! ./init */ "./resources/assets/js/init.js"); // pages :
 
 
 __webpack_require__(/*! ./testing/core */ "./resources/assets/js/testing/core.js");
+
+__webpack_require__(/*! ./docs/v1/page */ "./resources/assets/js/docs/v1/page.js");
 /*******************       admin    *************************/
 
 
@@ -3905,7 +4112,10 @@ __webpack_require__(/*! ./admin/dashboard/requests/page */ "./resources/assets/j
 __webpack_require__(/*! ./admin/dashboard/requests/ajax-requests */ "./resources/assets/js/admin/dashboard/requests/ajax-requests.js"); // login
 
 
-__webpack_require__(/*! ./admin/login/ajax-requests */ "./resources/assets/js/admin/login/ajax-requests.js");
+__webpack_require__(/*! ./admin/login/ajax-requests */ "./resources/assets/js/admin/login/ajax-requests.js"); // sign up
+
+
+__webpack_require__(/*! ./admin/signup/signip */ "./resources/assets/js/admin/signup/signip.js");
 /*******************       user    *************************/
 // all page
 
@@ -3944,6 +4154,23 @@ __webpack_require__(/*! ./user/dashboard/settings/page */ "./resources/assets/js
 
 
 __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/security/security.js");
+
+/***/ }),
+
+/***/ "./resources/assets/js/docs/v1/page.js":
+/*!*********************************************!*\
+  !*** ./resources/assets/js/docs/v1/page.js ***!
+  \*********************************************/
+/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+/* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+(function () {
+  window.app.docs.v1.page = function () {
+    $('.ico-menu').on('click', function () {
+      $('.settings-row__list-items').toggleClass('active');
+    });
+  };
+})();
 
 /***/ }),
 
@@ -4110,7 +4337,11 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
       },
       users: {},
       requests: {},
-      login: {}
+      login: {},
+      signup: {
+        signup: {},
+        email: {}
+      }
     },
     user: {
       signup: {},
@@ -4120,6 +4351,9 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
         requests: {}
       },
       security: {}
+    },
+    docs: {
+      v1: {}
     }
   };
 })();
@@ -4371,6 +4605,13 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
       console.log($this);
     }
   });
+  $('#toggle-navbar-wrapper-menu').on('click', function () {
+    if ($(this).html() === 'menu') {
+      $(this).html('close');
+    } else $(this).html('menu');
+
+    $('.navbar-wrapper-menu').toggleClass('toggle');
+  });
 })();
 
 /***/ }),
@@ -4423,6 +4664,10 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
 
       case 'admin-login':
         window.app.admin.login.ajaxRequest();
+        break;
+
+      case 'admin-signup':
+        window.app.admin.signup.signup();
         break;
       // end Admin
       // user
@@ -4479,6 +4724,12 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
 
       case 'user-reset-password':
         window.app.user.security.reset();
+        break;
+      // page helpers
+
+      case 'documentation-guid':
+        window.app.docs.v1.page();
+        break;
     }
   });
 })();
@@ -5196,7 +5447,6 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
 
     securityDataFormEl.on('submit', function (e) {
       e.preventDefault();
-      saveUserSecurityData.prop('disabled', true);
       var email = $('#user-email');
       var password = $('#user-password');
       var question = $('#user-question');
@@ -5233,7 +5483,6 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
       var errorMessagesEl = securityDataFormEl.find('.errors-messages');
       var messageTitleEl = errorMessagesEl.children('.modal-error-title');
       var messageBodyEl = errorMessagesEl.children('.modal-error-body');
-      saveUserSecurityData.prop('disabled', false);
 
       switch (title) {
         case 'done':
@@ -5555,9 +5804,9 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
 
   window.app.user.dashboard.settings.plugins = function () {
     var profileDataFormEl = $('#profile-data-form');
-    var securityDataFormEl = $('#security-data-form');
-    securityDataFormEl.parsley();
-    profileDataFormEl.parsley();
+    var securityDataFormEl = $('#security-data-form'); // securityDataFormEl.parsley();
+    // profileDataFormEl.parsley();
+
     window.Parsley.on('field:error', function () {
       this.$element.addClass('parsley-error');
     });
@@ -5590,14 +5839,12 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
     var question;
     form.on('submit', function (e) {
       e.preventDefault();
-      console.log('dsdfsfds');
       nextBtnEl.prop('disabled', true).addClass('btn-secondary');
       email = $('.form-item__data-email');
       action = nextBtnEl.attr('input-action');
 
       switch (action) {
         case 'check-email':
-          console.log('check');
           __webpack_provided_window_dot_axios({
             method: 'POST',
             url: '/user/login/reset/password/check/email',
@@ -5621,7 +5868,6 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
           break;
 
         case 'code-validation':
-          console.log('validation');
           __webpack_provided_window_dot_axios({
             method: 'POST',
             url: '/user/login/reset/password/check/email/validation',
@@ -5659,9 +5905,7 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
               }
             }
           }).then(function (response) {
-            setTimeout(function () {
-              return changePassword(response.data);
-            }, 2000);
+            changePassword(response.data);
           })["catch"](function (error) {
             return console.log(error);
           });
@@ -5696,8 +5940,6 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
       var title = _ref.title,
           body = _ref.body;
       nextBtnEl.prop('disabled', false).removeClass('btn-secondary');
-      console.log(title);
-      console.log(body);
       var errorMessagesEl = form.closest('.card-body').find('.errors-messages');
       var messageTitleEl = errorMessagesEl.children('.modal-error-title');
       var messageBodyEl = errorMessagesEl.children('.modal-error-body');
@@ -5763,8 +6005,6 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
       var title = _ref2.title,
           body = _ref2.body;
       nextBtnEl.prop('disabled', false).removeClass('btn-secondary');
-      console.log(title);
-      console.log(body);
       var errorMessagesEl = form.closest('.card-body').find('.errors-messages');
       var messageTitleEl = errorMessagesEl.children('.modal-error-title');
       var messageBodyEl = errorMessagesEl.children('.modal-error-body');
@@ -5825,12 +6065,74 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
       }
     }
 
-    function changePassword(_ref3) {
+    function checkQuestion(_ref3) {
       var title = _ref3.title,
           body = _ref3.body;
       nextBtnEl.prop('disabled', false).removeClass('btn-secondary');
-      console.log(title);
-      console.log(body);
+      var errorMessagesEl = form.closest('.card-body').find('.errors-messages');
+      var messageTitleEl = errorMessagesEl.children('.modal-error-title');
+      var messageBodyEl = errorMessagesEl.children('.modal-error-body');
+
+      switch (title) {
+        case 'done':
+          if (!errorMessagesEl.hasClass('d-none')) errorMessagesEl.addClass('d-none');
+          $('.header-up').addClass('d-none');
+          nextBtnEl.attr('input-action', 'chnage-password');
+          $('.data-container_title').text('Password');
+          email.attr('placeholder', 'New Password').attr('type', 'text').attr('maxlength', '100').attr('minlength', '8').attr('data-parsley-required-message', 'password is required').attr('data-parsley-pattern', '/^(?:(?:(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]))|(?:(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}[]:;<>,.?/~_+-=|\\]))|(?:(?=.*[0-9])(?=.*[A-Z])(?=.*[*.!@$%^&(){}[]:;<>,.?/~_+-=|\\]))|(?:(?=.*[0-9])(?=.*[a-z])(?=.*[*.!@$%^&(){}[]:;<>,.?/~_+-=|\\]))).{8,32}$/').removeAttr('size').val('');
+          $('.form-item__footer').addClass('d-none');
+          break;
+
+        case 'cancel':
+          errorMessagesEl.removeClass('d-none');
+          func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
+          errorMessagesEl.removeClass('d-none');
+          messageTitleEl.html(body.substring(0, body.indexOf(',')) + ',');
+          messageBodyEl.html(body.substring(body.indexOf(',') + 1, body.length));
+          break;
+
+        case 'validation':
+          errorMessagesEl.removeClass('d-none');
+          func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
+          var arrays = Object.values(body);
+
+          if (arrays.find(function (x) {
+            return x !== undefined;
+          }) !== undefined) {
+            var firstArray = arrays.find(function (x) {
+              return x !== undefined;
+            });
+
+            if (arrays.find(function (x) {
+              return x !== undefined;
+            }) !== undefined) {
+              if (firstArray.find(function (x) {
+                return x !== undefined;
+              }) !== undefined) {
+                messageTitleEl.html('');
+                messageBodyEl.text(firstArray.find(function (x) {
+                  return x !== undefined;
+                }));
+              }
+            }
+          }
+
+          break;
+
+        case 'error':
+          errorMessagesEl.removeClass('d-none');
+          func.setClass(errorMessagesEl, 'alert-warning', 'alert-danger');
+          errorMessagesEl.removeClass('d-none');
+          messageTitleEl.html(body.substring(0, body.indexOf(',')) + ',');
+          messageBodyEl.html(body.substring(body.indexOf(',') + 1, body.length));
+          break;
+      }
+    }
+
+    function changePassword(_ref4) {
+      var title = _ref4.title,
+          body = _ref4.body;
+      nextBtnEl.prop('disabled', false).removeClass('btn-secondary');
       var errorMessagesEl = form.closest('.card-body').find('.errors-messages');
       var messageTitleEl = errorMessagesEl.children('.modal-error-title');
       var messageBodyEl = errorMessagesEl.children('.modal-error-body');
@@ -5877,72 +6179,6 @@ __webpack_require__(/*! ./user/security/security */ "./resources/assets/js/user/
             }
           }
 
-          break;
-      }
-    }
-
-    function checkQuestion(_ref4) {
-      var title = _ref4.title,
-          body = _ref4.body;
-      nextBtnEl.prop('disabled', false).removeClass('btn-secondary');
-      console.log(title);
-      console.log(body);
-      var errorMessagesEl = form.closest('.card-body').find('.errors-messages');
-      var messageTitleEl = errorMessagesEl.children('.modal-error-title');
-      var messageBodyEl = errorMessagesEl.children('.modal-error-body');
-
-      switch (title) {
-        case 'done':
-          if (!errorMessagesEl.hasClass('d-none')) errorMessagesEl.addClass('d-none');
-          $('.header-up').addClass('d-none');
-          nextBtnEl.attr('input-action', 'chnage-password');
-          $('.data-container_title').text('Password');
-          email.attr('placeholder', 'New Password').attr('type', 'text').attr('maxlength', '100').attr('minlength', '8').attr('data-parsley-required-message', 'password is required').attr('data-parsley-pattern', '/^(?:(?:(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]))|(?:(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}[]:;<>,.?/~_+-=|\\]))|(?:(?=.*[0-9])(?=.*[A-Z])(?=.*[*.!@$%^&(){}[]:;<>,.?/~_+-=|\\]))|(?:(?=.*[0-9])(?=.*[a-z])(?=.*[*.!@$%^&(){}[]:;<>,.?/~_+-=|\\]))).{8,32}$/').removeAttr('size').val('');
-          $('.form-item__footer').addClass('d-none');
-          break;
-
-        case 'cancel':
-          errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
-          errorMessagesEl.removeClass('d-none');
-          messageTitleEl.html(body.substring(0, body.indexOf(',')) + ',');
-          messageBodyEl.html(body.substring(body.indexOf(',') + 1, body.length));
-          break;
-
-        case 'validation':
-          errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-danger', 'alert-warning');
-          var arrays = Object.values(body);
-
-          if (arrays.find(function (x) {
-            return x !== undefined;
-          }) !== undefined) {
-            var firstArray = arrays.find(function (x) {
-              return x !== undefined;
-            });
-
-            if (arrays.find(function (x) {
-              return x !== undefined;
-            }) !== undefined) {
-              if (firstArray.find(function (x) {
-                return x !== undefined;
-              }) !== undefined) {
-                messageTitleEl.html('');
-                messageBodyEl.text(firstArray.find(function (x) {
-                  return x !== undefined;
-                }));
-              }
-            }
-          }
-
-          break;
-
-        case 'error':
-          errorMessagesEl.removeClass('d-none');
-          func.setClass(errorMessagesEl, 'alert-warning', 'alert-danger');
-          errorMessagesEl.removeClass('d-none');
-          messageTitleEl.html(body.substring(0, body.indexOf(',')) + ',');
-          messageBodyEl.html(body.substring(body.indexOf(',') + 1, body.length));
           break;
       }
     }

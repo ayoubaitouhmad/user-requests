@@ -24,7 +24,8 @@ class UploadImage extends File implements UploadFile
      * max image size accepted
      * size : byte
      */
-    const FILE_SIZE = 2097152;
+//    const FILE_SIZE = 2097152;
+    const FILE_SIZE = 20097152;
 
     /**
      *  image format accepted to upload

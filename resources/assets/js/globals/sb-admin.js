@@ -68,16 +68,16 @@
 
         let $this = $(this);
         let shower = $this.closest('.image-shower').find('#image-preview');
-        let labelEl =$this.closest('.image-shower').find('.custom-file-label');
-        if(func.isValidImageExt(func.getFileExt($this))){
+        let labelEl = $this.closest('.image-shower').find('.custom-file-label');
+        if (func.isValidImageExt(func.getFileExt($this))) {
             shower.attr('src', URL.createObjectURL(e.target.files[0]));
             let fileName = func.getFileName($this);
             if (fileName.toString().length > 10) {
                 fileName = fileName.toString().substring(0, 10);
             }
             labelEl.text(fileName);
-        }else {
-            shower.attr('src','/img/unknown.png');
+        } else {
+            shower.attr('src', '/img/unknown.png');
             labelEl.text('');
             $this.val('');
         }
@@ -123,7 +123,6 @@
     }
 
 
-
     // show button (save new avatar)
     $('.custom-file-uploader-input').on('change', function () {
 
@@ -133,14 +132,22 @@
         if (func.isValidImageExt(func.getFileExt($this))) {
             imgShower.attr('data-src', URL.createObjectURL($this.get(0).files[0]));
             func.lazy();
-        }else {
-            imgShower.attr('data-src','/img/unknown.png');
+        } else {
+            imgShower.attr('data-src', '/img/unknown.png');
             func.lazy();
             $this.val('');
-        console.log($this);
+            console.log($this);
         }
     });
 
 
+    $('#toggle-navbar-wrapper-menu').on('click', function () {
+        if ($(this).html() === 'menu') {
+            $(this).html('close');
+        } else
+            $(this).html('menu');
 
+        $('.navbar-wrapper-menu').toggleClass('toggle');
+
+    });
 })();

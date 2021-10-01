@@ -1,0 +1,118 @@
+.index {
+  .main-panel {
+    width: 100% !important;
+    min-height: 0;
+
+    .content-wrapper {
+      background-color: white;
+    }
+
+  }
+
+  .brand-logo__img {
+    height: 50px;
+  }
+
+  .navbar {
+
+    box-shadow: -0.0625rem 0 0.625rem 0 rgb(0 0 0 / 7%), 0.3125rem 1.25rem 2.5rem 0 rgb(0 0 0 / 4%) !important;
+    .navbar-wrapper {
+
+      padding-left: 15px;
+      padding-right: 15px;
+      border-bottom: 0;
+      box-shadow: none !important;
+      height: 60px;
+      width: 136px;
+      border-bottom: 0;
+
+
+    }
+
+
+    .navbar-wrapper-menu {
+      background: #ffffff;
+      border-bottom: 1px solid #e3e3e3;
+      width: calc(100% - 136px);
+      border-right: 0;
+      height: 60px;
+      border-right: 1px solid #e3e3e3;
+      padding: 0 1rem;
+      a {
+
+        padding: .2rem 1rem;
+        height: 1.9rem;
+        font-size: .875rem;
+        margin-left: 1rem;
+        outline: none;
+        color: black;
+        border-radius: 4px;
+      }
+
+
+      .btn-login {
+        border: 1px solid black;
+        background-color: transparent;
+      }
+
+      .btn-help {
+        background-color: $second-color;
+        color: white;
+      }
+    }
+
+  }
+
+  .ico-menu{
+    z-index: 1;
+    position: absolute;
+    font-size: 2.2rem;
+    top: 12px;
+    right: 0;
+    transform: translateX(45px);
+
+  }
+
+  @media (max-width: 500px) {
+    .ico-menu{
+      transform: translateX(-13px);
+      transition:  transform 1s cubic-bezier(0.68,-0.55,0.27,1.55) !important;
+    }
+    .navbar-wrapper-menu{
+      position: fixed;
+      transform: translateY(-834px);
+      top: 0px;
+      display: flex;
+      flex-direction: column;
+      height: 100vh !important;
+      width: 100% !important;
+      justify-content: center!important;
+      align-items: center!important;
+      z-index: 0;
+
+      &.toggle{
+        transform: translateY(0px);
+        transition:  transform 1s cubic-bezier(0.68,-0.55,0.27,1.55) !important;
+      }
+      .btn-login {
+        border: 1px solid black;
+        background-color: transparent;
+      }
+
+      .btn-help {
+        color: black !important;
+
+        background-color: transparent !important;
+      }
+      a {
+        font-size: 1.15rem !important;
+        margin: 1rem 0;
+        border: none !important;
+
+      }
+    }
+
+  }
+
+
+}

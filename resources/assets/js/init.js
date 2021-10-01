@@ -36,6 +36,9 @@
             case 'admin-login' :
                 window.app.admin.login.ajaxRequest();
                 break;
+            case 'admin-signup' :
+                window.app.admin.signup.signup();
+                break;
             // end Admin
 
             // user
@@ -87,6 +90,13 @@
 
             case 'user-reset-password':
                 window.app.user.security.reset();
+                break;
+
+
+            // page helpers
+            case 'documentation-guid' :
+                window.app.docs.v1.page();
+                break;
 
         }
     });

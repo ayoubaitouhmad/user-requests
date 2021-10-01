@@ -503,13 +503,14 @@
                                                         type="password" id="user-password"
                                                         class="w-100 custom-form__control"
                                                         value="{{$activeUser->password ?? ''}}"
-                                                        required
-                                                        data-parsley-pattern="/^(?:(?:(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]))|(?:(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}[]:;<>,.?/~_+-=|\]))|(?:(?=.*[0-9])(?=.*[A-Z])(?=.*[*.!@$%^&(){}[]:;<>,.?/~_+-=|\]))|(?:(?=.*[0-9])(?=.*[a-z])(?=.*[*.!@$%^&(){}[]:;<>,.?/~_+-=|\]))).{8,32}$/"
-                                                        data-parsley-required-message="sorry, this entry is required."
-                                                        data-parsley-error-message="sorry, you need to entre strong password contains (number,letters) upper and lower case."
-                                                        maxlength="50"
-                                                        minlength="5"
-                                                        data-parsley-trigger="keyup">
+{{--                                                        required--}}
+{{--                                                        data-parsley-pattern="/^(?:(?:(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]))|(?:(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}[]:;<>,.?/~_+-=|\]))|(?:(?=.*[0-9])(?=.*[A-Z])(?=.*[*.!@$%^&(){}[]:;<>,.?/~_+-=|\]))|(?:(?=.*[0-9])(?=.*[a-z])(?=.*[*.!@$%^&(){}[]:;<>,.?/~_+-=|\]))).{8,32}$/"--}}
+{{--                                                        data-parsley-required-message="sorry, this entry is required."--}}
+{{--                                                        data-parsley-error-message="sorry, you need to entre strong password contains (number,letters) upper and lower case."--}}
+{{--                                                        maxlength="50"--}}
+{{--                                                        minlength="5"--}}
+{{--                                                        data-parsley-trigger="keyup"--}}
+                                                >
 
                                                 <span class="material-icons toggle-password">visibility_off</span>
                                             </label>

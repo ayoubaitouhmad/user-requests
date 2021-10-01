@@ -35,7 +35,9 @@
 			'uppercase',
 			'specialChars',
 			'lowercase',
-			'date_between'
+			'date_between',
+			'username'
+			
 		);
 		
 		const REGEX = [
@@ -46,7 +48,10 @@
 			'date' => "/^\d{4}[\-\/\s]?((((0[13578])|(1[02]))[\-\/\s]?(([0-2][0-9])|(3[01])))|(((0[469])|(11))[\-\/\s]?(([0-2][0-9])|(30)))|(02[\-\/\s]?[0-2][0-9]))$/",
 			'password' => "/^(?:(?:(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]))|(?:(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}[]:;<>,.?/~_+-=|\]))|(?:(?=.*[0-9])(?=.*[A-Z])(?=.*[*.!@$%^&(){}[]:;<>,.?/~_+-=|\]))|(?:(?=.*[0-9])(?=.*[a-z])(?=.*[*.!@$%^&(){}[]:;<>,.?/~_+-=|\]))).{8,32}$/",
 			'number' => '/^[0-9]$/',
-			'text' => '/^[a-zA-Z0-9\s.,:-_()?!]*$/'
+			'text' => '/^[a-zA-Z0-9\s]*$/',
+			'username' => '/^[a-zA-Z0-9-_]*$/' ,
+			'paragraph' => '/^[a-zA-Z0-9.,:-_()?!]*$/'
+			
 		];
 		
 		
@@ -56,7 +61,7 @@
 			'email' => ' sorry , enter a valid email like(name@domain.com).',
 			'maxLength' => ' sorry , field can accept only regex. ',
 			'minLength' => ' sorry , field must be at least regex characters. ',
-			'text' => ' sorry, field can only contain character and spaces and known symbols (?,!,= ...).',
+			'text' => ' sorry, field can only contain character and spaces.',
 			'number' => ' sorry , field can only contain real number',
 			'phone' => ' sorry , field can only contain 10 number (Ex : 0606060606)',
 			'address' => 'sorry, field can only contain character,numbers and spaces.',
@@ -67,9 +72,11 @@
 			'format' => 'sorry ,  field must be in list  (regex). ',
 			'size' => 'sorry ,  field must be less than regexMB.',
 			'uppercase' => 'sorry ,  field must be contain at least one uppercase character .',
-			'specialChars' => 'sorry ,  field must be contain one special caractere like (- or _) .',
+			'specialChars' => 'sorry ,  field must be contain one special caractere like (-) or (_) .',
 			'lowercase' => 'sorry ,   field must be contain at least one lowercase character .',
 			'date_between' => 'sorry ,   field must be between (regex) .',
+			'username' => 'sorry, field can only contain character and  special caractere like (- or _).',
+			'paragraph' => 'sorry, field can only contain paragraphs , text , character and special caractere.',
 			
 		];
 		
@@ -120,6 +127,7 @@
 								$message = self::MESSAGES[$rule];
 							
 								if (str_contains($message, 'field')) {
+									$this->field = str_replace(['_', '-'], ' ', $this->field);
 									$message = str_replace('field', $this->field, $message);
 								}
 								if (str_contains($message, 'regex')) {
@@ -237,6 +245,18 @@
 			} else
 				return true;
 		}
+			private function paragraph($val, $regex)
+		{
+			
+			if ($regex) {
+				$option = array(
+					'options' => array('regexp' => self::REGEX['paragraph'])
+				);
+				
+				return filter_var($val, FILTER_VALIDATE_REGEXP, $option) == $val;
+			} else
+				return true;
+		}
 		
 		
 		
@@ -294,6 +314,19 @@
 			if ($regex) {
 				$option = array(
 					'options' => array('regexp' => self::REGEX['date'])
+				);
+				
+				return filter_var($val, FILTER_VALIDATE_REGEXP, $option) == $val;
+			} else
+				return true;
+		}
+		
+		private function username($val, $regex)
+		{
+			
+			if ($regex) {
+				$option = array(
+					'options' => array('regexp' => self::REGEX['username'])
 				);
 				
 				return filter_var($val, FILTER_VALIDATE_REGEXP, $option) == $val;

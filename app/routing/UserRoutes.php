@@ -36,7 +36,7 @@
 	$router->map('POST', '/user/dashboard/requests/add', 'App\controllers\user\dashboard\RequestsController@store', 'user_dashboard_add_requests');
 	
 	// settings
-	$router->map('GET', '/user/dashboard/setting', 'App\controllers\user\dashboard\SettingsController@index', 'user_dashboard_settings');
+	$router->map('GET', '/user/dashboard/settings', 'App\controllers\user\dashboard\SettingsController@index', 'user_dashboard_settings');
 	$router->map('POST', '/user/dashboard/settings/edit/profile', 'App\controllers\user\dashboard\SettingsController@editProfile', 'user_dashboard_edit_profile');
 	$router->map('POST', '/user/dashboard/settings/edit/profile/avatar', 'App\controllers\user\dashboard\SettingsController@editProfileAvatar', 'user_dashboard_edit_profile_avatar');
 	$router->map('POST', '/user/dashboard/settings/edit/profile/security', 'App\controllers\user\dashboard\SettingsController@editPorfilePasswordAndSecurtity', 'user_dashboard_edit_profile_security');

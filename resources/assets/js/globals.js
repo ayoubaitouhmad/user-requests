@@ -8,7 +8,11 @@
             },
             users:{},
             requests : {},
-            login:{}
+            login:{},
+            signup : {
+                    signup : {},
+                        email: {}
+            }
         },
         user :{
             signup :{},
@@ -19,6 +23,9 @@
             },
             security:{}
 
+        },
+        docs : {
+            v1 : {}
         }
     };
 })();

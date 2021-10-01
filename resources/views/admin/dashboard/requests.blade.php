@@ -5,6 +5,9 @@
 <!-- page identifier --->
 @section('page-id','admin-dashboard-requests')
 
+@section('side-bar-request'  , 'active-page')
+
+
 <!-- bootstrap modals--->
 @section('bootstrap-modals')
     <!-- read request message modal-->
@@ -12,11 +15,11 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Modal title</h5>
+                    <h5 class="modal-title">Read All</h5>
                     <span class="btn-close material-icons">close</span>
                 </div>
                 <div class="modal-body">
-                    <h2 class="modal-body__title">Request reason</h2>
+                    <h2 class="modal-body__title"></h2>
                     <div class="form-floating">
                         <textarea autocorrect="off" spellcheck="false" aria-autocomplete="none" class="form-control"
                                   placeholder="" id="floatingTextarea2" style="height: 100px"></textarea>
@@ -164,7 +167,9 @@
     <div class="row">
 
         <!-- requests list -->
-        <div class="col-12 col-md-8  col-xl-9 grid-margin stretch-card">
+{{--        col-md-8  col-xl-9--}}
+{{--        col-md-4   col-xl-3--}}
+        <div class="col-md-8  col-xl-9  grid-margin stretch-card">
             <div class="card shadow">
                 <div class="card-body ">
                     <div class="d-flex justify-content-between">
@@ -215,12 +220,12 @@
                                 @php($i = 0)
                                 @foreach($requests as $request)
                                     <tr row-id="{{$request->request_id ?? ''}} ">
-                                        <td>{{$i}}</td>
+                                        <td>{{++$i}}</td>
                                         <td>
                                             <div class="user-infos__img-fullName">
                                                 <img  data-src="{{$request->userPhoto ?? ''}}"
                                                      alt="profile-image"
-                                                     class="preload-img">
+                                                     class="preload-img user-infos__img">
                                                 <span class="requests-list__user-name">{{$request->userName?? ''}}</span>
                                                 <input class="requests-list__user-name__hide" type="hidden"
                                                        value="{{$request->userName?? ''}}">
@@ -233,7 +238,7 @@
                                                 @php($fewWord =  implode(' ', array_slice(explode(' ', $request->request_pretext), 0, 4)))
                                                 <p>
                                                     {{$fewWord}}...
-                                                    <input class="requests-list__reason__hide" type="hidden"
+                                                    <input class="requests-list__reason__hide" modal-type="Rrquest Reason" type="hidden"
                                                            value="{{$request->request_pretext?? ''}}">
                                                     <span class="read-more alert-link d-block ">
                                                         read more
@@ -248,7 +253,7 @@
                                                 @php($fewWord =  implode(' ', array_slice(explode(' ', $request->request_response), 0, 4)))
                                                 <p>
                                                     {{$fewWord}}...
-                                                    <input type="hidden" class="requests-list__response__hide"
+                                                    <input type="hidden" modal-type="Rrquest Response" class="requests-list__response__hide"
                                                            value="{{$request->request_response?? ''}}">
                                                     <button class="read-more alert-link d-block ">
                                                         read more
@@ -355,7 +360,7 @@
             </div>
         </div>
         <!-- requests summary -->
-        <div class="col-12 col-md-4   col-xl-3 grid-margin stretch-card request-summary">
+        <div class="col-md-4   col-xl-3 grid-margin stretch-card request-summary">
 
             <!-- short summary | request order by type -->
             <div class="card shadow ">

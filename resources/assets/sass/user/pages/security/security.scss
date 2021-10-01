@@ -72,4 +72,10 @@ body[page-id="user-reset-password"] {
     }
 
   }
+  @media (max-width: 500px) {
+    .container {
+     padding: 0;
+    }
+
+  }
 }

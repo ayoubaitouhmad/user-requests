@@ -135,7 +135,7 @@
 							'required' => true,
 							'maxLength' => 40,
 							'minLength' => 5,
-							'like' => ['Change Role' ,' Vacation' ,'Emergency']
+							'like' => [	'status' , 'approve' , 'reject' , 'postpone' , 'pending' ,]
 						],
 
 						'response' => [

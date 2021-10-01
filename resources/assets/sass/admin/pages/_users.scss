@@ -309,6 +309,33 @@
     font-weight: 500;
   }
 
+  td:nth-child(2){
+    position: relative !important;
+  }
+
+  //.preview-open{
+  //
+  //  pointer-events: none;
+  //
+  //}
+  //
+  //.user-infos__img:hover{
+  //  pointer-events: all !important;
+  //}
+  //.user-infos__img:hover + .user-image-preview {
+  //  height: 303px!important;
+  //  width: 300px !important;
+  //}
+  //.user-image-preview{
+  //  pointer-events: all !important;
+  //  position: absolute;
+  //  top: -11px;
+  //  left: 158px;
+  //  opacity: 1;
+  //  z-index: 99999999999999;
+  //  height: 0;
+  //  width: 0;
+  //}
 }
 
 
@@ -333,3 +360,5 @@
 input:focus::placeholder {
   color: transparent !important;
 }
+
+

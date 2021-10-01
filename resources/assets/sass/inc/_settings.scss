@@ -497,7 +497,6 @@
 
 [page-id="user-dashboard-settings"]{
   .settings-items.hide{
-
       input,
       select
       {
@@ -506,10 +505,173 @@
         background-color: lightgrey;
       }
     }
-
-
-
 }
+[page-id="user-dashboard-settings"],
+[page-id="admin-dashboard-settings"]{
+  .settings-row__list {
+    .card {
+      &, .card-body {
+        border: none;
+      }
+
+      .card-body {
+
+
+        .settings-row__list-items {
+          @media (max-width: 768px) {
+            display: flex;
+            justify-content: space-between;
+          }
+
+
+          .list-item {
+
+
+            @media (max-width: 767px) {
+              padding-left: 0;
+              padding-right: 0;
+            }
+            @media (max-width: 490px) {
+              flex-direction: column;
+            }
+            @media (max-width: 576px) {
+              display: flex;
+              .ico-arrow {
+                transform: rotateZ(90deg);
+              }
+            }
+
+            @media (max-width: 500px) {
+              padding: 0 .4rem;
+            }
+
+
+
+            &.active-link:after {
+
+              @media (max-width: 768px) {
+                animation: dropdownAnimation_width .3s ease-in-out;
+                height: .2rem;
+                width: 100%;
+                bottom: -30%;
+              }
+              @media (max-width: 500px) {
+                bottom: -50%;
+              }
+
+            }
+
+
+
+            .list-item__title {
+              color: inherit;
+              display: inline-block;
+              font-size: 0.875rem;
+              line-height: 1;
+              vertical-align: middle;
+              position: relative;
+              @media (max-width: 382px) {
+                display: none;
+              }
+
+            }
+
+            .material-icons {
+              transition: visibility .5s ease-in;
+            }
+
+            .ico-hide {
+              visibility: hidden;
+            }
+
+            .ico-arrow {
+              animation: ico-arrow__visibility .8s ease-in;
+
+              @media (max-width: 768px) {
+                transform: rotateZ(90deg);
+                animation: ico-arrow__rotate .3s ease-in;
+
+              }
+              @media (min-width: 1420px) {
+                margin-left: 2rem !important;
+              }
+              @media (max-width: 1200px) {
+                margin-left: 2rem !important;
+              }
+
+              @media (max-width: 900px) {
+                margin-left: .8rem !important;
+              }
+              @media (max-width: 690px) {
+                display: none;
+              }
+            }
+
+
+            > span:not(:nth-child(1)) {
+              margin: 0 .1rem;
+              @media (max-width: 500px) {
+                margin: 0;
+              }
+
+            }
+
+            .material-icons {
+              color: $text-muted;
+            }
+
+
+          }
+        }
+      }
+    }
+
+
+  }
+  @media (max-width: 500px) {
+    .settings {
+
+      .settings-item {
+        padding: 0;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      #notification {
+        .notifications-settings__item{
+
+          padding: 0;
+        }
+      }
+
+      .settings-item_content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .settings-content__item {
+        padding: 0;
+
+        .row {
+          .col-12 {
+            padding: 0 !important;
+
+          }
+        }
+      }
+
+      .ui-settings__item {
+        padding: 0;
+      }
+    }
+  }
+}
+
 
 
 
@@ -575,47 +737,3 @@
   box-shadow: 0 0 3px #e8241a !important;
 }
 
-@media (max-width: 500px) {
-  .settings {
-
-    .settings-item {
-      padding: 0;
-
-
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    #notification {
-      .notifications-settings__item{
-
-      padding: 0;
-      }
-    }
-
-    .settings-item_content {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .settings-content__item {
-      padding: 0;
-
-      .row {
-        .col-12 {
-          padding: 0 !important;
-
-        }
-      }
-    }
-
-    .ui-settings__item {
-      padding: 0;
-    }
-  }
-}

@@ -5,7 +5,11 @@
         $('#users-list').DataTable({
             "info":     true,
             "pageLength": 8,
-            'scrollY': 610,
+
+            'scrollY': 616,
+            'scrollX': 564,
+            'select' : true,
+            'scrollCollapse': true,
         });
         // frontend validator lib
         $('#user_form').parsley(); //adding frm

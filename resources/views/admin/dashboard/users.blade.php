@@ -1,9 +1,13 @@
 <!-- import template --->
 @extends('admin.base.org')
 <!-- page title --->
-@section('title','app')
+@section('title','userRequests | Users List')
 <!-- page identifier --->
 @section('page-id','admin-dashboard-users')
+
+@section('side-bar-users' , 'active-page')
+
+
 <!-- bootstrap modals--->
 @section('bootstrap-modals')
     {{-- bootsrap modals : add user modal--}}
@@ -428,8 +432,6 @@
         </div>
     </div>
 
-
-
     {{-- bootsrap modals : conferm --}}
     <div class="modal fade" tabindex="-1" id="confirm" role="dialog" aria-labelledby="confirm">
         <div class="modal-dialog" role="document">
@@ -479,14 +481,7 @@
 @section('content')
 
 
-    <div class="row m-2">
-        @php
-            $dateToCompare = '2000-01-5';
-           $startdate = date('Y-m-d', strtotime('1950-04-5'));
-           $enddate = date('Y-m-d', strtotime('2000-04-5'));
-           var_dump($dateToCompare <= $enddate && $dateToCompare >= $startdate);
-        @endphp
-    </div>
+
     <!-- page indexer -->
     @include('inc.indexer' , ['page_src' => 'Dashboard','sep' => '|' ,'page_index' => 'Users'])
 
@@ -517,7 +512,7 @@
     <div class="row">
 
         <div class="col-12 col-md-8  col-xl-9  grid-margin stretch-card">
-            <div class="card shadow">
+            <div class="card  shadow">
                 <div class="card-body ">
                     <div class="d-flex justify-content-between align-items-center">
                         <h4 class="card-title">users list</h4>
@@ -526,28 +521,28 @@
                         </button>
                     </div>
                     <div class="table-responsive pt-3">
-                        <table class="table table-fixed custom-table" id="users-list">
+                        <table class="table table-fixed  custom-table" id="users-list">
                             <thead>
                             <tr>
                                 <th>
 
                                 </th>
-                                <th>user</th>
+                                <th>User</th>
 
                                 <th>
-                                    ville
+                                    City
                                 </th>
                                 <th>
-                                    gender
+                                    Gender
                                 </th>
                                 <th>
-                                    email
+                                    Email
                                 </th>
                                 <th>
-                                    account status
+                                    Account Status
                                 </th>
                                 <th>
-                                    action
+                                    Action
                                 </th>
                             </tr>
                             </thead>
@@ -560,8 +555,13 @@
                                         <td>{{++$i}}</td>
                                         <td>
                                             <div class="user-infos__img-fullName">
+
                                                 <img data-src="{{!empty(getFileFromDirByName($user->user_photo)) ? getFileFromDirByName($user->user_photo) : '/img/unknown.png' }}"
-                                                     alt="profile-image" class="preload-img">
+                                                     alt="profile-image" class="user-infos__img preload-img">
+
+                                                {{--                                                <img data-src="{{!empty(getFileFromDirByName($user->user_photo)) ? getFileFromDirByName($user->user_photo) : '/img/unknown.png' }}"--}}
+                                                {{--                                                     alt="profile-image" class="user-image-preview preload-img">--}}
+
                                                 <span class="requests-list__user-name">
                                                     {{$user->user_fullname}}
                                                 </span>
@@ -576,10 +576,18 @@
                                             @endif
                                         </td>
                                         <td>
-                                            @if(empty($request->user_gender) )
-                                                <span class="custom-badge custom-badge__empty"> Empty</span>
+                                            @if(!isset($request->user_gender) && !empty($request->user_gender) )
+                                                <span class="custom-badge custom-badge__empty">Empty</span>
+
                                             @else
-                                                @if($user->user_gender == 'm') male @else female @endif
+
+                                                @if($user->user_gender === 'm')
+                                                    <span class="material-icons"
+                                                          style="color: white ;background-color: #34a7fe  ">male</span>
+                                                @else
+                                                    <span class="material-icons"
+                                                          style="background-color: #ee4b70  !important; color: white ">female</span>
+                                                @endif
                                             @endif
                                         </td>
                                         <td>
@@ -759,7 +767,8 @@
                             @foreach($lastFourUsers as $user)
                                 <div class="last-requests-data">
                                     <div class="left-side">
-                                        <img src="" data-src="{{isset($user->user_photo) &&  !empty($user->user_photo) ? $user->user_photo : '/img/unknown.png'}}"
+                                        <img src=""
+                                             data-src="{{isset($user->user_photo) &&  !empty($user->user_photo) ? $user->user_photo : '/img/unknown.png'}}"
                                              alt="" class="preload-img">
                                         <div class="infos">
                                             <div class="name">{{$user->user_fullname}}</div>
@@ -775,9 +784,10 @@
                                         <span class="count">
                                             @if($user->user_gender==='f')
                                                 <span class="material-icons"
-                                                      style="background-color: #f81cff !important; color: white ">female</span>
+                                                      style="background-color: #ee4b70 !important; color: white ">female</span>
                                             @else
-                                                <span class="material-icons bg-info" style="color: white !important;">male</span>
+                                                <span class="material-icons"
+                                                      style="color: white ;background-color: #34a7fe  ">male</span>
                                             @endif
 
                                         </span>

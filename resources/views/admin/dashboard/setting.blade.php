@@ -7,7 +7,7 @@
 <!-- page identifier --->
 @section('page-id','admin-dashboard-settings')
 
-
+@section('side-bar-settings'  , 'active-page')
 
 <!-- notifications -->
 @include('inc.notifications')
@@ -18,11 +18,7 @@
 @section('content')
     <!-- page indexer -->
 
-    <div class="row m-2">
-        @php
-        var_dump(date('Y') - 18 - 40 . '-01-01'  )
-        @endphp
-    </div>
+
     @include('inc.indexer' , ['page_src' => 'Dashboard' , 'sep' => '|'  , 'page_index'=>'Settings'])
 
 
@@ -323,119 +319,9 @@
                         </div>
                     </div>
 
-
-
-
                 </div>
             </div>
         </div>
     </div>
 @endsection
 <!-- end main content  -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

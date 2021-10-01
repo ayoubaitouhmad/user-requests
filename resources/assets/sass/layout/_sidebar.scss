@@ -8,7 +8,6 @@
   padding: 0;
   width: 257px;
   z-index: 11;
-  transition: width .8s cubic-bezier(0.68,-0.55,0.27,1.55) !important;
   box-shadow: none;
   border-right: 1px solid #e3e3e3;
 
@@ -22,15 +21,18 @@
     .nav-item {
       transition-duration: 0.25s;
       transition-property: background;
-      &.disabled{
+
+      &.disabled {
         pointer-events: none;
-       &.hover-open{
-         .menu-title{
-           display: none !important;
-         }
-       }
+
+        &.hover-open {
+          .menu-title {
+            display: none !important;
+          }
+        }
+
         &,
-        .material-icons{
+        .material-icons {
           background-color: #f0f0f0 !important;
           opacity: .5 !important;
           user-select: none !important;
@@ -38,7 +40,7 @@
         }
 
 
-        &:hover{
+        &:hover {
           content: none !important;
         }
       }
@@ -61,7 +63,7 @@
           font-size: 1.210rem;
           line-height: 1;
           margin-right: 1.125rem;
-          color: inherit;
+
 
           &.menu-arrow {
             margin-left: 4rem;
@@ -73,9 +75,8 @@
         }
 
 
-
         .menu-title {
-          color: inherit;
+          color: rgb(15, 15, 15);
           display: inline-block;
           font-size: 0.875rem;
           line-height: 1;
@@ -119,7 +120,8 @@
         border-bottom: 1px solid #f3f3f3;
         margin-top: 0;
         position: relative;
-        &.active-page:before{
+
+        &.active-page:before {
           content: '';
           position: absolute;
           top: 0;
@@ -157,7 +159,6 @@
       padding: 0;
 
 
-
       .nav-link {
         color: #656565;
         padding: 0.6rem 1rem;
@@ -167,7 +168,7 @@
         height: auto;
         border-top: 0;
 
-        &:hover  {
+        &:hover {
           border-bottom-color: #3B2F85;
           border-top: 1px solid #3B2F85;
         }
@@ -187,19 +188,20 @@
 
 
 .sidebar-icon-only {
-  .navbar-menu-wrapper{
+  .navbar-menu-wrapper {
 
   }
+
   .sidebar {
     //margin-left: -.9rem;
     .nav {
       .nav-item {
+
         .nav-link {
           padding: 0;
           margin: .970rem;
 
           .menu-title {
-            display: none;
             border-radius: 0 5px 5px 0px;
           }
 
@@ -222,7 +224,11 @@
         .collapse {
           display: none;
         }
+
+
       }
+
+
 
       .nav-item.hover-open {
         .nav-link {
@@ -293,6 +299,17 @@
 }
 
 @media screen and (max-width: 991px) {
+  .sidebar{
+    .nav{
+      .nav-item{
+        &.active-page:before {
+          right: 0 ;
+          left: auto !important;
+
+        }
+      }
+    }
+  }
   .sidebar-offcanvas {
     position: fixed;
     max-height: calc(100vh - 60px);
@@ -300,10 +317,11 @@
     bottom: 0;
     overflow: auto;
     right: -254px;
+
   }
   .sidebar-offcanvas.active {
     right: 0;
-    transition: right .8s cubic-bezier(0.68,-0.55,0.27,1.55) !important;
+    transition: right .8s cubic-bezier(0.68, -0.55, 0.27, 1.55) !important;
   }
 }
 
@@ -312,7 +330,8 @@
     .navbar {
       .navbar-brand-wrapper {
         width: 70px;
-        transition: width .8s cubic-bezier(0.68,-0.55,0.27,1.55) !important;
+
+
         .navbar-brand-inner-wrapper {
           margin-right: auto;
 
@@ -339,7 +358,8 @@
 
     .sidebar {
       width: 70px;
-      transition: width .8s cubic-bezier(0.68,-0.55,0.27,1.55) !important;
+
+
       .nav {
         overflow: visible;
 
@@ -508,7 +528,7 @@
 
 @media (max-width: 500px) {
   .sidebar-offcanvas.active {
-      width: 160px;
+    width: 160px;
   }
 }
 
@@ -520,12 +540,3 @@
 }
 
 
-@keyframes fdsffdsf {
-  from {
-    width: 4px !important;
-
-  }
-  to {
-    width: auto;
-  }
-}

@@ -18,7 +18,7 @@ class UiMessages
 
 
     /**
-     * this methode call when user action successes
+     * this methode call when user spicifique action successes
      * @param $crudType
      * @return string
      */
@@ -26,6 +26,16 @@ class UiMessages
     {
         return 'Done !!, Data ' . $crudType . 'ed successfully.';
     }
+	
+	/**
+	 * this methode call when user  action successes
+	 * @param $crudType
+	 * @return string
+	 */
+	public static function done($message): string
+	{
+		return "Done !!, $message";
+	}
 
     /**
      * this methode call when user sign up with exists email , or some unique filed
@@ -81,7 +91,7 @@ class UiMessages
 	 */
 	public static function notMatch($item): string
 	{
-		return 'sorry !!, '.$item.' is not match the code sent to your email ' ;
+		return "sorry !!, $item is not match the $item sent to your email " ;
 	}
 	
 	

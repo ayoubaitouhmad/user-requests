@@ -28,7 +28,7 @@
 
 
 		<li class="nav-item @yield('side-bar-settings')">
-			<a class="nav-link" href="/user/dashboard/setting">
+			<a class="nav-link" href="/user/dashboard/settings">
 				<span class="material-icons">settings</span>
 				<span class="menu-title">Settings</span>
 			</a>

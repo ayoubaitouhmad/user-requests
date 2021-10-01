@@ -12,6 +12,9 @@
 		private $lastNname;
 		
 		private $username;
+		private $fullName;
+		
+		
 		
 		
 		
@@ -293,6 +296,25 @@
 		{
 			
 			$this->username = $username;
+		}
+		/**
+		 * @return mixed
+		 */
+		public function getFullName()
+		{
+			
+			return $this->fullName;
+		}
+		
+		
+		
+		/**
+		 * @param mixed $fullName
+		 */
+		public function setFullName($fullName): void
+		{
+			
+			$this->fullName = $fullName;
 		}
 		
 		

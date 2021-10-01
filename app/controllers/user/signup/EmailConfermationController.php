@@ -86,18 +86,17 @@
 							$_SESSION['currentSignUp']['sign_up_status'] = 1;
 							$this->tokenManager->destroy(); // REMOVE THE TOKEN FROM SESSION
 							echo cleanJSON([
-								'header' => UiMessages::VALID,
-								'body' => ''
+								'title' => UiMessages::VALID,
 							]);
 						}else{
 							echo cleanJSON([
-								'header' => UiMessages::CANCEL,
+								'title' => UiMessages::CANCEL,
 								'body' => UiMessages::notMatch('code')
 							]);
 						}
 				}else{
 					echo cleanJSON([
-						'header' => UiMessages::NOT_VALID,
+						'title' => UiMessages::NOT_VALID,
 						'body' =>  $this->errorHandler->all(),
 						'data' => AxiosHttpRequest::all()
 					]);
@@ -105,7 +104,7 @@
 			}
 			else{
 				echo cleanJSON([
-					'header' => UiMessages::ERROR,
+					'title' => UiMessages::ERROR,
 					'body' => UiMessages::error()
 				]);
 			}

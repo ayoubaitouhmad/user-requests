@@ -204,7 +204,7 @@
         // update user password & security
         securityDataFormEl.on('submit', function (e) {
             e.preventDefault();
-            saveUserSecurityData.prop('disabled', true);
+
             let email = $('#user-email');
             let password = $('#user-password');
             let question = $('#user-question');
@@ -229,8 +229,10 @@
                     }
                 })
                     .then(res => {
-                        HandleAjaxSecurityReturnData(res.data)
-                    })
+
+                        HandleAjaxSecurityReturnData(res.data);
+                    }
+                    )
                     .catch(error => console.log(error));
             }
         });
@@ -239,7 +241,7 @@
             let errorMessagesEl = securityDataFormEl.find('.errors-messages');
             let messageTitleEl = errorMessagesEl.children('.modal-error-title');
             let messageBodyEl = errorMessagesEl.children('.modal-error-body');
-            saveUserSecurityData.prop('disabled', false);
+
             switch (title) {
                 case 'done':
                     errorMessagesEl.removeClass('d-none');

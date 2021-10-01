@@ -80,7 +80,7 @@
 					$this->validator->add($request->data, [
 						'username' => [
 							'required' => true,
-							'text' => true,
+							'username' => true,
 							'maxLength' => 20,
 							'minLength' => 5
 						],
@@ -96,15 +96,11 @@
 						$password = AxiosHttpRequest::get('data', 'password');
 						if ($this->model->isValid($username, $password) !== null) {
 							Session::add('admin-connected',$username);
-							$this->tokenManager->destroy();
 							echo cleanJSON(
 								[
 									'header' => UiMessages::LOGIN_VALID
 								]
 							);
-							
-							
-							
 						} else {
 							echo cleanJSON(
 								[

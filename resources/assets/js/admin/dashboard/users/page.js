@@ -201,6 +201,18 @@
 
 
 
+        $('.user-infos__img').on('mouseenter' , function (){
+            $(this).closest('.card').addClass('preview-open');
+            console.log('fdfdg');
+        });
+
+        $('.user-infos__img').on('mouseleave' , function (){
+            $(this).closest('.card').removeClass('preview-open');
+        });
+
+
+
+
 
 
     };

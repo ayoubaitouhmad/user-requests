@@ -15,12 +15,7 @@
 @section('content')
     <!-- page indexer -->
     @include('inc.indexer' , ['page_src' => 'Home'])
-    <div class="row">
-        @php
-        echo "<pre>";
-        var_dump($activeUser)
-        @endphp
-    </div>
+
 
 @endsection
 <!-- end main content  -->

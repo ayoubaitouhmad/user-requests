@@ -27,6 +27,7 @@
             let $this = $(this);
             let requestMessageContainerEl = $this.siblings('input[type="hidden"]');
             let modalTextAreEl = modalEl.find('textarea');
+            modalEl.find('.modal-body__title').text(requestMessageContainerEl.attr('modal-type'))
             modalEl.modal('show');
             modalTextAreEl.val(requestMessageContainerEl.val());
         });

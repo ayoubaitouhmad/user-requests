@@ -52,16 +52,18 @@ body {
     display: flex;
     flex-direction: column;
     background-color: greenyellow !important;
+
     .content-wrapper {
       padding-bottom: 1rem;
       background: #f3f3f3;
       width: 100%;
       flex-grow: 1;
     }
+
     @media (max-width: 991px) {
 
-        margin-left: 0;
-        width: 100%;
+      margin-left: 0;
+      width: 100%;
 
     }
 
@@ -71,7 +73,6 @@ body {
     padding-top: 15px
   }
 }
-
 
 
 .preload-img {
@@ -90,17 +91,23 @@ body {
   padding: 0 .5rem;
 }
 
-.parsley-errors-list{
+.parsley-errors-list {
   display: none;
-  &.filled{
+
+  &.filled {
     display: block;
   }
 }
+
 .parsley-errors-list {
+
+  list-style: none !important;
+  padding-left: .9rem !important;
 
   & * {
     color: red !important;
-
+    font-size: .9rem;
+    font-weight: 500;
   }
 
   & .parsley-maxFileSize {
@@ -143,7 +150,7 @@ body {
 }
 
 
-.dataTables_scrollBody{
+.dataTables_scrollBody {
   &::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -164,7 +171,7 @@ body {
 }
 
 select:focus-visible,
-input:focus-visible{
+input:focus-visible {
   box-shadow: none !important;
   outline: none !important;
 

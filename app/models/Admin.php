@@ -16,6 +16,11 @@
 	{
 		protected  $PDO ;
 		protected   $tableName;
+		
+		
+		
+		
+		
 		public function  __construct()
 		{
 			$database = new database();
@@ -27,7 +32,24 @@
 		
 		public function create($record)
 		{
-			// TODO: Implement create() method.
+			try {
+				$query = "insert into admin (admin_id , admin_name , admin_email , admin_phone , admin_username , admin_password)";
+				$query .= "VALUES(:admin_id ,:admin_name , :admin_email , :admin_phone , :admin_username , :admin_password)";
+				$stmt = $this->PDO->prepare($query);
+				$stmt->execute([
+						':admin_id' =>generateId($record->getFullName()),
+						':admin_name' =>$record->getFullName(),
+						':admin_email' =>$record->getEmail(),
+						':admin_phone' =>$record->getPhoneNumber(),
+						':admin_username' =>$record->getUsername(),
+						':admin_password' =>$record->getPassword()
+				]);
+				return $stmt->rowCount();
+			} catch (PDOException $e) {
+				echo $e->getMessage();
+				
+				return false;
+			}
 		}
 		
 		
@@ -124,6 +146,30 @@
 				$stmt->bindParam(':pass' , $password , PDO::PARAM_STR);
 				$stmt->execute();
 				return $stmt->rowCount() > 0 ? $stmt->fetch(PDO::FETCH_OBJ) : null;
+			} catch (PDOException $e) {
+				echo $e->getMessage();
+				return false;
+			}
+			
+		}
+		
+		
+		
+		/**
+		 * @param $username
+		 * @param $email
+		 * @param $phone
+		 * @return false|mixed|null
+		 */
+		public function isDupplicated($username , $email , $phone ){
+			try {
+				$query = 'SELECT count(*) FROM admin where admin_username = :username or admin_email = :email or admin_phone = :phone ;';
+				$stmt = $this->PDO->prepare($query);
+				$stmt->bindParam(':username' , $username , PDO::PARAM_STR);
+				$stmt->bindParam(':email' , $email , PDO::PARAM_STR);
+				$stmt->bindParam(':phone' , $phone , PDO::PARAM_STR);
+				$stmt->execute();
+				return $stmt->fetchColumn() > 0 ;
 			} catch (PDOException $e) {
 				echo $e->getMessage();
 				return false;

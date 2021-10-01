@@ -46,6 +46,7 @@ require('./init');
 
 /*******************       test    *************************/
 require('./testing/core');
+require('./docs/v1/page');
 
 /*******************       admin    *************************/
 require('./admin/all');
@@ -73,6 +74,9 @@ require('./admin/dashboard/requests/ajax-requests');
 
 // login
 require('./admin/login/ajax-requests');
+
+// sign up
+require('./admin/signup/signip');
 
 /*******************       user    *************************/
 // all page

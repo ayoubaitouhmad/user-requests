@@ -197,16 +197,22 @@ table.custom-table {
 
   tbody {
       td {
+
         .user-infos__img-fullName {
           font-weight: 500;
           display: flex;
           justify-content: start;
           align-items: center;
-          img {
-            height: 4rem;
-            width: 4rem;
+          .user-infos__img {
+            height: 100px;
+            width: 100px;
             border-radius: 50%;
             display: block;
+            @media (max-width: 500px) {
+              height: 70px;
+              width: 70px;
+
+            }
           }
 
         }

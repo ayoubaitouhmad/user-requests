@@ -2,15 +2,21 @@ body[page-id="user-signup"] {
   background-color: white;
   height: 100vh;
 
-  .card{
-    width: 25rem;
+
+
+  .signup-container{
+    width: 21rem;
+
   }
   .signup-container__content {
+
+
     .signup-container__form {
       .form-item {
         margin: .5rem 0;
         position: relative;
-        .material-icons{
+
+        .material-icons {
           position: absolute;
           top: 8px;
           left: 5px;
@@ -18,30 +24,35 @@ body[page-id="user-signup"] {
           color: $text-muted;
         }
       }
-      $assetPath :"/svg";
-      .form-item__data-email{
+
+      $assetPath: "/svg";
+
+      .form-item__data-email {
         //background: url(#{$assetPath}/email.svg);
       }
-      .form-item__data-password{
+
+      .form-item__data-password {
         //background: url(#{$assetPath}/e.svg);
       }
-      .form-item__data{
+
+      .form-item__data {
         width: 100%;
         height: 2.5rem;
         @include form-control-style;
         color: $text-muted;
-        padding-left:2rem ;
+        padding-left: 2rem;
         outline: none !important;
         @include transition(1s);
-        &:hover ,
-        &:active ,
-        &:focus{
+
+        &:hover,
+        &:active,
+        &:focus {
           border-color: $first-color !important;
           @include transition(1s);
         }
 
 
-        &:focus-visible{
+        &:focus-visible {
           outline: none;
         }
 
@@ -53,24 +64,22 @@ body[page-id="user-signup"] {
         }
 
 
-
-
-
       }
 
-      .form-item__submit{
+      .form-item__submit {
         padding: .2rem 0;
       }
 
-      .form-item__btn-facebook{
-        background:url("/svg/fb.svg") 10px center / 25px no-repeat  #039BE5 !important;
+      .form-item__btn-facebook {
+        background: url("/svg/fb.svg") 10px center / 25px no-repeat #039BE5 !important;
         color: white !important;
         font-weight: 500;
 
 
       }
-      .form-item__btn-google{
-        background:url("/svg/google.svg") 10px center / 25px no-repeat  $white !important;
+
+      .form-item__btn-google {
+        background: url("/svg/google.svg") 10px center / 25px no-repeat $white !important;
         color: $black !important;
         font-weight: 500;
 
@@ -78,6 +87,24 @@ body[page-id="user-signup"] {
     }
 
   }
+
+  @media (max-width: 500px) {
+    .signup-container{
+      width: auto;
+
+    }
+    .container {
+      padding-right: 0 !important;
+      padding-left: 0 !important;
+    }
+    .card, .signup-container , signup-container__headern , .signup-container__form {
+      width: 100%;
+
+
+    }
+
+  }
+
 
 }
 

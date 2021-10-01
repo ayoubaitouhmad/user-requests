@@ -306,13 +306,13 @@
 							],
 							'question' => [
 								'required' => true,
-								'text' => true,
+								'paragraph' => true,
 								'maxLength' => 100,
 								'minLength' => 1
 							],
 							'response' => [
 								'required' => true,
-								'text' => true,
+								'paragraph' => true,
 								'maxLength' => 100,
 								'minLength' => 1
 							],
@@ -323,7 +323,8 @@
 							$user = new User();
 							$user->setId($this->currentUser->user_id);
 							$user->setEmail($post->email);
-							$user->setPassword($post->password);
+							$pass =password_hash($post->password , PASSWORD_DEFAULT);
+							$user->setPassword($pass);
 							$user->setSecretQuestion($post->question);
 							$user->setResponse($post->response);
 							if ($post->email === $this->currentUser->user_email) {
