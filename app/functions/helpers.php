@@ -116,14 +116,3 @@
 		}
 		return $records;
 	}
-	
-	
-	function calcVisiteur(){
-		$ip_all = file("ip.txt");
-		$ip_cur = $_SERVER['REMOTE_ADDR']."\n";
-		if (!in_array($ip_cur, $ip_all)) {
-			$ip_all[] = $ip_cur;
-			file_put_contents("ip.txt", implode($ip_all));
-		}
-		
-	}
