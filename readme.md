@@ -46,6 +46,30 @@ A PHP project based on project structure MVC to handle both user and admin reque
 
 - Light/dark mode toggle
 
-  
 
-[![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?)](https://github.com/tterb/atomic-design-ui/blob/master/LICENSEs)
+
+
+##Screenshots
+               
++ index 
+
+![MIT License](https://github.com/ayoubaitouhmad/user-requests/tree/master/public/img/img/overview/index.png)
+![MIT License](https://github.com/ayoubaitouhmad/user-requests/tree/master/public/img/img/overview/index1.png)
++ admin pages
+![MIT License](https://github.com/ayoubaitouhmad/user-requests/tree/master/public/img/img/overview/admin_signup.png)
+![MIT License](https://github.com/ayoubaitouhmad/user-requests/tree/master/public/img/img/overview/admin_home.png)
+![MIT License](https://github.com/ayoubaitouhmad/user-requests/tree/master/public/img/img/overview/users.png)
+![MIT License](https://github.com/ayoubaitouhmad/user-requests/tree/master/public/img/img/overview/requests.png)
+![MIT License](https://github.com/ayoubaitouhmad/user-requests/tree/master/public/img/img/overview/settings.png)
+![MIT License](https://github.com/ayoubaitouhmad/user-requests/tree/master/public/img/img/overview/notifications_admin.png)
+
+
+
+
+
+## Contributing
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+
+## License
+[MIT](https://choosealicense.com/licenses/mit/)

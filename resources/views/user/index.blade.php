@@ -23,7 +23,7 @@
                         <p class="banner-text ">
                             In-depth website users requests provide fast and easy way to deal with users requests and
                             user
-                            infos in real time,
+                            infos in real time.
                         </p>
                         <div class="text-center text-lg-left pt-2">
 
