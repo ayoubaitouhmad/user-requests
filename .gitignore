@@ -28,3 +28,7 @@ package-lock.json
 composer.lock
 
 # assets
+
+
+# uploads
+/public/uploads

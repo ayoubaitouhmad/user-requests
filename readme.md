@@ -8,6 +8,7 @@ A PHP project based on project structure MVC to handle both user and admin reque
 
 ## Installation
 
+
 + Install XAMPP or WAMPP.
 
 + Open XAMPP Control panal and start [apache] and [mysql] .
