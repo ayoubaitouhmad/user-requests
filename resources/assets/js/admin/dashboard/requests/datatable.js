@@ -6,7 +6,7 @@
             // "ordering": false,
             "info":     true,
             "pageLength": 8,
-
+            'responsive' : true,
             'scrollY': 564,
             'scrollX': 564,
             'select' : true,

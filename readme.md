@@ -32,7 +32,7 @@ A PHP project based on project structure MVC to handle both user and admin reque
   ```                      
 + we recomended that creating admin account from mysql and set admin id to
    ```shell
-      admin_id = 'admin_id'
+      admin_id = 'admin_'
   ```  
 + open your command prompt inside the project files and run the commands :
 
@@ -53,16 +53,15 @@ A PHP project based on project structure MVC to handle both user and admin reque
                
 + index 
 
-![MIT License](https://github.com/ayoubaitouhmad/user-requests/tree/master/public/img/img/overview/index.png)
-![MIT License](https://github.com/ayoubaitouhmad/user-requests/tree/master/public/img/img/overview/index1.png)
+![MIT License](./public/img/overview/index.png)
+![MIT License](./public/img/overview/index1.png)
 + admin pages
-![MIT License](https://github.com/ayoubaitouhmad/user-requests/tree/master/public/img/img/overview/admin_signup.png)
-![MIT License](https://github.com/ayoubaitouhmad/user-requests/tree/master/public/img/img/overview/admin_home.png)
-![MIT License](https://github.com/ayoubaitouhmad/user-requests/tree/master/public/img/img/overview/users.png)
-![MIT License](https://github.com/ayoubaitouhmad/user-requests/tree/master/public/img/img/overview/requests.png)
-![MIT License](https://github.com/ayoubaitouhmad/user-requests/tree/master/public/img/img/overview/settings.png)
-![MIT License](https://github.com/ayoubaitouhmad/user-requests/tree/master/public/img/img/overview/notifications_admin.png)
-
+![MIT License](./public/img/overview/admin_signup.png)
+![MIT License](./public/img/overview/admin_home.png)
+![MIT License](./public/img/overview/users.png)
+![MIT License](./public/img/overview/requests.png)
+![MIT License](./public/img/overview/settings.png)
+![MIT License](./public/img/overview/notifications_admin.png)
 
 
 

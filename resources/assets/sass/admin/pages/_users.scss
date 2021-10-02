@@ -95,6 +95,19 @@
             font-size: .78rem;
             font-family: 'Poppins';
 
+            @media (max-width: 500px) {
+              &:not(:first-child){
+                padding-top: 0;
+                margin-top: 0;
+             }
+              &:first-child{
+                padding-bottom: 0;
+                margin-bottom: -1rem;
+
+              }
+
+            }
+
             .custom-form__control{
               box-shadow: 0 0.3rem 0.1rem rgb(0 0 0 / 15%) !important;
             }
@@ -338,6 +351,10 @@
   //}
 }
 
+@media (max-width: 500px){
+
+
+}
 
 
 @media (max-width: 900px){
@@ -360,5 +377,3 @@
 input:focus::placeholder {
   color: transparent !important;
 }
-
-

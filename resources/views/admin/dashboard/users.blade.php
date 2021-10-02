@@ -489,8 +489,8 @@
     <!-- charts -->
 
 
-    <div class="row">
-        <div class="col-12  col-xl-6 grid-margin stretch-card">
+    <div class="row pt-0">
+        <div class="col-12 py-1  col-xl-6 grid-margin stretch-card">
             <div class="card shadow">
                 <div class="card-body">
                     <h4 class="card-title">compare users sign up percentage by gender in 2021</h4>
@@ -499,7 +499,7 @@
             </div>
         </div>
 
-        <div class="col-12  col-xl-6 grid-margin grid-margin-lg-0 stretch-card">
+        <div class="col-12 py-1 col-xl-6 grid-margin grid-margin-lg-0 stretch-card">
             <div class="card shadow">
                 <div class="card-body">
                     <h4 class="card-title">compare users sign up percentage by months in 2021/2020</h4>
@@ -511,7 +511,7 @@
 
     <div class="row">
 
-        <div class="col-12 col-md-8  col-xl-9  grid-margin stretch-card">
+        <div class="col-12 col-md-8 py-1  col-xl-9  grid-margin stretch-card">
             <div class="card  shadow">
                 <div class="card-body ">
                     <div class="d-flex justify-content-between align-items-center">
@@ -634,11 +634,11 @@
             </div>
         </div>
 
-        <div class="col-12 col-md-4   col-xl-3 grid-margin stretch-card request-summary">
+        <div class="col-12 col-md-4 py-1  col-xl-3 grid-margin stretch-card request-summary">
 
             <!-- short summary | number of user for eash role --->
-            <div class="card shadow ">
-                <div class="card-body ">
+            <div class="card  shadow pt-1 ">
+                <div class="card-body  pt-1">
                     <h5 class="card-title">users roles</h5>
                     <div class="request-short-summary">
                         <div>
@@ -759,8 +759,8 @@
                 </div>
             </div>
             <!-- last user added -->
-            <div class="card shadow" style="margin-top: 15px;">
-                <div class="card-body ">
+            <div class="card shadow pt-1" style="margin-top: 15px;">
+                <div class="card-body  ">
                     <div class="last-requests">
                         <h6 class="card-title">last users</h6>
                         @if(is_array($lastFourUsers) and count($lastFourUsers)>0)
@@ -817,120 +817,3 @@
 
 @endsection
 <!-- end main content  -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

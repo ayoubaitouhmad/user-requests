@@ -15,7 +15,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Read All</h5>
+                    <h5 class="modal-title"></h5>
                     <span class="btn-close material-icons">close</span>
                 </div>
                 <div class="modal-body">
@@ -38,7 +38,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Modal title</h5>
+                    <h5 class="modal-title"></h5>
                     <span class="btn-close material-icons">close</span>
                     <input type="hidden" id="encContainer">
                 </div>

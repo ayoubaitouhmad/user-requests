@@ -5,7 +5,7 @@
         $('#users-list').DataTable({
             "info":     true,
             "pageLength": 8,
-
+            'responsive' : true,
             'scrollY': 616,
             'scrollX': 564,
             'select' : true,
