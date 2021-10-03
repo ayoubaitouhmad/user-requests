@@ -35,6 +35,7 @@ A PHP project based on project structure MVC to handle both user and admin reque
       admin_id = 'admin_'
   ```  
 + open your command prompt inside the project files and run the commands :
++ create pusher account https://pusher.com and copy your api key inside PushNotification class you can found it in app/classes
 
 `npm install`
 
